@@ -1,21 +1,21 @@
 {
-  "name": "express-4.x-local-example",
-  "version": "0.0.0",
-  "description": "Express 4.x app using Passport for authentication with username and password.",
+  "name": "HeizungWeb",
+  "version": "0.0.1",
+  "description": "Web heater control.",
   "keywords": [
-    "example",
+    "IOT",
     "express",
-    "passport"
+    "heater"
   ],
-  "author": "Jared Hanson",
-  "license": "Unlicense",
-  "homepage": "https://github.com/passport/express-4.x-local-example",
+  "author": "Stefan Mandl",
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/mandl/HeizungWeb",
   "repository": {
-    "type": "git",
-    "url": "git://github.com/passport/express-4.x-local-example.git"
+    "type": "https",
+    "url": "https://github.com/mandl/HeizungWeb.git"
   },
   "bugs": {
-    "url": "https://github.com/passport/express-4.x-local-example/issues"
+    "url": "https://github.com/mandl/HeizungWeb/issues"
   },
   "scripts": {
     "start": "node server.js",
