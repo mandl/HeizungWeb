@@ -287,7 +287,7 @@ app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
 	         updatePng();
-			 res.sendFile(path.join(__dirname, '/public/test.html'));
+			 res.sendFile(path.join(__dirname, '/public/main.html'));
 });
 
 // Handle 404
