@@ -13,7 +13,7 @@ var Rest = require('connect-rest');
 
 var ar = require('./lib/temp');
 
-
+var UpdateTime = Date.now();
 // Configure the local strategy for use by Passport.
 //
 // The local strategy require a `verify` function which receives the credentials
@@ -242,6 +242,8 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 
 var updatePng = function(){
 	
+	console.log("updatePng");
+	
     // room 1
 	var pngPathName = path.join(__dirname + '/public/hum.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums1=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums1#000000:Bad']);
@@ -281,13 +283,41 @@ var updatePng = function(){
 	var pngPathName = path.join(__dirname + '/public/tempWeek3.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps3=./lib/weather.rrd:temps3:AVERAGE','LINE2:temps3#000000:Bad']);
 
+	// room4
+	var pngPathName = path.join(__dirname + '/public/hum4.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums4=./lib/weather.rrd:hums4:AVERAGE','LINE2:hums4#000000:Bad']);
+	
+	var pngPathName = path.join(__dirname + '/public/temp4.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps4=./lib/weather.rrd:temps4:AVERAGE','LINE2:temps4#000000:Bad']);
+
+	// room5
+	var pngPathName = path.join(__dirname + '/public/hum5.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums5=./lib/weather.rrd:hums5:AVERAGE','LINE2:hums5#000000:Bad']);
+	
+	var pngPathName = path.join(__dirname + '/public/temp5.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps5=./lib/weather.rrd:temps5:AVERAGE','LINE2:temps5#000000:Bad']);
+
+	// room6
+	var pngPathName = path.join(__dirname + '/public/hum6.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums6=./lib/weather.rrd:hums6:AVERAGE','LINE2:hums6#000000:Bad']);
+	
+	var pngPathName = path.join(__dirname + '/public/temp6.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps6=./lib/weather.rrd:temps6:AVERAGE','LINE2:temps6#000000:Bad']);
+
+	
 };
 
 app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
-	         updatePng();
-			 res.sendFile(path.join(__dirname, '/public/main.html'));
+			var myTime = Date.now();
+			if( myTime - UpdateTime > 1000 * 60 * 5)
+			{	
+				// more then 5 minute update png
+				UpdateTime = myTime;
+				updatePng();
+			}
+	        res.sendFile(path.join(__dirname, '/public/main.html'));
 });
 
 // Handle 404
@@ -301,4 +331,5 @@ https.createServer({
     cert: fs.readFileSync(path.join(__dirname,'ssl','cert.pem'))
   }, app).listen(3000);
 
+updatePng();
 setTimeout(ar.connectDevice, 1000);

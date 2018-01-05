@@ -3,6 +3,7 @@ var Backbone = require('backbone');
 var TempStation = Backbone.Model.extend({
        defaults: {
        id: 0,
+       label: 0,
        name : "Bad",
        state : 0,
        datasource: "0"
