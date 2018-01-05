@@ -304,14 +304,22 @@ var updatePng = function(){
 	var pngPathName = path.join(__dirname + '/public/temp6.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps6=./lib/weather.rrd:temps6:AVERAGE','LINE2:temps6#000000:Bad']);
 
+	// room7
+	var pngPathName = path.join(__dirname + '/public/hum7.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums7=./lib/weather.rrd:hums7:AVERAGE','LINE2:hums7#000000:Bad']);
 	
+	var pngPathName = path.join(__dirname + '/public/temp7.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps7=./lib/weather.rrd:temps7:AVERAGE','LINE2:temps7#000000:Bad']);
+
 };
 
 app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
 			var myTime = Date.now();
-			if( myTime - UpdateTime > 1000 * 60 * 5)
+			console.log(myTime);
+			console.log(UpdateTime);
+			if( (myTime - UpdateTime) > (1000 * 60 * 5))
 			{	
 				// more then 5 minute update png
 				UpdateTime = myTime;

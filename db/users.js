@@ -1,7 +1,7 @@
 
 var records = require("../users.json");
 
-console.log(records);
+//console.log(records);
 
 exports.findById = function(id, cb) {
   process.nextTick(function() {
