@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title></title>
+<meta name="description" content="">
+
+</head>
+<body>
+<h1>Meine Heizung</h1>
+<div id="controls"></div>
+	
+<script type="text/template" id="controls-template">
+<div class="view">
+<button id="onHeizung">On</button></div>
+</script>
+
+<div id="status"></div>
+<script type="text/template" id="view-template">
+<div class="view">
+<label>Stunden: <%= hours %></label> <br>
+<label>Starts:  <%= burnerStarts %></label><br>
+<label>Heizung: <%= burnerState %></label><br>
+<label>Battery: <%= voltageBattery %></label>
+</div>
+</script>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+	<script src="js/jquery-3.2.1.min.js"></script> 
+	<script src="js/main.js"></script>
+	<script src="js/mycode2.js"></script>
+	
+</body>
+</html>

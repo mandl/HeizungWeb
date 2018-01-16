@@ -166,10 +166,12 @@ function updateBurner(err, payload) {
     if(payload.burnerState === true)
     {
     	 console.log('switch on');
-    }
+         ar.switchOn();
+    }     
     else
     {
     	 console.log('switch off');
+    	 ar.switchOff();
     }
     
     if (err) {

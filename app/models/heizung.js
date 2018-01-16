@@ -50,4 +50,4 @@ var HeizungModel = Backbone.Model.extend({
     
    });
 
-
+module.exports.HeizungModel = HeizungModel;
