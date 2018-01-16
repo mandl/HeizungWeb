@@ -18,8 +18,7 @@
     "url": "https://github.com/mandl/HeizungWeb/issues"
   },
   "scripts": {
-    "start": "node server.js",
-    "build-js": "browserify -r ./models/tempstation.js:TempStations > public/js/bundle2.js",
+    "build-js": "browserify -r ./app/models/tempstation.js:Temp -r ./app/views/stationview.js:View  -o public/js/bundle2.js",
     "build-main": "browserify -r ./app/main.js:app > public/js/main.js"
   },
   "dependencies": {

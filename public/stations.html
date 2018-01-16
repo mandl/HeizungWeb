@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+ <meta http-equiv="Refresh" content="10">
+<title></title>
+<meta name="description" content="">
+
+</head>
+<body>
+	<h1>Active Tempstation</h1>
+	<div id="stations"></div>
+	
+	<script type="text/template" id="controls-template">
+<div class="view">
+<button id="onHeizung">On</button></div>
+</script>
+
+<script type="text/template" id="view-station-template">
+<div class="view">
+<label>ID:     <%= id %> </label>
+<label> Label:   <%= label %> </label>
+<label> Name:   <%= name %> </label>
+<label> Online: <%= state %> </label>
+<label> Datasource: <%= datasource %> </label>
+<label> Time:   <%= timestr %> </label>
+
+</div>
+</script>
+	<link rel="stylesheet" href="css/bootstrap.min.css">
+    <script src="js/jquery-3.2.1.min.js"></script>	
+	<script src="js/bundle2.js">
+	</script>
+	<script src="js/mycode.js">
+    </script>
+	
+</body>
+</html>

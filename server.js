@@ -1,3 +1,22 @@
+/*
+    Heizung
+    
+    Copyright (C) 2018 Mandl
+
+    This program is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 var fs = require('fs');
 var child_process = require('child_process');
 var express = require('express');
@@ -77,8 +96,8 @@ var rest = Rest.create( options );
 app.use(rest.processRequest());
 
 // Configure view engine to render EJS templates.
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
+//app.set('views', __dirname + '/views');
+//app.set('view engine', 'ejs');
 app.use(express.static('public'));
 
 
@@ -105,48 +124,21 @@ rest.get('/demo',function(req,content,cb){
 		
 });
 
-app.get('/login',
-
- function(req, res) {
+app.get('/login', function(req, res) {
 	 res.sendFile(path.join(__dirname, '/public/login.html'));
 });
 
-app.get('/station',
-
-		 function(req, res) {
-			 res.sendFile(path.join(__dirname, '/public/station.html'));
-		});
+app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+			 res.sendFile(path.join(__dirname, '/public/stations.html'));
+});
 
 
 app.get('/datastations',
 		 function(req, res) {
-			res.json([{
-			       'id' : 300,
-			       'name' : 'kitchen',
-			       'state' : 1
-			       },
-			       {
-			       'id' : 301,
-			       'name' : 'kitchen',
-			       'state' : 1
-			       },
-			       {
-			       'id' : 302,
-			       'name' : 'kitchen',
-			       'state' : 1
-			       },
-			       {
-			       'id' : 303,
-			       'name' : 'kitchen',
-			       'state' : 1
-			       },
-			       {
-			       'id' : 304,
-			       'name' : 'room',
-			       'state' : 1
-			       }
-			       ]);			
-		});
+			console.log(ar.getStationData());
+			res.json(ar.getStationData());
+
+});
 
 app.get('/heizung',
 

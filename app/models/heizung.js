@@ -17,29 +17,37 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 var Backbone = require('backbone');
 
-var TempStation = Backbone.Model.extend({
+var HeizungModel = Backbone.Model.extend({
        defaults: {
-       id: 0,
-       label: 0,
-       name : "Bad",
-       state : 0,
-       time : 0,
-       reset : 0,
-       lowbattery : 0,
-       timestr: "",
-       datasource: "0"
-     }
-});
+     
+       burnerState : false,
+       hours : 0,
+       burnerStarts : 0,
+       voltageBattery : 0,
+       temp : 0,
+       dayNightState : false,
+       dayNightTimeOn : 0,
+       dayNightTimeoff : 0
+       
+       
+     },
+     url: '/heater',
+     
+     switchBurn: function() {
+         var burnerState = this.get('burnerState');
+         burnerState =  ! burnerState;
+         this.set('burnerState', burnerState);
+         this.save();
+       },
+       switchOff: function() {
+           var stateOn = this.get('burnerState');
+           burnerState = 0;
+           this.set('stateOn', burnerState);
+           this.save();
+         }
+    
+   });
 
 
-var TempStations = Backbone.Collection.extend({
-	model: TempStation,
-	 url: '/datastations'
-	
-});
-
-module.exports.TempStation = TempStation;
-module.exports.TempStations = TempStations;
