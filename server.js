@@ -28,6 +28,11 @@ var path = require('path');
 var jsonBody = require('body/json');
 var Rest = require('connect-rest');
 
+var heaterData = require('./heaterData.json');
+var Heizung = require('./app/models/heizung');
+var myHeater = new Heizung.HeizungModel(heaterData);
+
+
 
 
 var ar = require('./lib/temp');
@@ -132,37 +137,34 @@ app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(
 			 res.sendFile(path.join(__dirname, '/public/stations.html'));
 });
 
-
-app.get('/datastations',
-		 function(req, res) {
-			console.log(ar.getStationData());
-			res.json(ar.getStationData());
-
+app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+	
+	child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam --save '+ __dirname + '/public/cam.jpg');
+	res.sendFile(path.join(__dirname, '/public/webcam.html'));
 });
 
-app.get('/heizung',
 
-		 function(req, res) {
+app.get('/datastations',
+	function(req, res) {
+			console.log(ar.getStationData());
+			res.json(ar.getStationData());
+});
 
-			 res.sendFile(path.join(__dirname, '/public/heizung.html'));
-		});
-
+app.get('/heizung',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+			res.sendFile(path.join(__dirname, '/public/heizung.html'));
+});
 
 
 app.get('/heater',
 
 		 function(req, res) {
-			res.json({ 'burnerState' : true,
-			       'hours' : 300,
-			       'burnerStarts' : 2000,
-			       'voltageBattery' : 40,
-			       'temp' : 27});
-			
+			res.json(myHeater.toJSON());			
 		});
 
 
 function updateBurner(err, payload) {
-    console.log(payload);
+    //console.log(payload);
+    myHeater.set(payload);
     if(payload.burnerState === true)
     {
     	 console.log('switch on');
@@ -328,10 +330,17 @@ app.use(function(req, res, next) {
     
 });
 
-https.createServer({
+var server = https.createServer({
     key: fs.readFileSync(path.join(__dirname,'ssl','key.pem')),
     cert: fs.readFileSync(path.join(__dirname,'ssl','cert.pem'))
-  }, app).listen(3000);
+  }, app);
+
+
+server.on('error', function (e) {
+	console.log(e);
+	});
+
+server.listen(3000);
 
 updatePng();
 setTimeout(ar.connectDevice, 1000);

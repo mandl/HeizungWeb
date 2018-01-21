@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta http-equiv="Refresh" content="10">
-<title></title>
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<title>Stations</title>
 <meta name="description" content="">
 </head>
 <body>
@@ -12,16 +12,18 @@
 	
 <script type="text/template" id="view-station-template">
 <div class="view">
-<label>ID:     <%= id %> </label>
-<label> Label:   <%= label %> </label>
-<label> Name:   <%= name %> </label>
-<label> Online: <%= state %> </label>
+<label> ID:         <%= id %> </label>
+<label> Label:      <%= label %> </label>
+<label> Name:       <%= name %> </label>
+<label> Temperatur: <%= temp %> </label>
+<label> Humidity:   <%= hum %> </label>
+<label> Online:     <%= state %> </label>
 <label> Datasource: <%= datasource %> </label>
-<label> Time:   <%= timestr %> </label>
-
+<label> Time:       <%= timestr %> </label>
 </div>
 </script>
-	<link rel="stylesheet" href="css/bootstrap.min.css">
+
+	
     <script src="js/jquery-3.2.1.min.js"></script>	
 	<script src="js/bundle2.js"></script>
 	<script src="js/mycode.js"></script>

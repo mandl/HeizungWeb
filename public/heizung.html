@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title></title>
+<title>State</title>
 <meta name="description" content="">
 
 </head>
@@ -12,7 +12,9 @@
 	
 <script type="text/template" id="controls-template">
 <div class="view">
-<button id="onHeizung">On</button></div>
+<button class="btn btn-primary" id="onHeizung">On</button></div>
+
+<button class="btn btn-primary" id="onDayNight">Day Night On</button></div>
 </script>
 
 <div id="status"></div>
@@ -21,7 +23,12 @@
 <label>Stunden: <%= hours %></label> <br>
 <label>Starts:  <%= burnerStarts %></label><br>
 <label>Heizung: <%= burnerState %></label><br>
-<label>Battery: <%= voltageBattery %></label>
+<label>Battery: <%= voltageBattery %></label><br>
+<label>Day on:  <%= dayNightTimeOn %> </label><br>
+<label>Day off: <%= dayNightTimeoff %> </label><br>
+<label>Day active: <%= dayNightState %> </label>
+
+
 </div>
 </script>
 	<link rel="stylesheet" href="css/bootstrap.min.css">

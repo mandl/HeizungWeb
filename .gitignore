@@ -10,4 +10,5 @@ ssl/
 temp.log
 
 public/*png
+public/*jpg
 

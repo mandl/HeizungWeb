@@ -37,3 +37,8 @@ RRA:MIN:0.5:96:3600 \
 RRA:MAX:0.5:96:3600 \
 RRA:AVERAGE:0.5:96:3600
 
+#Web Cam
+
+sudo apt-get install fswebcam
+
+LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam  --save cam.jpg

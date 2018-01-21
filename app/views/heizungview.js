@@ -19,6 +19,9 @@
 
 var Backbone = require('backbone');
 var _ = require('underscore');
+var $ = require('jquery');
+Backbone.$ = $;
+
 
 var heizungControlsView = Backbone.View.extend({
 
@@ -26,7 +29,9 @@ var heizungControlsView = Backbone.View.extend({
 	// Cache the template function for a single item.
 	template : _.template($('#controls-template').html()),
 	events : {
-		'click #onHeizung': 'handleOn'		
+		'click #onHeizung': 'handleOn',
+		'click #onDayNight':'handleDayNight'
+		
 	},
 	// Called when the view is first created
 	initialize : function() {
@@ -37,17 +42,27 @@ var heizungControlsView = Backbone.View.extend({
 	render : function() {
 		this.$el.html(this.template(this.model.attributes));		
 		this.$onHeizung = this.$('#onHeizung');
+		this.$onDayNight = this.$('#onDayNight');
 		if (this.model.get('burnerState'))
 		
 			this.$onHeizung.text('Off');
 		else
 			this.$onHeizung.text('On');
+		if (this.model.get('dayNightState'))
+			
+			this.$onDayNight.text('DayNight Off');
+		else
+			this.$onDayNight.text('DayNight On');
 		return this;
 	},
 	
 	handleOn : function () {
-		console.log('click');
+		console.log('on');
 		this.model.switchBurn();
+	},
+	handleDayNight : function () {
+		console.log('handleDayNight');
+		this.model.switchDayNight();
 	}
 
 });

@@ -21,6 +21,9 @@
 // one station
 var Backbone = require('backbone');
 var _ = require('underscore');
+var $ = require('jquery');
+Backbone.$ = $;
+
 
 var StationView = Backbone.View.extend({
 	  

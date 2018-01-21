@@ -10,8 +10,11 @@ var helloData = new myView.StationsView({collection:dd,el: '#stations'  });
 
 dd.fetch();
 
+setInterval(function() { dd.fetch(); },5000);
+
 $(document).ready(function() {
 	console.log('ready');
-	helloData.render();    
+	helloData.render();  
+	
     
   });

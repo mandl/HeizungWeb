@@ -13,68 +13,99 @@
       <li><a href="log">Log</a></li>
       <li><a href="stations">Stations</a></li>
       <li><a href="heizung">Control</a></li>
+      <li><a href="webcam">Cam</a></li>
       <li><a href="logout">Logout</a></li>
       
     </ul>
   </div>
 </div>
 
+ <button class="btn btn-primary" id="ShowWeek">Show week</button>
+ <button class="btn btn-primary" id="ShowHumidity">Hide Humidity</button>
+ 
+
   <div class="container">
     <h1 class="title">Villa</h1>
     <h2>Outside</h2>
+    <div id="hum1">
     <h3>Day humidity</h3>
-    <img src="hum.png" alt="Humidity">
+    <img  src="hum.png" alt="Humidity">
+    </div>
     <h3>Temperature</h3>
-    <img src="temp.png" alt="Temperatur">
-
+    <img  src="temp.png" alt="Temperatur">
+   
+    <div id="Week1">
+    <div id="hum2">
     <h3>Week humidity</h3>  
     <img src="humWeek.png" class="img-fluid" alt="Humidity">
-     <h3>Temperature</h3>
-    <img src="tempWeek.png" class="img-fluid"  alt="Temperatur">  
+    </div>
+    <h3>Week Temperature</h3>
+    <img  src="tempWeek.png" class="img-fluid"  alt="Temperatur">  
+    </div>
     
     <h2>Living</h2>
+    <div id="hum3">
     <h3>Day humidity</h3>
-    <img src="hum2.png" alt="Humidity">
+    <img id="hum3" src="hum2.png" alt="Humidity">
+    </div>
     <h3>Temperature</h3>
     <img src="temp2.png" alt="Temperatur">
 
+    <div id="Week3">
+    <div id="hum4">
     <h3>Week humidity</h3>  
     <img src="humWeek2.png" class="img-fluid" alt="Humidity">
-     <h3>Temperature</h3>
+    </div>
+    <h3>Week Temperature</h3>
     <img src="tempWeek2.png" class="img-fluid"  alt="Temperatur">  
+    </div>
     
     <h2>Dining</h2>
+    <div id="hum5">
     <h3>Day humidity</h3>
-    <img src="hum3.png" alt="Humidity">
+    <img  src="hum3.png" alt="Humidity">
+    </div>
     <h3>Temperature</h3>
     <img src="temp3.png" alt="Temperatur">
 
+    <div id="Week2">
+    <div id="hum6">
     <h3>Week humidity</h3>  
     <img src="humWeek3.png" class="img-fluid" alt="Humidity">
-     <h3>Temperature</h3>
+    </div>
+    <h3>Temperature</h3>
     <img src="tempWeek3.png" class="img-fluid"  alt="Temperatur">  
+    </div>
     
     <h2>Plants</h2>
+    <div id="hum7">
     <h3>Day humidity</h3>
-    <img src="hum4.png" alt="Humidity">
+    <img  src="hum4.png" alt="Humidity">
+    </div>
     <h3>Temperature</h3>
     <img src="temp4.png" alt="Temperatur">  
     
     <h2>Wash</h2>
+    <div id="hum8">
     <h3>Day humidity</h3>
     <img src="hum5.png" alt="Humidity">
+    </div>
     <h3>Temperature</h3>
     <img src="temp5.png" alt="Temperatur">
     
     <h2>Roof</h2>
+    <div id="hum9">
     <h3>Day humidity</h3>
-    <img src="hum6.png" alt="Humidity">
+    <img id="hum9" src="hum6.png" alt="Humidity">
+    </div>
     <h3>Temperature</h3>
     <img src="temp6.png" alt="Temperatur">
     
     <h2>Heater</h2>
+    <div id="hum10">
     <h3>Day humidity</h3>
-    <img src="hum7.png" alt="Humidity">
+    <img  src="hum7.png" alt="Humidity">
+    </div>
     <h3>Temperature</h3>
     <img src="temp7.png" alt="Temperatur"> 
   </div>
@@ -82,5 +113,41 @@
   <!-- Latest compiled and minified CSS -->
 <link rel="stylesheet" href="css/bootstrap.min.css">
 <script src="js/jquery-3.2.1.min.js"></script>
+
+<script>
+ $(document).ready(function() {
+    console.log('ready');
+    $('#Week1').toggle("slow");
+    $('#Week2').toggle("slow");
+    $('#Week3').toggle("slow");
+    
+    $('#ShowWeek').click(function(){
+    	 $('#Week1').toggle("slow");
+    	 $('#Week2').toggle("slow");
+    	 $('#Week3').toggle("slow");
+    }); 
+    
+    $('#ShowHumidity').click(function(){
+        $('#hum1').toggle("slow");
+        $('#hum2').toggle("slow");
+        $('#hum3').toggle("slow");
+        $('#hum4').toggle("slow");
+        $('#hum5').toggle("slow");
+        $('#hum6').toggle("slow");
+        $('#hum7').toggle("slow");
+        $('#hum8').toggle("slow");
+        $('#hum9').toggle("slow");
+        $('#hum10').toggle("slow");
+   }); 
+    
+  });
+</script>
+  
+$(document).ready(function() {
+    console.log('ready');
+    helloData.render();    
+    
+  });
+
 </body>
 

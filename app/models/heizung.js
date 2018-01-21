@@ -40,13 +40,14 @@ var HeizungModel = Backbone.Model.extend({
          burnerState =  ! burnerState;
          this.set('burnerState', burnerState);
          this.save();
-       },
-       switchOff: function() {
-           var stateOn = this.get('burnerState');
-           burnerState = 0;
-           this.set('stateOn', burnerState);
-           this.save();
-         }
+     },
+   
+     switchDayNight: function() {
+         var dayNightState = this.get('dayNightState');
+         dayNightState = ! dayNightState;
+         this.set('dayNightState', dayNightState);
+         this.save();
+     }
     
    });
 
