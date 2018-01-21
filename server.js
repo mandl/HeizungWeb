@@ -33,7 +33,7 @@ var Heizung = require('./app/models/heizung');
 var myHeater = new Heizung.HeizungModel(heaterData);
 
 
-
+var pnpFolder = path.join(__dirname ,'public','images');
 
 var ar = require('./lib/temp');
 
@@ -139,7 +139,8 @@ app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(
 
 app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
 	
-	child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam --save '+ __dirname + '/public/cam.jpg');
+	var camFile = path.join(pnpFolder,'cam.jpg')
+	child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam --save '+ camFile);
 	res.sendFile(path.join(__dirname, '/public/webcam.html'));
 });
 
@@ -188,8 +189,7 @@ app.post('/heater',
 	 jsonBody(req, res, updateBurner);
 	
 	    res.send('ok');
-	    res.end();
-			
+	    res.end();		
 });
 
 app.post('/login', passport.authenticate('local', {
@@ -198,23 +198,6 @@ app.post('/login', passport.authenticate('local', {
 	res.redirect('/');
 });
 
-
-function updateState(err, payload) {
-    console.log(payload);
-    
-    if (err) {
-      console.log(err);
-    } else {
-
-}}
-
-app.post('/LED', function(req, res) {
-    jsonBody(req, res, updateState)
-  
-    res.writeHead(200);
-    res.write('ok');
-    res.end();
-});
 
 app.get('/logout', function(req, res) {
 	req.logout();
@@ -239,73 +222,99 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 var updatePng = function(){
 	
 	console.log("updatePng");
-	
+		
     // room 1
-	var pngPathName = path.join(__dirname + '/public/hum.png');
+	var pngPathName = path.join(pnpFolder,'hum.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums1=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums1#000000:Bad']);
 	
-	var pngPathName = path.join(__dirname + '/public/temp.png');
+	var pngPathName = path.join(pnpFolder, 'temp.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps1=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps1#000000:Bad']);
 
-	var pngPathName = path.join(__dirname + '/public/humWeek.png');
+	var pngPathName = path.join(pnpFolder, 'humWeek.png');
 	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums1=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums1#000000:Bad']);
 
-	var pngPathName = path.join(__dirname + '/public/tempWeek.png');
+	var pngPathName = path.join(pnpFolder, 'tempWeek.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps1=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps1#000000:Bad']);
 	
     // room 2
-	var pngPathName = path.join(__dirname + '/public/hum2.png');
+	var pngPathName = path.join(pnpFolder,'hum2.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums2=./lib/weather.rrd:hums2:AVERAGE','LINE2:hums2#000000:Bad']);
 	
-	var pngPathName = path.join(__dirname + '/public/temp2.png');
+	var pngPathName = path.join(pnpFolder, 'temp2.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps2=./lib/weather.rrd:temps2:AVERAGE','LINE2:temps2#000000:Bad']);
 
-	var pngPathName = path.join(__dirname + '/public/humWeek2.png');
+	var pngPathName = path.join(pnpFolder, 'humWeek2.png');
 	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums2=./lib/weather.rrd:hums2:AVERAGE','LINE2:hums2#000000:Bad']);
 
-	var pngPathName = path.join(__dirname + '/public/tempWeek2.png');
+	var pngPathName = path.join(pnpFolder, 'tempWeek2.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps2=./lib/weather.rrd:temps2:AVERAGE','LINE2:temps2#000000:Bad']);
 	
 	// room 3
-	var pngPathName = path.join(__dirname + '/public/hum3.png');
+	var pngPathName = path.join(pnpFolder, 'hum3.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums3=./lib/weather.rrd:hums3:AVERAGE','LINE2:hums3#000000:Bad']);
 	
-	var pngPathName = path.join(__dirname + '/public/temp3.png');
+	var pngPathName = path.join(pnpFolder, 'temp3.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps3=./lib/weather.rrd:temps3:AVERAGE','LINE2:temps3#000000:Bad']);
 
-	var pngPathName = path.join(__dirname + '/public/humWeek3.png');
+	var pngPathName = path.join(pnpFolder, 'humWeek3.png');
 	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums3=./lib/weather.rrd:hums3:AVERAGE','LINE2:hums3#000000:Bad']);
 	
-	var pngPathName = path.join(__dirname + '/public/tempWeek3.png');
+	var pngPathName = path.join(pnpFolder, 'tempWeek3.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps3=./lib/weather.rrd:temps3:AVERAGE','LINE2:temps3#000000:Bad']);
 
 	// room4
-	var pngPathName = path.join(__dirname + '/public/hum4.png');
+	var pngPathName = path.join(pnpFolder, 'hum4.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums4=./lib/weather.rrd:hums4:AVERAGE','LINE2:hums4#000000:Bad']);
 	
-	var pngPathName = path.join(__dirname + '/public/temp4.png');
+	var pngPathName = path.join(pnpFolder, 'temp4.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps4=./lib/weather.rrd:temps4:AVERAGE','LINE2:temps4#000000:Bad']);
 
+	var pngPathName = path.join(pnpFolder, 'humWeek4.png');
+	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums4=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums4#000000:Bad']);
+
+	var pngPathName = path.join(pnpFolder, 'tempWeek4.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps4=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps4#000000:Bad']);
+
 	// room5
-	var pngPathName = path.join(__dirname + '/public/hum5.png');
+	var pngPathName = path.join(pnpFolder, 'hum5.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums5=./lib/weather.rrd:hums5:AVERAGE','LINE2:hums5#000000:Bad']);
 	
-	var pngPathName = path.join(__dirname + '/public/temp5.png');
+	var pngPathName = path.join(pnpFolder, 'temp5.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps5=./lib/weather.rrd:temps5:AVERAGE','LINE2:temps5#000000:Bad']);
 
+	var pngPathName = path.join(pnpFolder, 'humWeek5.png');
+	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums5=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums5#000000:Bad']);
+
+	var pngPathName = path.join(pnpFolder, 'tempWeek5.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps5=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps5#000000:Bad']);
+
+	
 	// room6
-	var pngPathName = path.join(__dirname + '/public/hum6.png');
+	var pngPathName = path.join(pnpFolder, 'hum6.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums6=./lib/weather.rrd:hums6:AVERAGE','LINE2:hums6#000000:Bad']);
 	
-	var pngPathName = path.join(__dirname + '/public/temp6.png');
+	var pngPathName = path.join(pnpFolder, 'temp6.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps6=./lib/weather.rrd:temps6:AVERAGE','LINE2:temps6#000000:Bad']);
 
+	var pngPathName = path.join(pnpFolder, 'humWeek6.png');
+	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums6=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums6#000000:Bad']);
+
+	var pngPathName = path.join(pnpFolder, 'tempWeek6.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps6=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps6#000000:Bad']);
+
+	
 	// room7
-	var pngPathName = path.join(__dirname + '/public/hum7.png');
+	var pngPathName = path.join(pnpFolder, 'hum7.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums7=./lib/weather.rrd:hums7:AVERAGE','LINE2:hums7#000000:Bad']);
 	
-	var pngPathName = path.join(__dirname + '/public/temp7.png');
+	var pngPathName = path.join(pnpFolder, 'temp7.png');
 	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps7=./lib/weather.rrd:temps7:AVERAGE','LINE2:temps7#000000:Bad']);
+
+	var pngPathName = path.join(pnpFolder, 'humWeek7.png');
+	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums7=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums7#000000:Bad']);
+
+	var pngPathName = path.join(pnpFolder, 'tempWeek7.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps7=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps7#000000:Bad']);
 
 };
 
