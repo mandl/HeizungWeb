@@ -352,8 +352,10 @@ server.listen(3000);
 updatePng('',7,'1');
 updatePng('muc',4,'2');
 
-//setTimeout(ar.connectDevice, 1000);
+// connect Arduino
+setTimeout(ar.connectDevice, 1000);
 
+// Check night/day switch
 setInterval(function() { 
 	
 	// update every 5 seconds
