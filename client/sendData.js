@@ -17,37 +17,58 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-const path = require('path');
+
+
+const https = require('https');
+const querystring = require('querystring');
 const SerialPort = require('serialport');
-const rrdtool = require('rrdtool');
-const winston = require('winston');
-const TempStations = require('../app/models/tempstation');
-const stationData = require('../station.json');
+const  TempStations = require('../app/models/tempstation');
+const  stationData = require('../stationRemote1.json');
+const  configData = require('../config.json');
 
 var stations = new TempStations.TempStations(stationData);
 
+const  Readline = SerialPort.parsers.Readline;
 
-winston.level = 'info';
-winston.add(winston.transports.File, { filename: 'temp.log' });
+var serial;
+var parser;
 
-winston.info('Server start');
-
-var Readline = SerialPort.parsers.Readline;
-var serial = null;
-var parser = null;
-
-
-try{
-	var f = path.join(__dirname, 'weather1.rrd');
+var sendOutData = function(data) {
 	
-	var db = rrdtool.open(f);
-	
-	var f2 = path.join(__dirname, 'weather2.rrd');
-	var db2 = rrdtool.open(f2);
+	//console.log(data);
+	var headers = {
+		    'Content-Type': 'application/json',
+		    'Content-Length': Buffer.byteLength(data)
+		  };
 
-} catch (e) {
-	console.log(e);
-} 
+		const options = {
+		  hostname: configData.server_url,
+		  port: 3000,
+		  path: "/demo",
+		  rejectUnauthorized: false,
+		  encoding: "utf8",
+		  method: 'POST',
+		  headers: headers,
+		  json: true
+		  
+		};
+	const req = https.request(options, (res) => {
+	  console.log('statusCode:', res.statusCode);
+	  console.log('headers:', res.headers);
+	
+	  res.on('data', (d) => {
+	    process.stdout.write(d);
+	  });
+	});
+	
+	req.on('error', (e) => {
+	  console.error(e);
+	});
+	req.write(data);
+	req.end();
+
+};
+
 
 var connectDevice = function() {
 	var port = SerialPort.list(function(err, ports) {
@@ -57,9 +78,8 @@ var connectDevice = function() {
 			//console.log(port.manufacturer);
 			if (port.manufacturer != undefined) {
 				var name = port.manufacturer;
-				console.log(typeof name);
 				if (name.startsWith('Arduino')) {
-					console.log('Found Arduino at ' + port.comName);
+					console.log('Found Arduino at: ' + port.comName);
 					DoConnect(port);
 					return;
 				}
@@ -81,47 +101,26 @@ var DoConnect=function(port)
 		}));
 	
 		serial.on('close', function() {
-			winston.info('close port');
+			console.log('close port');
 			serial = null;
 			parser = null;
 			reconnectDevice();
 		});
 		
 		serial.on('open', function() {
-			winston.info('port open ');
+			console.log('port open ');
 			setInterval(function() {
-				console.log('save data');
-				 var TimeNow = Date.now();
-				 var dataTemp = {}; 
-				stations.each(function(model){
-					
-					if(TimeNow - model.get('time') < 1000 * 60 * 20)
-			    	{	
-				    	var preFix = model.get('datasource');
-				    	
-						dataTemp["temps"+preFix]  = model.get('temp');
-						dataTemp["hums"+preFix] = model.get('hum');
-			    	}
-					
-				});
-				 console.log(dataTemp);
-						
-				try {
-				db.update(dataTemp, function(err) {
-					if (err != null)
-						winston.info(err);
-				});
-				} catch (e) {
-					return winston.error(e);
-				} 
+				console.log('send data');
+				console.log(JSON.stringify(stations));
 				
-			}, 1000 * 60 * 5);
+				sendOutData(JSON.stringify(stations));	
+				
+			}, 1000 * 60 * 5); // send every 5 minutes
 			
 		});
 		
 		serial.on('error', function(err) {
-	
-			winston.error("serial error");
+		
 			serial = null;
 			parser = null;
 			console.error("error", err);
@@ -133,7 +132,7 @@ var DoConnect=function(port)
 			var my = data.toString();
 	
 			// { ID: 5, Reset: 0, LOWBAT: 0, Temp: 22.3, Hygro: 47 }
-			winston.debug(my);
+			
 			console.log(my);
 			try {
 				var obj = JSON.parse(my);
@@ -158,75 +157,31 @@ var DoConnect=function(port)
 				}		
 				else{
 					//console.log(data);
-					
+					// Update
 					data.set({"temp": obj.Temp});
 					data.set({"hum" : obj.Hygro});
 					data.set({"time": Date.now()});
 					data.set({"reset": obj.Reset});
 					data.set({"lowbattery": obj.LOWBAT});
 					data.set({"timestr": new Date().toLocaleString()});
-					
+					//console.log(dataTemp);
 				}	
 			} catch (e) {
-				winston.error(my);
-				winston.error(e);
+				
 			}
 		});
 };
 
 // check for connection errors or drops and reconnect
 var reconnectDevice = function() {
-	winston.info('INITIATING RECONNECT');
+	console.log('INITIATING RECONNECT');
 	setTimeout(function() {
-		winston.info('RECONNECTING TO ARDUINO');
+		console.log('RECONNECTING TO ARDUINO');
 		connectDevice();
 	}, 10000);
 };
 
-var getStationData = function() {
-	return stations.toJSON();
-};
-
-var getHeaterData = function() {
-	return myHeater.toJSON();	
-};
-
-var switchOn = function() {
-	
-	if(serial != null)
-		serial.write('an\r\n');
-};
-
-var switchOff = function() {
-	if(serial != null)
-		serial.write('aus\r\n');
-};
-
-var getStatus = function() {
-	if(serial != null)
-		serial.write('status\r\n');
-};
-
-var updateDB2 = function(dataTemp) {
-	
-	console.log(dataTemp);	
-		
-	try {
-		db2.update(dataTemp, function(err) {
-			if (err != null)
-				winston.info(err);
-		});
-		} catch (e) {
-			return winston.error(e);
-		} 
-};
+console.log('Connect to: ' + configData.server_url);
+setTimeout(connectDevice, 1000);
 
 
-exports.connectDevice = connectDevice;
-exports.getStationData = getStationData;
-
-exports.switchOn = switchOn;
-exports.switchOff = switchOff;
-exports.getStatus = getStatus;
-
-exports.updateDB2 = updateDB2;

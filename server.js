@@ -17,25 +17,30 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-var fs = require('fs');
-var child_process = require('child_process');
-var express = require('express');
-var https = require('https')
-var passport = require('passport');
-var Strategy = require('passport-local').Strategy;
-var db = require('./db');
-var path = require('path');
-var jsonBody = require('body/json');
-var Rest = require('connect-rest');
+const fs = require('fs');
+const child_process = require('child_process');
+const express = require('express');
+const https = require('https')
+const passport = require('passport');
+const Strategy = require('passport-local').Strategy;
+const db = require('./db');
+const path = require('path');
+const jsonBody = require('body/json');
+const Rest = require('connect-rest');
 
-var heaterData = require('./heaterData.json');
-var Heizung = require('./app/models/heizung');
+const heaterData = require('./heaterData.json');
+const Heizung = require('./app/models/heizung');
 var myHeater = new Heizung.HeizungModel(heaterData);
 
 
-var pnpFolder = path.join(__dirname ,'public','images');
+const pnpFolder = path.join(__dirname ,'public','images');
 
-var ar = require('./lib/temp');
+const ar = require('./lib/temp');
+
+//const stationData = require('stationRemote1.json');
+const TempStations = require('./app/models/tempstation');
+
+var stationsRemote = new TempStations.TempStations();
 
 var UpdateTime = Date.now();
 // Configure the local strategy for use by Passport.
@@ -96,9 +101,9 @@ var options = {
 // Create a new Express application.
 var app = express();
 
-var rest = Rest.create( options );
+//var rest = Rest.create( options );
 
-app.use(rest.processRequest());
+//app.use(rest.processRequest());
 
 // Configure view engine to render EJS templates.
 //app.set('views', __dirname + '/views');
@@ -124,10 +129,15 @@ app.use(require('express-session')({
 app.use(passport.initialize());
 app.use(passport.session());
 
-
-rest.get('/demo',function(req,content,cb){
-		
-});
+//async function service( request, content ){
+//    console.log( 'Received headers:' + JSON.stringify( request.headers ) )
+//    console.log( 'Received parameters:' + JSON.stringify( request.parameters ) )
+//    console.log( 'Received JSON object:' + JSON.stringify( content ) )
+//    return 'ok'
+//}
+//
+//
+//rest.post('/demo',service);
 
 app.get('/login', function(req, res) {
 	 res.sendFile(path.join(__dirname, '/public/login.html'));
@@ -147,12 +157,33 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(re
 
 app.get('/datastations',
 	function(req, res) {
-			console.log(ar.getStationData());
+			//console.log(ar.getStationData());
 			res.json(ar.getStationData());
+});
+
+app.get('/datastationsmuc',
+		function(req, res) {
+				//console.log(stationsRemote);
+				res.json(stationsRemote.toJSON());
 });
 
 app.get('/heizung',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 			res.sendFile(path.join(__dirname, '/public/heizung.html'));
+});
+
+
+app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+	
+	if( DoUpdatePng())
+	{	
+		updatePng('muc',4,'2');
+	}	
+	res.sendFile(path.join(__dirname, '/public/muc.html'));
+});
+
+app.get('/dra',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+	
+	res.sendFile(path.join(__dirname, '/public/dra.html'));
 });
 
 
@@ -181,7 +212,45 @@ function updateBurner(err, payload) {
       console.log(err);
     } else {
 
+}};
+
+function getStationJson(err, payload) {
+    
+	//console.log(payload);
+	
+	var dataTemp = {}; 
+	stationsRemote.reset(payload);
+    var TimeNow = Date.now();
+    //console.log(payload);
+    
+    stationsRemote.each(function(model) {
+	//console.log(model.attributes);
+	//model.get('id');
+	//model.get('time');
+    	//console.log(TimeNow - model.get('time'));
+		if((TimeNow - model.get('time')) < (1000 * 60 * 30))
+		{	
+	    	var preFix = model.get('datasource');	
+			dataTemp["temps"+preFix]  = model.get('temp');
+			dataTemp["hums"+preFix] = model.get('hum');
+		}
+    });
+   
+    
+    ar.updateDB2(dataTemp);
+    
+    if (err) {
+      console.log(err);
+    } else {
+
 }}
+
+app.post('/demo',
+		function(req, res) {
+	    jsonBody(req, res, getStationJson);
+		res.send('ok');
+		res.end();		
+});
 
 app.post('/heater',
 
@@ -217,121 +286,50 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 });
 
 
-
-
-var updatePng = function(){
+var updatePng = function(prefix,count,dbprefix){
 	
 	console.log("updatePng");
 		
-    // room 1
-	var pngPathName = path.join(pnpFolder,'hum.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums1=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums1#000000:Bad']);
-	
-	var pngPathName = path.join(pnpFolder, 'temp.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps1=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps1#000000:Bad']);
+	for(var i=1; i <= count; i++)
+	{
+		// Day
+		var pngPathName = path.join(pnpFolder, prefix + 'hum'+ i +'.png');
+		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix+ '.rrd:hums'+i+':AVERAGE','LINE2:hums'+i+'#000000:Humidity']);
+		var pngPathName = path.join(pnpFolder, prefix +  'temp'+ i +'.png');
+		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix+ '.rrd:temps'+i+':AVERAGE','LINE2:temps'+i+'#000000:Temp']);
+		
+		// week
+		var pngPathName = path.join(pnpFolder, prefix + 'humWeek'+ i +'.png');
+		child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix+ '.rrd:hums'+i+':AVERAGE','LINE2:hums'+i+'#000000:Humidity']);
+		var pngPathName = path.join(pnpFolder, prefix + 'tempWeek'+ i +'.png');
+		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix+ '.rrd:temps'+i+':AVERAGE','LINE2:temps'+i+'#000000:Temp']);
 
-	var pngPathName = path.join(pnpFolder, 'humWeek.png');
-	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums1=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums1#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'tempWeek.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps1=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps1#000000:Bad']);
-	
-    // room 2
-	var pngPathName = path.join(pnpFolder,'hum2.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums2=./lib/weather.rrd:hums2:AVERAGE','LINE2:hums2#000000:Bad']);
-	
-	var pngPathName = path.join(pnpFolder, 'temp2.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps2=./lib/weather.rrd:temps2:AVERAGE','LINE2:temps2#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'humWeek2.png');
-	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums2=./lib/weather.rrd:hums2:AVERAGE','LINE2:hums2#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'tempWeek2.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps2=./lib/weather.rrd:temps2:AVERAGE','LINE2:temps2#000000:Bad']);
-	
-	// room 3
-	var pngPathName = path.join(pnpFolder, 'hum3.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums3=./lib/weather.rrd:hums3:AVERAGE','LINE2:hums3#000000:Bad']);
-	
-	var pngPathName = path.join(pnpFolder, 'temp3.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps3=./lib/weather.rrd:temps3:AVERAGE','LINE2:temps3#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'humWeek3.png');
-	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums3=./lib/weather.rrd:hums3:AVERAGE','LINE2:hums3#000000:Bad']);
-	
-	var pngPathName = path.join(pnpFolder, 'tempWeek3.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps3=./lib/weather.rrd:temps3:AVERAGE','LINE2:temps3#000000:Bad']);
-
-	// room4
-	var pngPathName = path.join(pnpFolder, 'hum4.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums4=./lib/weather.rrd:hums4:AVERAGE','LINE2:hums4#000000:Bad']);
-	
-	var pngPathName = path.join(pnpFolder, 'temp4.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps4=./lib/weather.rrd:temps4:AVERAGE','LINE2:temps4#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'humWeek4.png');
-	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums4=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums4#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'tempWeek4.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps4=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps4#000000:Bad']);
-
-	// room5
-	var pngPathName = path.join(pnpFolder, 'hum5.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums5=./lib/weather.rrd:hums5:AVERAGE','LINE2:hums5#000000:Bad']);
-	
-	var pngPathName = path.join(pnpFolder, 'temp5.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps5=./lib/weather.rrd:temps5:AVERAGE','LINE2:temps5#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'humWeek5.png');
-	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums5=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums5#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'tempWeek5.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps5=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps5#000000:Bad']);
-
-	
-	// room6
-	var pngPathName = path.join(pnpFolder, 'hum6.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums6=./lib/weather.rrd:hums6:AVERAGE','LINE2:hums6#000000:Bad']);
-	
-	var pngPathName = path.join(pnpFolder, 'temp6.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps6=./lib/weather.rrd:temps6:AVERAGE','LINE2:temps6#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'humWeek6.png');
-	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums6=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums6#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'tempWeek6.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps6=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps6#000000:Bad']);
-
-	
-	// room7
-	var pngPathName = path.join(pnpFolder, 'hum7.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums7=./lib/weather.rrd:hums7:AVERAGE','LINE2:hums7#000000:Bad']);
-	
-	var pngPathName = path.join(pnpFolder, 'temp7.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps7=./lib/weather.rrd:temps7:AVERAGE','LINE2:temps7#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'humWeek7.png');
-	child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums7=./lib/weather.rrd:hums1:AVERAGE','LINE2:hums7#000000:Bad']);
-
-	var pngPathName = path.join(pnpFolder, 'tempWeek7.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps7=./lib/weather.rrd:temps1:AVERAGE','LINE2:temps7#000000:Bad']);
-
-};
+	}
+}
 
 app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
-			var myTime = Date.now();
-			console.log(myTime);
-			console.log(UpdateTime);
-			if( (myTime - UpdateTime) > (1000 * 60 * 5))
-			{	
-				// more then 5 minute update png
-				UpdateTime = myTime;
-				updatePng();
+		
+			if( DoUpdatePng())
+			{
+				updatePng('',7,'1');	
 			}
 	        res.sendFile(path.join(__dirname, '/public/main.html'));
 });
+
+var DoUpdatePng = function() {
+	
+	var myTime = Date.now();
+	
+	if( (myTime - UpdateTime) > (1000 * 60 * 10))
+	{	
+		// more then 10 minute update graph
+		UpdateTime = myTime;
+		return true;
+	}
+	return false;
+}
 
 // Handle 404
 app.use(function(req, res, next) {
@@ -351,5 +349,48 @@ server.on('error', function (e) {
 
 server.listen(3000);
 
-updatePng();
-setTimeout(ar.connectDevice, 1000);
+updatePng('',7,'1');
+updatePng('muc',4,'2');
+
+//setTimeout(ar.connectDevice, 1000);
+
+setInterval(function() { 
+	
+	// update every 5 seconds
+	console.log('Check state');
+	var date = new Date();
+	var current_hour = date.getHours();
+
+	console.log(current_hour);
+	
+
+	if(myHeater.get('dayNightState'))
+	{
+		
+		var start = myHeater.get('dayNightTimeOn');
+		var end = myHeater.get('dayNightTimeoff');
+		
+		console.log('dayNight on');
+		console.log(start);
+		console.log(end);
+
+		
+		if(( current_hour >= start ) &&( current_hour < end ))
+		{
+			// on
+			console.log('switch on');
+	        ar.switchOn();
+		}
+		else
+		{
+		   // off
+		   console.log('switch off');
+	       ar.switchOff();
+		}
+	}
+	
+	
+	
+	
+	
+},1000 * 60 * 1);

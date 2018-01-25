@@ -41,7 +41,10 @@ var TempStations = Backbone.Collection.extend({
 	model: TempStation,
 	 url: '/datastations'
 	
+	
 });
+
+
 
 module.exports.TempStation = TempStation;
 module.exports.TempStations = TempStations;
