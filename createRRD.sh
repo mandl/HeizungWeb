@@ -22,7 +22,7 @@ RRA:MIN:0.5:96:3600 \
 RRA:MAX:0.5:96:3600 \
 RRA:AVERAGE:0.5:96:3600
 
-rrdtool create .lib/weather2.rrd --step 900 \
+rrdtool create ./lib/weather2.rrd --step 900 \
 DS:temps1:GAUGE:1200:-40:50 \
 DS:temps2:GAUGE:1200:-40:50 \
 DS:temps3:GAUGE:1200:-40:50 \
@@ -36,7 +36,7 @@ RRA:MIN:0.5:96:3600 \
 RRA:MAX:0.5:96:3600 \
 RRA:AVERAGE:0.5:96:3600
 
-rrdtool create .lib/weather3.rrd --step 900 \
+rrdtool create ./lib/weather3.rrd --step 900 \
 DS:temps1:GAUGE:1200:-40:50 \
 DS:temps2:GAUGE:1200:-40:50 \
 DS:temps3:GAUGE:1200:-40:50 \

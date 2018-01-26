@@ -1,4 +1,3 @@
 [{"id": 36, "label": 11, "name": "Outside", "state": 0, "datasource" : "1"},
-{"id": 32, "label": 12,"name": "Bad","state": 0, "datasource" : "4"},
-{"id": 62, "label": 13,"name": "Sleep","state": 0, "datasource" : "3"},
-{"id": 61, "label": 5,"name": "Heater","state": 0, "datasource" : "4"}]
+{"id": 32, "label": 12,"name": "Bad","state": 0, "datasource" : "2"},
+{"id": 62, "label": 13,"name": "Sleep","state": 0, "datasource" : "3"}]

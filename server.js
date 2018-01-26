@@ -30,17 +30,21 @@ const Rest = require('connect-rest');
 
 const heaterData = require('./heaterData.json');
 const Heizung = require('./app/models/heizung');
+const expressHandlebars = require('express-handlebars');
 var myHeater = new Heizung.HeizungModel(heaterData);
 
-
+const stationData = require('./stationRemote1.json');
+const stationData2 = require('./stationRemote2.json');
 const pnpFolder = path.join(__dirname ,'public','images');
 
 const ar = require('./lib/temp');
 
-//const stationData = require('stationRemote1.json');
 const TempStations = require('./app/models/tempstation');
 
 var stationsRemote = new TempStations.TempStations();
+
+var stationsMuc = new TempStations.TempStations(stationData);
+var stationsDra = new TempStations.TempStations(stationData2);
 
 var UpdateTime = Date.now();
 // Configure the local strategy for use by Passport.
@@ -129,6 +133,17 @@ app.use(require('express-session')({
 app.use(passport.initialize());
 app.use(passport.session());
 
+
+//view engine setup
+app.set('views', path.join(__dirname, 'views'));
+//Helper is used to ease stringifying JSON
+app.engine('handlebars', expressHandlebars({helpers: {
+ toJSON : function(object) {
+ return JSON.stringify(object);
+ }
+}}));
+app.set('view engine', 'handlebars');
+
 //async function service( request, content ){
 //    console.log( 'Received headers:' + JSON.stringify( request.headers ) )
 //    console.log( 'Received parameters:' + JSON.stringify( request.parameters ) )
@@ -138,6 +153,7 @@ app.use(passport.session());
 //
 //
 //rest.post('/demo',service);
+
 
 app.get('/login', function(req, res) {
 	 res.sendFile(path.join(__dirname, '/public/login.html'));
@@ -178,13 +194,18 @@ app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, 
 	{	
 		updatePng('muc',4,'2');
 	}	
-	res.sendFile(path.join(__dirname, '/public/muc.html'));
+	res.render('mainview', { title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
 });
 
 app.get('/dra',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
-	res.sendFile(path.join(__dirname, '/public/dra.html'));
+	if( DoUpdatePng())
+	{	
+		updatePng('dra',2,'3');
+	}	
+	res.render('mainview', { title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
 });
+
 
 
 app.get('/heater',
@@ -235,10 +256,14 @@ function getStationJson(err, payload) {
 			dataTemp["hums"+preFix] = model.get('hum');
 		}
     });
-   
     
-    ar.updateDB2(dataTemp);
-    
+    var ol = Object.keys(dataTemp);
+    console.log(ol.length);
+    if ( ol.length  > 0)
+    {
+    	console.log("Save remote data");
+    	ar.updateDB2(dataTemp);
+    }
     if (err) {
       console.log(err);
     } else {
@@ -310,12 +335,15 @@ var updatePng = function(prefix,count,dbprefix){
 app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
+	
+	  		var my = ar.getStationData()
 		
 			if( DoUpdatePng())
 			{
 				updatePng('',7,'1');	
 			}
-	        res.sendFile(path.join(__dirname, '/public/main.html'));
+			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
+
 });
 
 var DoUpdatePng = function() {
@@ -351,9 +379,10 @@ server.listen(3000);
 
 updatePng('',7,'1');
 updatePng('muc',4,'2');
+updatePng('dra',2,'3');
 
 // connect Arduino
-setTimeout(ar.connectDevice, 1000);
+//setTimeout(ar.connectDevice, 1000);
 
 // Check night/day switch
 setInterval(function() { 
@@ -390,9 +419,4 @@ setInterval(function() {
 	       ar.switchOff();
 		}
 	}
-	
-	
-	
-	
-	
 },1000 * 60 * 1);

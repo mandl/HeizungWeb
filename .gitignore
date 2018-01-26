@@ -12,3 +12,7 @@ temp.log
 public/*png
 public/*jpg
 
+lib/*.rrd
+
+public/images/*png
+

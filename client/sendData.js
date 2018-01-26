@@ -43,7 +43,7 @@ var sendOutData = function(data) {
 
 		const options = {
 		  hostname: configData.server_url,
-		  port: 3000,
+		  port: configData.server_port,
 		  path: "/demo",
 		  rejectUnauthorized: false,
 		  encoding: "utf8",
@@ -182,6 +182,7 @@ var reconnectDevice = function() {
 };
 
 console.log('Connect to: ' + configData.server_url);
+console.log('Using port: ' + configData.server_port);
 setTimeout(connectDevice, 1000);
 
 

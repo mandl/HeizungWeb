@@ -17,8 +17,6 @@
     ./createRRD.sh
 
 
-
-
 #Web Cam
 
     sudo apt-get install fswebcam

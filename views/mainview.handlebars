@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="css/bootstrap.min.css">
+<title>{{title}}</title>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <a class="navbar-brand" href="/">Villa</a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+  </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="muc">Muc</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="dra">Dra</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="log">Log</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="stations">Stations</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="heizung">Control</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="webcam">Cam</a>
+      </li>
+      <li class="nav-item>">
+        <a class="nav-link" href="logout">Logout</a>
+      </li>     
+    </ul>
+  </div>
+</nav>
+<br>
+
+<div class="container">
+<button class="btn btn-primary" id="ShowWeek">Show week</button>
+<button class="btn btn-primary" id="ShowHumidity">Hide Humidity</button>
+</div>
+<div class="container">
+{{#each stations}}
+    <h1>{{name}}</h1>
+    <label> Sensor label: {{label}} </label><br>
+			<div id="day{{datasource}}">
+				<h2>Day temperature</h2>
+				<img  src="/images/{{../prefix}}temp{{datasource}}.png" class="img-fluid"  alt="Temperatur">
+			</div>
+			<div id="hum{{datasource}}">
+				<h2>Day humidity</h2>
+				<img  src="/images/{{../prefix}}hum{{datasource}}.png" class="img-fluid"  alt="Humidity">
+			</div>
+			
+			<div id="week{{datasource}}">
+				<h2>Week temperature</h2>
+				<label> Sensor ID: {{label}} </label><br>
+				<img  src="/images/{{../prefix}}tempWeek{{datasource}}.png" class="img-fluid" alt="Temperatur">
+				<div id="hum{{datasource}}">
+					<h2>Week humidity</h2>
+					<img  src="/images/{{../prefix}}humWeek{{datasource}}.png" class="img-fluid" alt="Humidity">
+				</div>
+			</div>
+			<br>
+    {{/each}}
+</div>
+<script src="js/jquery-3.2.1.min.js"></script>
+<script>
+ $(document).ready(function() {
+    console.log('ready');
+    {{#each stations}}
+     $('#week{{datasource}}').toggle("slow");
+    {{/each}}
+    
+    $('#ShowWeek').click(function(){
+    	{{#each stations}}
+        $('#week{{datasource}}').toggle("slow");
+       {{/each}}
+       //$('#ShowWeek').text('Hide week');
+        
+    }); 
+    
+    $('#ShowHumidity').click(function(){
+    	{{#each stations}}
+        $('#hum{{datasource}}').toggle("slow");
+       {{/each}}
+    //$('#ShowHumidity').text('Show Humidity');
+       
+   }); 
+    
+  });
+</script>
+</body>
+</html>
