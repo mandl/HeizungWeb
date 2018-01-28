@@ -259,6 +259,9 @@ function getStationJson(err, payload) {
     
     var ol = Object.keys(dataTemp);
     console.log(ol.length);
+    delete dataTemp['hums-1'];
+    delete dataTemp['temps-1'];
+    
     if ( ol.length  > 0)
     {
     	console.log("Save remote data");

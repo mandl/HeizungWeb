@@ -142,7 +142,7 @@ var DoConnect=function(port)
 				if(data  === undefined)
 				{
 					console.log('new id');
-					if(obj.Reset)
+					if((obj.Reset) && (configData.add_new_stations))
 					{
 						stations.add({id: obj.ID,
 						       label: 0,
@@ -152,7 +152,7 @@ var DoConnect=function(port)
 						       reset : obj.Reset,
 						       lowbattery : obj.LOWBAT,
 						       timestr: new Date().toLocaleString(),
-						       datasource: "0"});
+						       datasource: "-1"});
 					}	
 				}		
 				else{
@@ -181,8 +181,9 @@ var reconnectDevice = function() {
 	}, 10000);
 };
 
-console.log('Connect to: ' + configData.server_url);
-console.log('Using port: ' + configData.server_port);
+console.log('Connect to:      ' + configData.server_url);
+console.log('Using port:      ' + configData.server_port);
+console.log('Add new station: ' + configData.add_new_stations);
 setTimeout(connectDevice, 1000);
 
 
