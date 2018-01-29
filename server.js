@@ -166,7 +166,8 @@ app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(
 app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
 	
 	var camFile = path.join(pnpFolder,'cam.jpg')
-	child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam --save '+ camFile);
+	//child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam --save '+ camFile);
+	child_process.execSync('raspistill -o '+ camFile);
 	res.sendFile(path.join(__dirname, '/public/webcam.html'));
 });
 
@@ -343,7 +344,7 @@ app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 		
 			if( DoUpdatePng())
 			{
-				updatePng('',7,'1');	
+				updatePng('',8,'1');	
 			}
 			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
 
@@ -380,7 +381,7 @@ server.on('error', function (e) {
 
 server.listen(3000);
 
-updatePng('',7,'1');
+updatePng('',8,'1');
 updatePng('muc',4,'2');
 updatePng('dra',2,'3');
 
