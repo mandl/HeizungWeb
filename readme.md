@@ -1,3 +1,7 @@
+#Install Node.js
+
+    curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+    
 
 #Create SSl
     openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout ./ssl/key.pem -out ./ssl/cert.pem

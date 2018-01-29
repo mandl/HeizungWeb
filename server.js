@@ -385,7 +385,7 @@ updatePng('muc',4,'2');
 updatePng('dra',2,'3');
 
 // connect Arduino
-//setTimeout(ar.connectDevice, 1000);
+setTimeout(ar.connectDevice, 1000);
 
 // Check night/day switch
 setInterval(function() { 
