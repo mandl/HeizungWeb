@@ -61,7 +61,7 @@
 				<h2>Week temperature</h2>
 				<label> Sensor ID: {{label}} </label><br>
 				<img  src="/images/{{../prefix}}tempWeek{{datasource}}.png" class="img-fluid" alt="Temperatur">
-				<div id="hum{{datasource}}">
+				<div id="humWeek{{datasource}}">
 					<h2>Week humidity</h2>
 					<img  src="/images/{{../prefix}}humWeek{{datasource}}.png" class="img-fluid" alt="Humidity">
 				</div>
@@ -70,9 +70,16 @@
     {{/each}}
 </div>
 <script src="js/jquery-3.2.1.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
 <script>
  $(document).ready(function() {
     console.log('ready');
+  
+    $.each($('#navbarNav').find('li'), function() {
+        $(this).toggleClass('active',
+            '/' + $(this).find('a').attr('href') == window.location.pathname);
+    });
+    
     {{#each stations}}
      $('#week{{datasource}}').toggle("slow");
     {{/each}}
@@ -88,6 +95,7 @@
     $('#ShowHumidity').click(function(){
     	{{#each stations}}
         $('#hum{{datasource}}').toggle("slow");
+        $('#humWeek{{datasource}}').toggle("slow");
        {{/each}}
     //$('#ShowHumidity').text('Show Humidity');
        

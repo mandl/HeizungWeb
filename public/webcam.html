@@ -43,52 +43,21 @@
 <h1>Web cam</h1>
 <img  src="/images/cam.jpg" class="img-fluid"  alt="Offline">
 </div>	
-<div class="btn-group" data-toggle="buttons">
-  <label class="btn btn-primary" for="btn1">
-    <input type="checkbox" id="btn1" name="myGroup"> Checkbox 1
-  </label>
-  <label class="btn btn-primary" for="btn2">
-    <input type="checkbox" id="btn2" name="myGroup"> Checkbox 2
-  </label>
-  <label class="btn btn-primary" for="btn3">
-    <input type="checkbox" id="btn3" name="myGroup"> Checkbox 3
-  </label>
-</div>	
 
-<div class="btn-group-toggle" data-toggle="buttons">
-  <label class="btn btn-secondary">
-    <input type="checkbox" checked autocomplete="off" id='eee'> Checked
-  </label>
-</div>
-<div class="btn-group btn-group-toggle" data-toggle="buttons">
-  <label class="btn btn-secondary active">
-    <input type="radio" name="options" id="option1" autocomplete="off" checked> Active
-  </label>
-  <label class="btn btn-secondary">
-    <input type="radio" name="options" id="option2" autocomplete="off"> Radio
-  </label>
-  <label class="btn btn-secondary">
-    <input type="radio" name="options" id="option3" autocomplete="off"> Radio
-  </label>
-</div>
 
 <script src="js/jquery-3.2.1.min.js"></script> 
+<script src="js/bootstrap.min.js"></script>
 <script>
 
 
 
  $(document).ready(function() {
     console.log('ready');
-    $('.btn-group>.btn').on('click', function () {
-        // toggle checkbox
-        var $chk = $(this).find('[type=checkbox]');
-        $chk.attr('checked',!$chk.attr('checked'));
+    $.each($('#navbarNav').find('li'), function() {
+        $(this).toggleClass('active',
+            '/' + $(this).find('a').attr('href') == window.location.pathname);
     });
     
-    $('.btn-group-toggle').on('click', function () {
-    	  console.log('click');
-    	$('#eee').attr('checked', true);
-    });
   });
 </script>
 </body>

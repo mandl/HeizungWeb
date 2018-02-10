@@ -46,7 +46,6 @@ var stationsRemote = new TempStations.TempStations();
 var stationsMuc = new TempStations.TempStations(stationData);
 var stationsDra = new TempStations.TempStations(stationData2);
 
-var UpdateTime = Date.now();
 // Configure the local strategy for use by Passport.
 //
 // The local strategy require a `verify` function which receives the credentials
@@ -167,7 +166,7 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(re
 	
 	var camFile = path.join(pnpFolder,'cam.jpg')
 	//child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam --save '+ camFile);
-	child_process.execSync('raspistill -o '+ camFile);
+	child_process.execSync('raspistill -a 12 -md 0 -o '+ camFile);
 	res.sendFile(path.join(__dirname, '/public/webcam.html'));
 });
 
@@ -190,20 +189,12 @@ app.get('/heizung',  require('connect-ensure-login').ensureLoggedIn(),function(r
 
 
 app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-	
-	if( DoUpdatePng())
-	{	
-		updatePng('muc',4,'2');
-	}	
+
 	res.render('mainview', { title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
 });
 
 app.get('/dra',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
-	if( DoUpdatePng())
-	{	
-		updatePng('dra',2,'3');
-	}	
 	res.render('mainview', { title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
 });
 
@@ -258,11 +249,10 @@ function getStationJson(err, payload) {
 		}
     });
     
-    var ol = Object.keys(dataTemp);
-    console.log(ol.length);
     delete dataTemp['hums-1'];
     delete dataTemp['temps-1'];
-    
+    var ol = Object.keys(dataTemp);
+   
     if ( ol.length  > 0)
     {
     	console.log("Save remote data");
@@ -317,7 +307,7 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 
 var updatePng = function(prefix,count,dbprefix){
 	
-	console.log("updatePng");
+	console.log("updatePng: " + prefix);
 		
 	for(var i=1; i <= count; i++)
 	{
@@ -339,29 +329,10 @@ var updatePng = function(prefix,count,dbprefix){
 app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
-	
 	  		var my = ar.getStationData()
-		
-			if( DoUpdatePng())
-			{
-				updatePng('',8,'1');	
-			}
 			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
 
 });
-
-var DoUpdatePng = function() {
-	
-	var myTime = Date.now();
-	
-	if( (myTime - UpdateTime) > (1000 * 60 * 10))
-	{	
-		// more then 10 minute update graph
-		UpdateTime = myTime;
-		return true;
-	}
-	return false;
-}
 
 // Handle 404
 app.use(function(req, res, next) {
@@ -424,3 +395,12 @@ setInterval(function() {
 		}
 	}
 },1000 * 60 * 1);
+
+
+setInterval(function() {
+	
+	updatePng('',8,'1');
+	updatePng('muc',4,'2');
+	updatePng('dra',2,'3');
+	
+},1000 * 60 * 10);

@@ -1,12 +1,13 @@
-#Install Node.js
+# Install Node.js
 
     curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
     
 
-#Create SSl
+# Create SSl
+
     openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout ./ssl/key.pem -out ./ssl/cert.pem
 
-#Install
+# Install
 
     sudo npm install forever -g
 
@@ -16,12 +17,20 @@
 
     npm install
 
-#Create rrd Database
+# Create rrd Database
 
     ./createRRD.sh
 
+# RAM Disk
 
-#Web Cam
+    sudo nano /etc/fstab
+
+    tmpfs /mnt/RAMDisk tmpfs nodev,nosuid,size=16M 0 0
+
+    ln -s /mnt/RAMDisk /home/pi/HeizungWeb/public/images
+
+
+# Web Cam
 
     sudo apt-get install fswebcam
 
