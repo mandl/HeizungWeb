@@ -12,6 +12,8 @@
 # Install
 
     sudo npm install forever -g
+    
+    sudo npm install forever-service -g
 
     sudo npm install browserify -g
 
@@ -37,6 +39,13 @@
 
     ln -s /mnt/RAMDisk /home/pi/HeizungWeb/public/images
 
+# Service
+
+	sudo forever-service install Heizung
+	
+	sudo nano /etc/rc.local
+	
+	sudo service Heizung start
 
 # Web Cam
 
