@@ -5,6 +5,8 @@
 
 # Create SSl
 
+    mkdir ssl
+    
     openssl req -newkey rsa:2048 -new -nodes -x509 -days 3650 -keyout ./ssl/key.pem -out ./ssl/cert.pem
 
 # Install
@@ -16,6 +18,12 @@
     sudo apt-get install rrdtool
 
     npm install
+    
+    npm run-script build-1
+    
+    npm run-script build-2
+    
+    
 
 # Create rrd Database
 
