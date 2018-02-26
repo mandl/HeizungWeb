@@ -32,6 +32,7 @@ const  Readline = SerialPort.parsers.Readline;
 
 var serial;
 var parser;
+var crcError = 0;
 
 var sendOutData = function(data) {
 	
@@ -111,8 +112,7 @@ var DoConnect=function(port)
 			console.log('port open ');
 			setInterval(function() {
 				console.log('send data');
-				console.log(JSON.stringify(stations));
-				
+				console.log(JSON.stringify(stations));		
 				sendOutData(JSON.stringify(stations));	
 				
 			}, 1000 * 60 * 5); // send every 5 minutes
@@ -136,37 +136,50 @@ var DoConnect=function(port)
 			console.log(my);
 			try {
 				var obj = JSON.parse(my);
+				if (obj.frame == 'data')
+				{	
 				
-				var data = stations.findWhere({id: obj.ID});
-						
-				if(data  === undefined)
-				{
-					console.log('new id');
-					if((obj.Reset) && (configData.add_new_stations))
+					var data = stations.findWhere({id: obj.ID});
+							
+					if(data  === undefined)
 					{
-						stations.add({id: obj.ID,
-						       label: 0,
-						       name : "New",
-						       state : 0,
-						       time : Date.now(),
-						       reset : obj.Reset,
-						       lowbattery : obj.LOWBAT,
-						       timestr: new Date().toLocaleString(),
-						       datasource: "-1"});
-					}	
-				}		
-				else{
-					//console.log(data);
-					// Update
-					data.set({"temp": obj.Temp});
-					data.set({"hum" : obj.Hygro});
-					data.set({"time": Date.now()});
-					data.set({"reset": obj.Reset});
-					data.set({"lowbattery": obj.LOWBAT});
-					data.set({"timestr": new Date().toLocaleString()});
-					//console.log(dataTemp);
+						console.log('new id');
+						if((obj.Reset) && (configData.add_new_stations))
+						{
+							stations.add({id: obj.ID,
+							       label: 0,
+							       name : "New",
+							       state : 0,
+							       time : Date.now(),
+							       reset : obj.Reset,
+							       lowbattery : obj.LOWBAT,
+							       timestr: new Date().toLocaleString(),
+							       datasource: "-1"});
+						}	
+					}		
+					else{
+						//console.log(data);
+						// Update
+						data.set({"temp": obj.Temp});
+						data.set({"hum" : obj.Hygro});
+						data.set({"time": Date.now()});
+						data.set({"reset": obj.Reset});
+						data.set({"lowbattery": obj.LOWBAT});
+						data.set({"timestr": new Date().toLocaleString()});
+						//console.log(dataTemp);
+					}
+				}
+				else if (obj.frame == 'info')
+				{
+					crcError = crcError + 1;
+					console.log(crcError);
 				}	
-			} catch (e) {
+				else
+				{
+					
+					console.log(obj);
+				}
+				} catch (e) {
 				
 			}
 		});
