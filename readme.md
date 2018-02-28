@@ -1,6 +1,16 @@
+# Update 
+
+	sudo apt update
+	
+	sudo apt upgrade
+	
+	sudo rpi-update
+
 # Install Node.js
 
     curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+    
+    sudo apt-get install nodejs
     
 
 # Create SSl

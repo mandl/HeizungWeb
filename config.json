@@ -1,4 +1,6 @@
 {"server_url": "localhost", 
  "server_port": 3000,
- "add_new_stations":false
+ "add_new_stations":false,
+ "location_temp":"/mucdata",
+ "location_pic":"/muccam"
  }

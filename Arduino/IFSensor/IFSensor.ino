@@ -822,8 +822,8 @@ void loop()
       }
       Hygro = frame[3] & 0x7f;
       weakbat = (frame[3] & 0b10000000) >> 7;
-
-      Serial.print("{\"ID\":");
+      Serial.print("{\"frame\":\"data\"");
+      Serial.print(",\"ID\":");
       Serial.print(SensorId);
       Serial.print(",\"Reset\":");
       if(ResetFlag == 1)
@@ -853,7 +853,7 @@ void loop()
     }
     else
     {
-      Serial.print("{\"CRCfalse\":\"");
+      Serial.print("{\"frame\":\"info\",\"CRCfalse\":\"");
       Serial.print(crc,HEX);
       Serial.println("\"}");    
     }

@@ -20,11 +20,15 @@
 
 
 const https = require('https');
+const child_process = require('child_process');
 const querystring = require('querystring');
 const SerialPort = require('serialport');
-const  TempStations = require('../app/models/tempstation');
-const  stationData = require('../stationRemote1.json');
-const  configData = require('../config.json');
+const TempStations = require('../app/models/tempstation');
+const stationData = require('../stationRemote1.json');
+const configData = require('../config.json');
+const fs = require('fs');
+const path = require('path');
+const pnpFolder = path.join('../' ,'public','images');
 
 var stations = new TempStations.TempStations(stationData);
 
@@ -45,7 +49,7 @@ var sendOutData = function(data) {
 		const options = {
 		  hostname: configData.server_url,
 		  port: configData.server_port,
-		  path: "/demo",
+		  path: configData.location_temp,
 		  rejectUnauthorized: false,
 		  encoding: "utf8",
 		  method: 'POST',
@@ -70,6 +74,46 @@ var sendOutData = function(data) {
 
 };
 
+var sendPic = function() {
+	
+	//console.log(data);
+	var camFile = path.join(pnpFolder,'cam.jpg')
+	child_process.execSync('raspistill -a 12 -md 0 -o '+ camFile);
+	
+	var data = fs.readFileSync(camFile);
+	//console.log(data);
+	var headers = {
+		    'Content-Type': 'image/jpeg',
+		    'Content-Length': Buffer.byteLength(data)
+		  };
+
+		const options = {
+		  hostname: configData.server_url,
+		  port: configData.server_port,
+		  path: configData.location_pic,
+		  rejectUnauthorized: false,
+		  encoding: "utf8",
+		  method: 'POST',
+		  headers: headers
+		  
+		  
+		};
+	const req = https.request(options, (res) => {
+	  console.log('statusCode:', res.statusCode);
+	  console.log('headers:', res.headers);
+	
+	  res.on('data', (d) => {
+	    process.stdout.write(d);
+	  });
+	});
+	
+	req.on('error', (e) => {
+	  console.error(e);
+	});
+	req.write(data);
+	req.end();
+
+};
 
 var connectDevice = function() {
 	var port = SerialPort.list(function(err, ports) {
@@ -196,7 +240,16 @@ var reconnectDevice = function() {
 
 console.log('Connect to:      ' + configData.server_url);
 console.log('Using port:      ' + configData.server_port);
+console.log('Path temp data:  ' + configData.location_temp);
+console.log('Path pic data:   ' + configData.location_pic);
 console.log('Add new station: ' + configData.add_new_stations);
 setTimeout(connectDevice, 1000);
+
+
+setInterval(function() {
+	console.log('send image');
+	sendPic();
+	
+}, 1000 * 60 * 1); // send every 1 minutes
 
 

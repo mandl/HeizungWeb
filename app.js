@@ -27,6 +27,7 @@ const db = require('./db');
 const path = require('path');
 const jsonBody = require('body/json');
 const Rest = require('connect-rest');
+const bodyParser = require('body-parser');
 
 const heaterData = require('./heaterData.json');
 const Heizung = require('./app/models/heizung');
@@ -35,13 +36,15 @@ var myHeater = new Heizung.HeizungModel(heaterData);
 
 const stationData = require('./stationRemote1.json');
 const stationData2 = require('./stationRemote2.json');
-const pnpFolder = path.join(__dirname ,'public','images');
+const pnpFolder = path.join(__dirname ,'picture');
 
 const ar = require('./lib/temp');
 
 const TempStations = require('./app/models/tempstation');
 
 var stationsRemote = new TempStations.TempStations();
+var stationsDraRemote = new TempStations.TempStations();
+
 
 var stationsMuc = new TempStations.TempStations(stationData);
 var stationsDra = new TempStations.TempStations(stationData2);
@@ -104,36 +107,37 @@ var options = {
 // Create a new Express application.
 var app = express();
 
+app.disable('x-powered-by');
 //var rest = Rest.create( options );
 
 //app.use(rest.processRequest());
 
-// Configure view engine to render EJS templates.
-//app.set('views', __dirname + '/views');
-//app.set('view engine', 'ejs');
-app.use(express.static('public'));
+
 
 
 // Use application-level middleware for common functionality, including
 // logging, parsing, and session handling.
 app.use(require('morgan')('dev'));
 app.use(require('cookie-parser')());
-app.use(require('body-parser').urlencoded({
-	extended : true
-}));
+app.use(bodyParser.urlencoded({ extended : true }));
 app.use(require('express-session')({
 	secret : 'keyboard cat',
 	resave : false,
 	saveUninitialized : false
 }));
 
+app.use(bodyParser.raw( {inflate:false, limit:'6mb', type:'image/jpeg'} ));
+
 // Initialize Passport and restore authentication state, if any, from the
 // session.
 app.use(passport.initialize());
 app.use(passport.session());
 
+app.use(express.static(__dirname+'/public'));
+app.use('/picture',require('connect-ensure-login').ensureLoggedIn(),express.static(__dirname + '/picture'))
 
-//view engine setup
+
+		//view engine setup
 app.set('views', path.join(__dirname, 'views'));
 //Helper is used to ease stringifying JSON
 app.engine('handlebars', expressHandlebars({helpers: {
@@ -170,6 +174,7 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(re
 	res.sendFile(path.join(__dirname, '/public/webcam.html'));
 });
 
+// get stations data
 
 app.get('/datastations',
 	function(req, res) {
@@ -181,6 +186,13 @@ app.get('/datastationsmuc',
 		function(req, res) {
 				//console.log(stationsRemote);
 				res.json(stationsRemote.toJSON());
+});
+
+
+app.get('/datastationsdra',
+		function(req, res) {
+				//console.log(stationsRemote);
+				res.json(stationsDraRemote.toJSON());
 });
 
 app.get('/heizung',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
@@ -264,9 +276,19 @@ function getStationJson(err, payload) {
 
 }}
 
-app.post('/demo',
+//
+//  Client data
+
+app.post('/mucdata',
 		function(req, res) {
 	    jsonBody(req, res, getStationJson);
+		res.send('ok');
+		res.end();		
+});
+
+app.post('/dradata',
+		function(req, res) {
+	    //jsonBody(req, res, getStationJson);
 		res.send('ok');
 		res.end();		
 });
@@ -279,6 +301,64 @@ app.post('/heater',
 	    res.send('ok');
 	    res.end();		
 });
+
+//
+// Camera post
+//
+
+app.post('/dracam',
+
+		function(req, res) {
+		
+			console.log(req.headers);
+			var picFile = path.join(pnpFolder,"dracam.jpg");
+			fs.writeFile(picFile, req.body, function(err) {
+		        if(err) {
+		            console.log(err);
+		        } else {
+		        	console.log("pic save " + picFile);
+		        }
+		    });
+		    res.send('ok');
+		    res.end();		
+	});
+
+
+app.post('/muccam',
+
+		function(req, res) {
+		
+			//console.log(req.headers);
+			var picFile  = path.join(pnpFolder,"muccam.jpg")
+			fs.writeFile(picFile, req.body, function(err) {
+		        if(err) {
+		            console.log(err);
+		        } else {
+		            console.log("pic save " + picFile);
+		        }
+		    });
+		    res.send('ok');
+		    res.end();		
+	});
+
+app.post('/dipcam',
+
+		function(req, res) {
+		
+			console.log(req.headers);
+			var picFile = path.join(pnpFolder,"dipcam.jpg");
+			fs.writeFile(picFile, req.body, function(err) {
+		        if(err) {
+		            console.log(err);
+		        } else {
+		        	console.log("pic save " + picFile);
+		        }
+		    });
+		    res.send('ok');
+		    res.end();		
+	});
+
+// Login
 
 app.post('/login', passport.authenticate('local', {
 	failureRedirect : '/login'
@@ -303,6 +383,8 @@ app.get('/profile', require('connect-ensure-login').ensureLoggedIn(), function(
 app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
   res.sendFile(path.join(__dirname, 'temp.log'));
 });
+
+// update week and day graph
 
 
 var updatePng = function(prefix,count,dbprefix){
@@ -364,12 +446,7 @@ setInterval(function() {
 	
 	// update every 5 seconds
 	console.log('Check state');
-	var date = new Date();
-	var current_hour = date.getHours();
-
-	console.log(current_hour);
 	
-
 	if(myHeater.get('dayNightState'))
 	{
 		
@@ -396,6 +473,7 @@ setInterval(function() {
 	}
 },1000 * 60 * 1);
 
+// Update data graph
 
 setInterval(function() {
 	
@@ -403,4 +481,4 @@ setInterval(function() {
 	updatePng('muc',4,'2');
 	updatePng('dra',2,'3');
 	
-},1000 * 60 * 10);
+},1000 * 60 * 10);  // every 10 minutes
