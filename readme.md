@@ -45,9 +45,9 @@
 
     sudo nano /etc/fstab
 
-    tmpfs /mnt/RAMDisk tmpfs nodev,nosuid,size=16M 0 0
+    tmpfs /mnt/RAMDisk tmpfs nodev,nosuid,size=32M 0 0
 
-    ln -s /mnt/RAMDisk /home/pi/HeizungWeb/public/images
+    ln -s /mnt/RAMDisk /home/pi/HeizungWeb/picture
 
 # Service
 

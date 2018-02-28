@@ -28,7 +28,7 @@ const stationData = require('../stationRemote1.json');
 const configData = require('../config.json');
 const fs = require('fs');
 const path = require('path');
-const pnpFolder = path.join('../' ,'public','images');
+const pnpFolder = path.join('../' ,'picture');
 
 var stations = new TempStations.TempStations(stationData);
 
