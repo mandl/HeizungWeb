@@ -1,0 +1,32 @@
+<h1>Active Tempstation</h1>
+<h2>Local</h1>
+<div id="stations"></div>
+<h2>Muc</h1>
+<div id="stationsremote"></div>
+	
+<script type="text/template" id="view-station-template">
+<div class="view">
+<label> ID:         <%= id %> </label>
+<label> Label:      <%= label %> </label>
+<label> Name:       <%= name %> </label>
+<label> Temperatur: <%= temp %> </label>
+<label> Humidity:   <%= hum %> </label>
+<label> Datasource: <%= datasource %> </label>
+<label> Time:       <%= timestr %> </label>
+</div>
+</script>
+<script src="js/jquery-3.2.1.min.js"></script>	
+<script src="js/bundle2.js"></script>
+<script src="js/mycode.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script>
+
+ $(document).ready(function() {
+    console.log('ready');
+    $.each($('#navbarNav').find('li'), function() {
+        $(this).toggleClass('active',
+            '/' + $(this).find('a').attr('href') == window.location.pathname);
+    });
+    
+  });
+</script>

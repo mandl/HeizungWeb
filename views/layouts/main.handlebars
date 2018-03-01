@@ -1,10 +1,9 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html>
 <head>
 <meta charset="utf-8">
-<title>Web Cam</title>
-<meta name="description" content="">
 <link rel="stylesheet" href="css/bootstrap.min.css">
+<title>{{title}}</title>
 </head>
 <body>
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -32,6 +31,9 @@
       <li class="nav-item">
         <a class="nav-link" href="webcam">Cam</a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="webcamRemote">Cam Remote</a>
+      </li>
       <li class="nav-item>">
         <a class="nav-link" href="logout">Logout</a>
       </li>     
@@ -39,26 +41,9 @@
   </div>
 </nav>
 <br>
+
 <div class="container">
-<h1>Web cam</h1>
-<img  src="/picture/cam.jpg" class="img-fluid"  alt="Offline">
-</div>	
-
-
-<script src="js/jquery-3.2.1.min.js"></script> 
-<script src="js/bootstrap.min.js"></script>
-<script>
-
-
-
- $(document).ready(function() {
-    console.log('ready');
-    $.each($('#navbarNav').find('li'), function() {
-        $(this).toggleClass('active',
-            '/' + $(this).find('a').attr('href') == window.location.pathname);
-    });
-    
-  });
-</script>
+{{{body}}}
+</div>
 </body>
 </html>

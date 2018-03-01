@@ -1,0 +1,15 @@
+<div class="container">
+<h1>Web cam</h1>
+<img  src="/picture/cam.jpg" class="img-fluid"  alt="Offline">
+</div>	
+<script src="js/jquery-3.2.1.min.js"></script> 
+<script src="js/bootstrap.min.js"></script>
+<script>
+ $(document).ready(function() {
+    console.log('ready');
+    $.each($('#navbarNav').find('li'), function() {
+        $(this).toggleClass('active',
+            '/' + $(this).find('a').attr('href') == window.location.pathname);
+    }); 
+  });
+</script>

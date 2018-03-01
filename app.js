@@ -42,6 +42,7 @@ const ar = require('./lib/temp');
 
 const TempStations = require('./app/models/tempstation');
 
+
 var stationsRemote = new TempStations.TempStations();
 var stationsDraRemote = new TempStations.TempStations();
 
@@ -162,8 +163,8 @@ app.get('/login', function(req, res) {
 	 res.sendFile(path.join(__dirname, '/public/login.html'));
 });
 
-app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
-			 res.sendFile(path.join(__dirname, '/public/stations.html'));
+app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {	
+	res.render('stations', { layout:'main', title: 'Stations'});
 });
 
 app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
@@ -171,7 +172,11 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(re
 	var camFile = path.join(pnpFolder,'cam.jpg')
 	//child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam --save '+ camFile);
 	child_process.execSync('raspistill -a 12 -md 0 -o '+ camFile);
-	res.sendFile(path.join(__dirname, '/public/webcam.html'));
+	res.render('webcam', { layout:'main', title: 'Webcam'});
+});
+
+app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+	res.render('webcamRemote', { layout:'main', title: 'Webcam remote'});
 });
 
 // get stations data
@@ -196,21 +201,20 @@ app.get('/datastationsdra',
 });
 
 app.get('/heizung',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-			res.sendFile(path.join(__dirname, '/public/heizung.html'));
+	res.render('heizung', { layout:'main', title: 'Control'});
+
 });
 
 
 app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 
-	res.render('mainview', { title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
+	res.render('mainview', { layout:'main', title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
 });
 
 app.get('/dra',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
-	res.render('mainview', { title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
+	res.render('mainview', { layout:'main', title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
 });
-
-
 
 app.get('/heater',
 
@@ -359,7 +363,6 @@ app.post('/dipcam',
 	});
 
 // Login
-
 app.post('/login', passport.authenticate('local', {
 	failureRedirect : '/login'
 }), function(req, res) {
@@ -381,7 +384,9 @@ app.get('/profile', require('connect-ensure-login').ensureLoggedIn(), function(
 
 // log routes
 app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
-  res.sendFile(path.join(__dirname, 'temp.log'));
+	var logtext = fs.readFileSync(path.join(__dirname, 'temp.log'))
+	res.render('logfile', { layout:'main',logdata: logtext});
+
 });
 
 // update week and day graph
@@ -412,7 +417,7 @@ app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
 	  		var my = ar.getStationData()
-			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
+			res.render('mainview', { layout:'main', title: 'Villa',stations:my,prefix:''});
 
 });
 
@@ -446,6 +451,8 @@ setInterval(function() {
 	
 	// update every 5 seconds
 	console.log('Check state');
+	var d = new Date();
+	var current_hour = d.getHours();
 	
 	if(myHeater.get('dayNightState'))
 	{
@@ -453,9 +460,8 @@ setInterval(function() {
 		var start = myHeater.get('dayNightTimeOn');
 		var end = myHeater.get('dayNightTimeoff');
 		
-		console.log('dayNight on');
-		console.log(start);
-		console.log(end);
+		console.log('dayNightTimeOn ' + start);
+		console.log('dayNightTimeoff ' + end);
 
 		
 		if(( current_hour >= start ) &&( current_hour < end ))
