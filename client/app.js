@@ -243,13 +243,19 @@ console.log('Using port:      ' + configData.server_port);
 console.log('Path temp data:  ' + configData.location_temp);
 console.log('Path pic data:   ' + configData.location_pic);
 console.log('Add new station: ' + configData.add_new_stations);
+console.log('Send picture:    ' + configData.remote_cam);
 setTimeout(connectDevice, 1000);
 
 
 setInterval(function() {
-	console.log('send image');
-	sendPic();
 	
-}, 1000 * 60 * 1); // send every 1 minutes
+	if(configData.remote_cam)
+	{	
+		var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') 
+		console.log('send image: ' + strDate);
+		sendPic();
+	}
+	
+}, 1000 * 60 * 30); // send every 30 minutes
 
 

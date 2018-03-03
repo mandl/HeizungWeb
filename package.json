@@ -40,5 +40,6 @@
     "socket.io": "^2.0.4",
     "winston": "^2.4.0",
     "winston-logrotate": "^1.3.0"
+   
   }
 }

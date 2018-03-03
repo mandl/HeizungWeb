@@ -1,6 +1,6 @@
 /*
     Heizung
-    
+
     Copyright (C) 2018 Mandl
 
     This program is free software: you can redistribute it and/or modify
@@ -15,7 +15,7 @@
 
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
+*/
 
 
 // the sensor communicates using SPI, so include the library:
@@ -25,24 +25,41 @@
 #include <SerialCommands.h>
 #include <EEPROM.h>
 
+
+
 #define RFM01
+#define USE_DHT22
+
+#ifdef USE_DHT22
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
+
+#define DHTPIN            A5         // Pin which is connected to the DHT sensor.
+
+#define DHTTYPE           DHT22     // DHT 22 (AM2302)
+
+DHT_Unified dht(DHTPIN, DHTTYPE);
+
+#endif
+
 
 /*
- Funkthermometer TX 29-IT
- 
- Das TX29IT ist ein kostengünstiges (ca. 10 €) Funkthermometer, welches seine Daten ca. alle 4 s über Funk (868 Mhz) überträgt.
- Parameter der Funkübertragung:
- 
- Mittenfrequenz 868,3 MHz
- Modulation: FSK
- Frequenzhub: +/- 90 kHz
- Datenrate: 17.241 kbit/s
+  Funkthermometer TX 29-IT
 
- Receiver
+  Das TX29IT ist ein kostengünstiges (ca. 10 €) Funkthermometer, welches seine Daten ca. alle 4 s über Funk (868 Mhz) überträgt.
+  Parameter der Funkübertragung:
 
- RFM 01
- SI4320 Universal ISM FSK Receiver
- */
+  Mittenfrequenz 868,3 MHz
+  Modulation: FSK
+  Frequenzhub: +/- 90 kHz
+  Datenrate: 17.241 kbit/s
+
+  Receiver
+
+  RFM 01
+  SI4320 Universal ISM FSK Receiver
+*/
 
 // ##### IT+ Frame #####
 // Frame example (5 byte):
@@ -51,7 +68,7 @@
 // | || |  ||  ||  ||
 // 9 28  624   28  DE
 // | |    |    |   +--> CRC-8 (x8 + x5 + x4 +1)
-// | |    |    +------> Hygro in % 
+// | |    |    +------> Hygro in %
 // | |    |				  bit6..0 = hygro value (0..127, 106 = no hygro)
 // | |    |				  bit7 = weak battery indicator (0=okay, 1=weak)
 // | |    |				  example: 28 --> hygro 40%, battery okay
@@ -61,7 +78,7 @@
 // | |					  nibble 3 = T0.1
 // | |					  example1: 624 --> 62.4 - 40 = 22.4°C
 // | |                    example2: 394 --> 39.4 - 40 = -0.6°C
-// | +----------------> SensorID 
+// | +----------------> SensorID
 // |					  bit7..2 SensorID (0..63)
 // |					  bit1 = Restart flag (0=no restart, 1=restart-->new batt)
 // |					  bit0 = unused (always 0)
@@ -276,7 +293,7 @@
 // pin16 function select
 
 #define PIN16_VDI_output       (1 << 10)
- 
+
 // VDI (valid data indicator) signal, bits 9-8
 
 #define VDI_FAST               (0 << 8)    // .... .... 00.. .... --> Fast  CR_LOCK & DQD
@@ -375,27 +392,42 @@
 // the other you need are controlled by the SPI library):
 // Pin nFFS: 1-10k Pullup too Vcc  RFM01
 // Pin nSEL
+
+// *****************************************************************************************************
+//    Pins
+//
+//  Pin A0    Spannung
+//  Pin A1    PT1000_1
+//  Pin 10    chipSelectPin RM01x
 const int chipSelectPin = 10;
-//Pin  niRQ
+
+//  Pin 3 niRQ RM01x
 const int rfm_IRQPin = 3;
 
-const int Ledpin = 13;
-
-// Pin Definitions
+//  Pin 11 BETRIEBS_STUNDEN  input
 const int BETRIEBS_STUNDEN = 11;
+
+// Pin 9 BRENNER_STOERUNG   input
 const int BRENNER_STOERUNG = 9;
+
+// Pin 12 BLINK_LICHT output
 const int BLINK_LICHT = 12;
+
+// Pin 8 HEIZUNG_AN  output
 const int HEIZUNG_AN = 8;
 
 volatile byte rxfill = 0;
 volatile byte frame[5];         // frame buffer
-volatile byte frameready= false;  // neuer Frame
+volatile byte frameready = false; // neuer Frame
 
 int Betriebsstunden = 1;
-int BrennerStoerung = 1; 
+int BrennerStoerung = 1;
 int Spannung = 0; // Akku Spannung
 int PT1000_1 = 0; // Temperatur
 int reset = 1;
+
+double temp = 106;
+double hum  =106;
 
 int BetriebsstundenOld = 1;
 int BetriebsstundenNew = 1;
@@ -407,27 +439,85 @@ struct settings_t
   unsigned int starts;
 } settings;
 
+typedef struct t  {
+  unsigned long tStart;
+  unsigned long tTimeout;
+};
+
+//Tasks and their Schedules.
+t t_func1 = {0, 100}; //Run every 100ms
+t t_func2 = {0, 4000}; //Run every 4 seconds.
+
+bool tCheck (struct t *t ) {
+  if (millis() > t->tStart + t->tTimeout)
+    return true;
+  return false;
+}
+
+void tRun (struct t *t) {
+  t->tStart = millis();
+}
+
+void func1 (void) {
+  //This executes every 100ms.
+}
+void func2 (void) {
+
+ #ifdef USE_DHT22
+  //This executes every 4 seconds.
+  sensors_event_t event;
+  dht.temperature().getEvent(&event);
+  if (isnan(event.temperature)) {
+    Serial.print("{\"frame\":\"infodht\"");
+    Serial.print(",\"msg\":\"Error reading temperature\"");
+    Serial.println("}");
+  }
+  else {
+    temp = event.temperature;
+  }
+  // Get humidity event and print its value.
+  dht.humidity().getEvent(&event);
+  if (isnan(event.relative_humidity)) {
+    Serial.print("{\"frame\":\"infodht\"");
+    Serial.print(",\"msg\":\"Error reading humidity\"");
+    Serial.println("}");
+  }
+  else {
+    hum = event.relative_humidity;
+  }
+  Serial.print("{\"frame\":\"data\"");
+  Serial.print(",\"ID\":99");
+  Serial.print(",\"Reset\":0");
+  Serial.print(",\"LOWBAT\":0");
+  Serial.print(",\"Temp\":");
+  Serial.print(temp);
+  Serial.print(",\"Hygro\":");
+  Serial.print(hum);
+  Serial.println("}");
+#endif
+
+}
 
 
-Bounce BrennerStoerungbouncer = Bounce( BRENNER_STOERUNG,1200 ); 
-Bounce Betriebsstundenbouncer = Bounce( BETRIEBS_STUNDEN,800); 
+Bounce BrennerStoerungbouncer = Bounce( BRENNER_STOERUNG, 1200 );
+Bounce Betriebsstundenbouncer = Bounce( BETRIEBS_STUNDEN, 800);
 
 char serial_command_buffer_[32];
-SerialCommands serial_commands_(&Serial, serial_command_buffer_, sizeof(serial_command_buffer_),(const char*) "\r\n", (const char*)" ");
+SerialCommands serial_commands_(&Serial, serial_command_buffer_, sizeof(serial_command_buffer_), (const char*) "\r\n", (const char*)" ");
 
-//This is the default handler, and gets called when no other command matches. 
+//This is the default handler, and gets called when no other command matches.
 void cmd_unrecognized(SerialCommands* sender, const char* cmd)
 {
   sender->GetSerial()->print("{\"error\":\"");
   sender->GetSerial()->print(cmd);
   sender->GetSerial()->println("\"}");
-  
+
 }
 
 //called for ON command
 void cmd_led_on(SerialCommands* sender)
 {
-  digitalWrite(HEIZUNG_AN, HIGH);  
+  digitalWrite(HEIZUNG_AN, HIGH);
   sender->GetSerial()->print("{\"result\":\"an_ok\"");
   sender->GetSerial()->println("}");
 }
@@ -435,7 +525,7 @@ void cmd_led_on(SerialCommands* sender)
 //called for OFF command
 void cmd_led_off(SerialCommands* sender)
 {
-  digitalWrite(HEIZUNG_AN, LOW);  
+  digitalWrite(HEIZUNG_AN, LOW);
   sender->GetSerial()->print("{\"result\":\"aus_ok\"");
   sender->GetSerial()->println("}");
 }
@@ -453,43 +543,43 @@ void cmd_resetRuntime(SerialCommands* sender)
 // read saved data
 void cmd_readData(SerialCommands* sender)
 {
-
-  sender->GetSerial()->print("{\"runtime\":");  
-  sender->GetSerial()->print(settings.runtime); 
-  sender->GetSerial()->print(",\"starts\":");  
-  sender->GetSerial()->print(settings.starts); 
+  sender->GetSerial()->print("{\"frame\":\"rundata\"");
+  sender->GetSerial()->print(",\"runtime\":");
+  sender->GetSerial()->print(settings.runtime);
+  sender->GetSerial()->print(",\"starts\":");
+  sender->GetSerial()->print(settings.starts);
   sender->GetSerial()->println("}");
 }
 //
 void cmd_setData(SerialCommands* sender)
 {
-  
+
 }
 void cmd_status(SerialCommands* sender)
 {
-      // werte lesen
-      Spannung = analogRead(0);
-      BrennerStoerung = BrennerStoerungbouncer.read();
-      Betriebsstunden = Betriebsstundenbouncer.read();
-      PT1000_1 = analogRead(1);
+  // werte lesen
+  Spannung = analogRead(0);
+  BrennerStoerung = BrennerStoerungbouncer.read();
+  Betriebsstunden = Betriebsstundenbouncer.read();
+  PT1000_1 = analogRead(1);
 
-      sender->GetSerial()->print("{\"status\":"); 
-      sender->GetSerial()->print(reset);  
-      sender->GetSerial()->print(",\"BrennerStoerung\":");  
-      sender->GetSerial()->print(!BrennerStoerung);  
-      sender->GetSerial()->print(",\"Betriebsstunden\":");  
-      sender->GetSerial()->print(!Betriebsstunden);  
-      sender->GetSerial()->print(",\"Spannung\":");  
-      sender->GetSerial()->print(Spannung); 
-      sender->GetSerial()->print(",\"PT1000_1\":");  
-      sender->GetSerial()->print(PT1000_1);
-      sender->GetSerial()->println("}");   
-      
-      reset = 0;
+  sender->GetSerial()->print("{\"frame\":\"statusdata\"");
+  sender->GetSerial()->print(",\"status\":");
+  sender->GetSerial()->print(reset);
+  sender->GetSerial()->print(",\"BrennerStoerung\":");
+  sender->GetSerial()->print(!BrennerStoerung);
+  sender->GetSerial()->print(",\"Spannung\":");
+  sender->GetSerial()->print(Spannung);
+  sender->GetSerial()->print(",\"PT1000_1\":");
+  sender->GetSerial()->print(PT1000_1);
+  sender->GetSerial()->println("}");
+
+  reset = 0;
 }
-  
-  
-//Note: Commands are case sensitive
+
+//
+//  Note: Commands are case sensitive
+//
 SerialCommand cmd_led_on_("an", cmd_led_on);
 SerialCommand cmd_led_off_("aus", cmd_led_off);
 SerialCommand cmd_status_("status", cmd_status);
@@ -500,15 +590,18 @@ SerialCommand cmd_setData_("setdata", cmd_setData);
 
 void setup() {
 
-  
+
   frameready = false;
   rxfill = 0;
- 
+
   Serial.begin(115200);
-  
+
   // wait open the port
-  while (!Serial);
+  //while (!Serial);
   //Serial.println("init start");
+#ifdef USE_DHT22
+  dht.begin();
+#endif
 
   serial_commands_.SetDefaultHandler(cmd_unrecognized);
   serial_commands_.AddCommand(&cmd_led_on_);
@@ -518,6 +611,7 @@ void setup() {
   serial_commands_.AddCommand(&cmd_readData_);
   serial_commands_.AddCommand(&cmd_setData_);
 
+  // read saved data
   eeprom_read_block((void*)&settings, (void*)0, sizeof(settings));
 
   // start the SPI library:
@@ -529,36 +623,34 @@ void setup() {
   pinMode(chipSelectPin, OUTPUT);
   digitalWrite(chipSelectPin, HIGH);
 
-  pinMode(Ledpin, OUTPUT);
-  digitalWrite(Ledpin, LOW);
   pinMode(rfm_IRQPin, INPUT_PULLUP);
 
   delay(500);
   rfm01_cmd(CMD_RESET);
- 
+
   // give time to set up:
   delay(500);
 
-  #ifdef RFM01
+#ifdef RFM01
 
-    rfm01_init();
+  rfm01_init();
 
-  #else
+#else
 
-    rfm12_init();
+  rfm12_init();
 
-  #endif
- 
+#endif
+
   //digitalem Pin3
   attachInterrupt(1, rf12_interrupt, LOW);
 
-   // initialize the digital pin as an output.
-  pinMode(HEIZUNG_AN, OUTPUT);    
-  pinMode(BLINK_LICHT, OUTPUT);  
+  // initialize the digital pin as an output.
+  pinMode(HEIZUNG_AN, OUTPUT);
+  pinMode(BLINK_LICHT, OUTPUT);
 
   pinMode(BETRIEBS_STUNDEN, INPUT_PULLUP);  // Betriebsstunden
   pinMode(BRENNER_STOERUNG, INPUT_PULLUP);  // Brenner stoerung
-  
+
   wdt_enable(WDTO_8S);
 
 }
@@ -567,55 +659,55 @@ void setup() {
 
 void rfm01_init()
 {
-    // Source: "RFM01 Universal ISM Band FSK Receiver" (http://www.hoperf.com/upload/rf/RFM01.pdf)
+  // Source: "RFM01 Universal ISM Band FSK Receiver" (http://www.hoperf.com/upload/rf/RFM01.pdf)
 
-    rfm01_cmd(CMD_STATUS);      // ------------- Status Read Command -------------
+  rfm01_cmd(CMD_STATUS);      // ------------- Status Read Command -------------
 
-    rfm01_cmd(CMD_CONFIG |      // -------- Configuration Setting Command --------
-    BAND_868 |                  // selects the 868 MHz frequency band
-    LOAD_CAP_12C5 |             // 12.5pF crystal load capacitance
-    BW_134 |                    // 134kHz baseband bandwidth
-    NO_CLOCK );                 // no clock
+  rfm01_cmd(CMD_CONFIG |      // -------- Configuration Setting Command --------
+            BAND_868 |                  // selects the 868 MHz frequency band
+            LOAD_CAP_12C5 |             // 12.5pF crystal load capacitance
+            BW_134 |                    // 134kHz baseband bandwidth
+            NO_CLOCK );                 // no clock
 
-    rfm01_cmd(CMD_RSTMODE | 1 ); // Disable reset
+  rfm01_cmd(CMD_RSTMODE | 1 ); // Disable reset
 
-    rfm01_cmd(CMD_FREQ |        // -------- Frequency Setting Command --------
-    0x067c);                    // 868.300 .0 MHz --> F = ((915/(10*3))-30)*4000 = 2001 = 0x07d0
+  rfm01_cmd(CMD_FREQ |        // -------- Frequency Setting Command --------
+            0x067c);                    // 868.300 .0 MHz --> F = ((915/(10*3))-30)*4000 = 2001 = 0x07d0
 
-    
-    rfm01_cmd(CMD_LOWDUTY |     // -------- Low Duty-Cycle Command --------
-    0x0e);                      // (this is the default setting)
 
-    rfm01_cmd(CMD_AFC |         // -------- AFC Command --------
-    AFC_VDI |                   // drop the f_offset value when the VDI signal is low
-    AFC_RL_15 |                 // limits the value of the frequency offset register to +15/-16
-    AFC_STROBE |                // the actual latest calculated frequency error is stored into the output registers of the AFC block
-    AFC_FINE |                  // switches the circuit to high accuracy (fine) mode
-    AFC_OUT_ON |                // enables the output (frequency offset) register
-    AFC_ON);                    // enables the calculation of the offset frequency by the AFC circuit
+  rfm01_cmd(CMD_LOWDUTY |     // -------- Low Duty-Cycle Command --------
+            0x0e);                      // (this is the default setting)
 
-    rfm01_cmd(CMD_DFILTER |     // -------- Data Filter Command --------
-    CR_LOCK_FAST |              // clock recovery lock control, fast mode, fast attack and fast release
-    FILTER_DIGITAL |            // select the digital data filter
-    DQD_4);                     // DQD threshold parameter
+  rfm01_cmd(CMD_AFC |         // -------- AFC Command --------
+            AFC_VDI |                   // drop the f_offset value when the VDI signal is low
+            AFC_RL_15 |                 // limits the value of the frequency offset register to +15/-16
+            AFC_STROBE |                // the actual latest calculated frequency error is stored into the output registers of the AFC block
+            AFC_FINE |                  // switches the circuit to high accuracy (fine) mode
+            AFC_OUT_ON |                // enables the output (frequency offset) register
+            AFC_ON);                    // enables the calculation of the offset frequency by the AFC circuit
 
-    rfm01_cmd(CMD_DRATE |       // -------- Data Rate Command --------
-    0<<7 |                      // cs = 0
-    0x13);                      // R = 19 = 0x13
-                                // BR = 10000000 / 29 / (R + 1) / (1 + cs*7) = 17.241 kbps 
+  rfm01_cmd(CMD_DFILTER |     // -------- Data Filter Command --------
+            CR_LOCK_FAST |              // clock recovery lock control, fast mode, fast attack and fast release
+            FILTER_DIGITAL |            // select the digital data filter
+            DQD_4);                     // DQD threshold parameter
 
-    rfm01_cmd(CMD_RCON |        // -------- Receiver Setting Command --------
-    VDI_CR_LOCK |               // VDI (valid data indicator) signal: clock recovery lock
-    LNA_0 |                     // LNA gain set to 0dB
-    RSSI_97);                   // threshold of the RSSI detector set to 97dB
+  rfm01_cmd(CMD_DRATE |       // -------- Data Rate Command --------
+            0 << 7 |                    // cs = 0
+            0x13);                      // R = 19 = 0x13
+  // BR = 10000000 / 29 / (R + 1) / (1 + cs*7) = 17.241 kbps
 
-    ResetFiFO();                // Reset FiFo
+  rfm01_cmd(CMD_RCON |        // -------- Receiver Setting Command --------
+            VDI_CR_LOCK |               // VDI (valid data indicator) signal: clock recovery lock
+            LNA_0 |                     // LNA gain set to 0dB
+            RSSI_97);                   // threshold of the RSSI detector set to 97dB
 
-    rfm01_cmd(CMD_RCON |        // -------- Receiver Setting Command ---------
-    VDI_CR_LOCK |               // VDI (valid data indicator) signal: clock recovery lock
-    LNA_0 |                     // LNA gain set to 0dB
-    RSSI_97  |                  // threshold of the RSSI detector set to 103dB
-    RX_EN);                     // enables the whole receiver chain
+  ResetFiFO();                // Reset FiFo
+
+  rfm01_cmd(CMD_RCON |        // -------- Receiver Setting Command ---------
+            VDI_CR_LOCK |               // VDI (valid data indicator) signal: clock recovery lock
+            LNA_0 |                     // LNA gain set to 0dB
+            RSSI_97  |                  // threshold of the RSSI detector set to 103dB
+            RX_EN);                     // enables the whole receiver chain
 }
 
 
@@ -625,10 +717,10 @@ void rfm01_init()
 void rfm12_init()
 {
   unsigned int data;
-  
+
   // Bit	15	14	13	12	11	10	9	8	7	6	5	4	3	2	1	0
   //  1	0	0	0	0	0	0	0	el ef b1 b0 x3 x2	x1 x0
-  //	1	0	0	0	0	0	0	0	1	 1	1	 0	0	 1	1	 1	
+  //	1	0	0	0	0	0	0	0	1	 1	1	 0	0	 1	1	 1
   rfm01_cmd(0x80E7);			// ena TX latch, ena RX FIFO, 868MHz, 12.0pF
 
   // 	1	1	0	0	1	1	0	0	0	ob1	ob0	lpx	dly	dit	bw1	bw0	0xCC77
@@ -648,17 +740,17 @@ void rfm12_init()
   rfm01_cmd(0xC613);			// DATA RATE 17.241 kbps
 
   //	1	0	0	1	0	p16	d1 d0	i2 i1	i0	g1	g0	r2	r1	r0
-  //	1 0	0	1	0	1	  1	 0	1	 0	1	  0	  0	  0	  0	  1	
+  //	1 0	0	1	0	1	  1	 0	1	 0	1	  0	  0	  0	  0	  1
   //rfm01_cmd(0x94A8);			// VDI, fast, 134khz, LNA 0dB, DRRSI -103 dB
-  
-  rfm01_cmd(0x9000 |        // -------- Receiver Setting Command --------
-    PIN16_VDI_output |
-    VDI_SLOW |              //
-    BW_134 |
-    LNA_0 |                 // LNA gain set to 0dB
-    RSSI_97);               // threshold of the RSSI detector set to 97dB
 
-  
+  rfm01_cmd(0x9000 |        // -------- Receiver Setting Command --------
+            PIN16_VDI_output |
+            VDI_SLOW |              //
+            BW_134 |
+            LNA_0 |                 // LNA gain set to 0dB
+            RSSI_97);               // threshold of the RSSI detector set to 97dB
+
+
   //	1	1	0	0	1	1	1	0	b7	b6	b5	b4	b3	b2	b1	b0	0xCED4
   //	1 1	0	0	1	1	1	0	1	1	0	1	0	1	0	0	0xCED4
   rfm01_cmd(0xCED4);			// SYNC=2DD4
@@ -667,9 +759,9 @@ void rfm12_init()
   //	1	1	0	0	0	0	1	0	1	0	1	0	1	1	0	0	0xC2AC
   //rfm01_cmd(0xC2AC);			// autolock, dig. filter, mid level
   rfm01_cmd(CMD_DFILTER |     // -------- Data Filter Command --------
-    CR_LOCK_FAST |              // clock recovery lock control, fast mode, fast attack and fast release
-    FILTER_DIGITAL |            // select the digital data filter
-    DQD_4);                     // DQD threshold parameter
+            CR_LOCK_FAST |              // clock recovery lock control, fast mode, fast attack and fast release
+            FILTER_DIGITAL |            // select the digital data filter
+            DQD_4);                     // DQD threshold parameter
 
   // 	1	1	0	0	1	0	1	0	f3	f2	f1	f0	sp	al	ff	dr	0xCA80
   //	1	1	0	0	1	0	1	0	1	  0	  0	  0  	0  	0	  1  	1 	0xCA83
@@ -679,12 +771,12 @@ void rfm12_init()
   //	1	1	0	0	0	1	0	0 1	 0	0	  0	  0	 0	1	  1	  0xC483
   //rfm01_cmd(0xC483);			// AFC if VDI=0, unlimited range, AFC OE+EN
   rfm01_cmd(CMD_AFC |         // -------- AFC Command --------
-    AFC_KEEP |                
-    AFC_RL_15 |                 // limits the value of the frequency offset register to +15/-16
-    AFC_STROBE |                // the actual latest calculated frequency error is stored into the output registers of the AFC block
-    AFC_FINE |                  // switches the circuit to high accuracy (fine) mode
-    AFC_OUT_ON |                // enables the output (frequency offset) register
-    AFC_ON);                    // enables the calculation of the offset frequency by the AFC circuit
+            AFC_KEEP |
+            AFC_RL_15 |                 // limits the value of the frequency offset register to +15/-16
+            AFC_STROBE |                // the actual latest calculated frequency error is stored into the output registers of the AFC block
+            AFC_FINE |                  // switches the circuit to high accuracy (fine) mode
+            AFC_OUT_ON |                // enables the output (frequency offset) register
+            AFC_ON);                    // enables the calculation of the offset frequency by the AFC circuit
 
   // 	1	0	0	1	1	0	0	mp	m3	m2	m1	m0	0	p2	p1	p0	0x9800
   //	1	0	0	1	1	0	0	0	0	1	0	1	0	0	0	0	0x9850
@@ -695,7 +787,7 @@ void rfm12_init()
   rfm01_cmd(0xE000);			// NOT USE
 
   // 	1	1	0	0	1	0	0	0	d6	d5	d4	d3	d2	d1	d0	en	0xC80E
-  //	1	1	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0xC800  
+  //	1	1	0	0	1	0	0	0	0	0	0	0	0	0	0	0	0xC800
   rfm01_cmd(0xC800);			// NOT USE
 
   rfm01_cmd(0x82D9);
@@ -703,13 +795,13 @@ void rfm12_init()
   ResetFiFO();
 
   data = rfm01_cmd(0x0000);
-  if(data & STATUS_FFIT)
+  if (data & STATUS_FFIT)
   {
     //afc = byte(data);
     // data in RX FIFO
     //Serial.println("dummy read");
     rfm01_cmd(0xB000);
-  }  
+  }
 }
 
 #endif
@@ -720,14 +812,14 @@ byte CheckITPlusCRC(volatile byte *msge, byte nbBytes) {
   byte do_xor;
 
   while (nbBytes-- != 0) {
-    curByte = *msge++; 
+    curByte = *msge++;
     bitmask = 0b10000000;
     while (bitmask != 0) {
       curbit = ((curByte & bitmask) == 0) ? 0 : 1;
       bitmask >>= 1;
       do_xor = (reg & 0x80);
 
-      reg <<=1;
+      reg <<= 1;
       reg |= curbit;
 
       if (do_xor)
@@ -746,51 +838,42 @@ void loop()
   byte crc = 0;
   byte SensorId;
   signed char Temp;
-  
+
   byte Hygro;
   byte ResetFlag;
   byte DeciTemp;
   byte weakbat;
-  
 
   serial_commands_.ReadSerial();
 
+  BrennerStoerungbouncer.update();
+  Betriebsstundenbouncer.update();
+
   BetriebsstundenOld = BetriebsstundenNew;
   BetriebsstundenNew = Betriebsstundenbouncer.read();
-  
-  if(( BetriebsstundenOld == 1) && (BetriebsstundenNew == 0))
+
+  if (( BetriebsstundenOld == 1) && (BetriebsstundenNew == 0))
   {
-     // Brenner laeuft
-     Serial.println("start");
-     currentMillisStart = millis();
-      
+    // Brenner laeuft
+    Serial.println("start");
+    currentMillisStart = millis();
   }
 
-  if(( BetriebsstundenOld == 0) && (BetriebsstundenNew == 1))
+  if (( BetriebsstundenOld == 0) && (BetriebsstundenNew == 1))
   {
-     // Brenner stop
-     Serial.println("stop");
-     settings.runtime = settings.runtime + (millis() - currentMillisStart);
-     settings.starts ++ ;
-     eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
-     Serial.print(settings.runtime,DEC);
-     Serial.print(settings.starts,DEC);
-     
+    // Brenner stop
+    Serial.println("stop");
+    settings.runtime = settings.runtime + (millis() - currentMillisStart);
+    settings.starts ++ ;
+    eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
+    Serial.println(settings.runtime, DEC);
+    Serial.println(settings.starts, DEC);
   }
-  
-  
-  if(frameready== true)
-  {
-    // new frame
-    //for (byte i=0; i < 5; i++)
-    //{
-    //  Serial.print(frame[i],HEX);
-    //  Serial.print(' ');
-    //}
-    //Serial.println();
 
-    crc = CheckITPlusCRC(&frame[0],5);
-    if(crc == 0)
+  if (frameready == true)
+  {
+    crc = CheckITPlusCRC(&frame[0], 5);
+    if (crc == 0)
     {
       //Serial.print("CRC ok ");
       //Serial.println(crc,HEX);
@@ -807,11 +890,11 @@ void loop()
 
       if (Temp >= 40) {
         Temp -= 40;
-      } 
+      }
       else {
         if (DeciTemp == 0) {
           Temp = 40 - Temp;
-        } 
+        }
         else {
           Temp = 39 - Temp;
           DeciTemp = 10 - DeciTemp;
@@ -826,7 +909,7 @@ void loop()
       Serial.print(",\"ID\":");
       Serial.print(SensorId);
       Serial.print(",\"Reset\":");
-      if(ResetFlag == 1)
+      if (ResetFlag == 1)
       {
         Serial.print("1");
       }
@@ -835,7 +918,7 @@ void loop()
         Serial.print("0");
       }
       Serial.print(",\"LOWBAT\":");
-      if(weakbat == 1)
+      if (weakbat == 1)
       {
         Serial.print("1");
       }
@@ -844,37 +927,44 @@ void loop()
         Serial.print("0");
       }
       Serial.print(",\"Temp\":");
-      Serial.print(Temp,DEC);
+      Serial.print(Temp, DEC);
       Serial.print(".");
       Serial.print(DeciTemp);
       Serial.print(",\"Hygro\":");
-      Serial.print(Hygro);  
-      Serial.println("}");      
+      Serial.print(Hygro);
+      Serial.println("}");
     }
     else
     {
       Serial.print("{\"frame\":\"info\",\"CRCfalse\":\"");
-      Serial.print(crc,HEX);
-      Serial.println("\"}");    
+      Serial.print(crc, HEX);
+      Serial.println("\"}");
     }
     rxfill = 0;
     frameready = false;
   }
-  BrennerStoerungbouncer.update();
-  Betriebsstundenbouncer.update();
-  
+ 
+
   BrennerStoerung = BrennerStoerungbouncer.read();
-  if(BrennerStoerung == 1)
+  if (BrennerStoerung == 1)
   {
     // Blinklicht aus
-    digitalWrite(BLINK_LICHT, LOW);  
+    digitalWrite(BLINK_LICHT, LOW);
   }
   else
   {
-    digitalWrite(BLINK_LICHT, HIGH);  
-  } 
+    digitalWrite(BLINK_LICHT, HIGH);
+  }
 
+  if (tCheck(&t_func1)) {
+    func1();
+    tRun(&t_func1);
+  }
 
+  if (tCheck(&t_func2)) {
+    func2();
+    tRun(&t_func2);
+  }
   wdt_reset();
 }
 
@@ -885,13 +975,13 @@ void rf12_interrupt() {
   byte data1;
   byte data2;
   byte data3;
-  
+
   digitalWrite(chipSelectPin, LOW);
 
-  data1 = SPI.transfer(0); 
+  data1 = SPI.transfer(0);
   data2 = SPI.transfer(0);
   data3 = SPI.transfer(0);
- 
+
   val = (data1 << 8) + (data2);
 
   //Serial.println(val,HEX);
@@ -899,27 +989,27 @@ void rf12_interrupt() {
   // take the chip select high to de-select:
   digitalWrite(chipSelectPin, HIGH);
 
-  #ifdef RFM01
-    if((val & STATUS_FFIT) && (val & STATUS_DRSSI) && (val & STATUS_DQD) && (val & STATUS_CRL))
-  #else
-    if(val & STATUS_FFIT)
-  #endif
+#ifdef RFM01
+  if ((val & STATUS_FFIT) && (val & STATUS_DRSSI) && (val & STATUS_DQD) && (val & STATUS_CRL))
+#else
+  if (val & STATUS_FFIT)
+#endif
   {
     if (((data3 & 0xf0) == 0x90) && (rxfill == 0))
     {
       // new frame
-      frame[0]= data3;
+      frame[0] = data3;
       rxfill++;
     }
-    else if((rxfill > 0) && (rxfill <= 3))
+    else if ((rxfill > 0) && (rxfill <= 3))
     {
-      frame[rxfill]= data3;
+      frame[rxfill] = data3;
       rxfill++;
-    } 
-    else if(rxfill == 4)
+    }
+    else if (rxfill == 4)
     {
       // laste bye
-      frame[4]= data3;
+      frame[4] = data3;
       //rxfill = 0;
       frameready = true;
 
@@ -928,29 +1018,29 @@ void rf12_interrupt() {
 
     }
   }
-  else{
-     ResetFiFO();
+  else {
+    ResetFiFO();
   }
 }
 void ResetFiFO()
-{ 
-   #ifdef RFM01
+{
+#ifdef RFM01
 
-    rfm01_cmd(CMD_FIFO |        // -------- Output and FIFO Mode Command --------
-    8<<4 |                      // f = 8, FIFO generates IT when number of the received data bits reaches this level
-    1<<2 |                      // s = 1, set the input of the FIFO fill start condition to sync word
-    0<<1 |                      // Disables FIFO fill after synchron word reception
-    0);                         // Disables the 16bit deep FIFO mode
+  rfm01_cmd(CMD_FIFO |        // -------- Output and FIFO Mode Command --------
+            8 << 4 |                    // f = 8, FIFO generates IT when number of the received data bits reaches this level
+            1 << 2 |                    // s = 1, set the input of the FIFO fill start condition to sync word
+            0 << 1 |                    // Disables FIFO fill after synchron word reception
+            0);                         // Disables the 16bit deep FIFO mode
 
-    rfm01_cmd(CMD_FIFO |        // -------- Output and FIFO Mode Command --------
-    8<<4 |                      // f = 8, FIFO generates IT when number of the received data bits reaches this level
-    1<<2 |                      // s = 1, set the input of the FIFO fill start condition to sync word
-    1<<1 |                      // Enables FIFO fill after synchron word reception
-    1);                         // Ensables the 16bit deep FIFO mode
-  #else
-    rfm01_cmd(0xCA89);
-    rfm01_cmd(0xCA83);
-  #endif
+  rfm01_cmd(CMD_FIFO |        // -------- Output and FIFO Mode Command --------
+            8 << 4 |                    // f = 8, FIFO generates IT when number of the received data bits reaches this level
+            1 << 2 |                    // s = 1, set the input of the FIFO fill start condition to sync word
+            1 << 1 |                    // Enables FIFO fill after synchron word reception
+            1);                         // Ensables the 16bit deep FIFO mode
+#else
+  rfm01_cmd(0xCA89);
+  rfm01_cmd(0xCA83);
+#endif
 }
 
 
@@ -964,8 +1054,8 @@ unsigned int rfm01_cmd(unsigned int value) {
   // take the chip select low to select the device:
   digitalWrite(chipSelectPin, LOW);
 
-  num1 = SPI.transfer(byte(value >> 8)); 
-  num2 = SPI.transfer(byte(value));  
+  num1 = SPI.transfer(byte(value >> 8));
+  num2 = SPI.transfer(byte(value));
 
   // take the chip select high to de-select:
   digitalWrite(chipSelectPin, HIGH);
@@ -973,5 +1063,6 @@ unsigned int rfm01_cmd(unsigned int value) {
   val = (num1 << 8) + (num2);
   return val;
 }
+
 
 

@@ -10,32 +10,27 @@
 <div id="status"></div>
 <script type="text/template" id="view-template">
 <div class="view">
-<label>Stunden: <%= hours %></label> <br>
-<label>Starts:  <%= burnerStarts %></label><br>
-<label>Heizung: <%= burnerState %></label><br>
-<label>Battery: <%= voltageBattery %></label><br>
-<label>Day on:  <%= dayNightTimeOn %> </label><br>
-<label>Day off: <%= dayNightTimeoff %> </label><br>
-<label>Day active: <%= dayNightState %> </label>
-
-
+<label>Stunden:     <%= hours %></label> <br>
+<label>Starts:      <%= burnerStarts %></label><br>
+<label>Heizung:     <%= burnerState %></label><br>
+<label>Battery:     <%= voltageBattery %></label><br>
+<label>Temperature: <%= temp %></label><br>
+<label>Day on:      <%= dayNightTimeOn %> </label><br>
+<label>Day off:     <%= dayNightTimeoff %> </label><br>
+<label>Day active:  <%= dayNightState %> </label>
 </div>
-</script>
-	
-	<script src="js/jquery-3.2.1.min.js"></script> 
-	<script src="js/bootstrap.min.js"></script>
-	<script src="js/main.js"></script>
-	<script src="js/mycode2.js"></script>
-	<script>
+</script>	
+{{#section 'jquery'}}	
+<script src="js/main.js"></script>
+<script src="js/mycode2.js"></script>
+<script>
  $(document).ready(function() {
     console.log('ready');
-    $.each($('#navbarNav').find('li'), function() {
-        $(this).toggleClass('active',
-            '/' + $(this).find('a').attr('href') == window.location.pathname);
-    });
+    //$.each($('#navbarNav').find('li'), function() {
+    //    $(this).toggleClass('active',
+    //        '/' + $(this).find('a').attr('href') == window.location.pathname);
+    //});
     
   });
  </script>
- 	
-</body>
-</html>
+{{/section}} 	

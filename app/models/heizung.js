@@ -23,6 +23,7 @@ var HeizungModel = Backbone.Model.extend({
        defaults: {
      
        burnerState : false,
+       burnerFault : false,
        hours : 0,
        burnerStarts : 0,
        voltageBattery : 0,

@@ -29,10 +29,21 @@ const jsonBody = require('body/json');
 const Rest = require('connect-rest');
 const bodyParser = require('body-parser');
 
-const heaterData = require('./heaterData.json');
-const Heizung = require('./app/models/heizung');
-const expressHandlebars = require('express-handlebars');
-var myHeater = new Heizung.HeizungModel(heaterData);
+
+var handlebars = require('express-handlebars')
+.create({
+    defaultLayout: 'main',
+    helpers: {
+        section: function (name, options) {
+            if (!this._sections) {
+                this._sections = {};
+            }
+            this._sections[name] = options.fn(this);
+            return null;
+        }
+    }
+});
+
 
 const stationData = require('./stationRemote1.json');
 const stationData2 = require('./stationRemote2.json');
@@ -109,12 +120,6 @@ var options = {
 var app = express();
 
 app.disable('x-powered-by');
-//var rest = Rest.create( options );
-
-//app.use(rest.processRequest());
-
-
-
 
 // Use application-level middleware for common functionality, including
 // logging, parsing, and session handling.
@@ -138,14 +143,14 @@ app.use(express.static(__dirname+'/public'));
 app.use('/picture',require('connect-ensure-login').ensureLoggedIn(),express.static(__dirname + '/picture'))
 
 
-		//view engine setup
-app.set('views', path.join(__dirname, 'views'));
 //Helper is used to ease stringifying JSON
-app.engine('handlebars', expressHandlebars({helpers: {
- toJSON : function(object) {
- return JSON.stringify(object);
- }
-}}));
+//app.engine('handlebars', expressHandlebars({helpers: {
+// toJSON : function(object) {
+// return JSON.stringify(object);
+// }
+//}}));
+
+app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
 //async function service( request, content ){
@@ -201,6 +206,8 @@ app.get('/datastationsdra',
 });
 
 app.get('/heizung',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+	
+
 	res.render('heizung', { layout:'main', title: 'Control'});
 
 });
@@ -219,13 +226,13 @@ app.get('/dra',  require('connect-ensure-login').ensureLoggedIn(),function(req, 
 app.get('/heater',
 
 		 function(req, res) {
-			res.json(myHeater.toJSON());			
+			res.json(ar.getHeater().toJSON());			
 		});
 
 
 function updateBurner(err, payload) {
     //console.log(payload);
-    myHeater.set(payload);
+    ar.getHeater().set(payload);
     if(payload.burnerState === true)
     {
     	 console.log('switch on');
@@ -417,7 +424,7 @@ app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
 	  		var my = ar.getStationData()
-			res.render('mainview', { layout:'main', title: 'Villa',stations:my,prefix:''});
+			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
 
 });
 
@@ -449,16 +456,19 @@ setTimeout(ar.connectDevice, 1000);
 // Check night/day switch
 setInterval(function() { 
 	
-	// update every 5 seconds
+	
 	console.log('Check state');
 	var d = new Date();
 	var current_hour = d.getHours();
 	
-	if(myHeater.get('dayNightState'))
+	ar.getHeizungData();
+	ar.getStatus();
+	
+	if(ar.getHeater().get('dayNightState'))
 	{
 		
-		var start = myHeater.get('dayNightTimeOn');
-		var end = myHeater.get('dayNightTimeoff');
+		var start = ar.getHeater().get('dayNightTimeOn');
+		var end = ar.getHeater().get('dayNightTimeoff');
 		
 		console.log('dayNightTimeOn ' + start);
 		console.log('dayNightTimeoff ' + end);
@@ -477,7 +487,7 @@ setInterval(function() {
 	       ar.switchOff();
 		}
 	}
-},1000 * 60 * 1);
+},1000 * 60 * 1);  // every minute
 
 // Update data graph
 
