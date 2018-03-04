@@ -58,8 +58,8 @@ var sendOutData = function(data) {
 		  
 		};
 	const req = https.request(options, (res) => {
-	  logger.info('statusCode:', res.statusCode);
-	  logger.info('headers:', res.headers);
+	  logger.debug('statusCode:', res.statusCode);
+	  logger.debug('headers:', res.headers);
 	
 	  res.on('data', (d) => {
 	    // process.stdout.write(d);
@@ -99,8 +99,8 @@ var sendPic = function() {
 		  
 		};
 	const req = https.request(options, (res) => {
-	  logger.info('statusCode:', res.statusCode);
-	  logger.info('headers:', res.headers);
+	  logger.debug('statusCode:', res.statusCode);
+	  logger.debug('headers:', res.headers);
 	
 	  res.on('data', (d) => {
 	    // process.stdout.write(d);
@@ -155,8 +155,8 @@ var DoConnect=function(port)
 		serial.on('open', function() {
 			logger.info('port open ');
 			setInterval(function() {
-				logger.info('send data');
-				logger.info(JSON.stringify(stations));		
+				logger.debug('send data');
+				logger.debug(JSON.stringify(stations));		
 				sendOutData(JSON.stringify(stations));	
 				
 			}, 1000 * 60 * 5); // send every 5 minutes
@@ -213,7 +213,7 @@ var DoConnect=function(port)
 				{
 					// crc error
 					crcError = crcError + 1;
-					logger.error(crcError);
+					logger.debug("CRC errors: "crcError);
 				}	
 				else
 				{			
@@ -248,7 +248,7 @@ setInterval(function() {
 	if(configData.remote_cam)
 	{	
 		var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') 
-		logger.info('send image: ' + strDate);
+		logger.debug('send image: ' + strDate);
 		sendPic();
 	}
 	

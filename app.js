@@ -387,7 +387,7 @@ var updatePng = function(prefix,count,dbprefix){
 		
 		// week
 		var pngPathName = path.join(pnpFolder, prefix + 'humWeek'+ i +'.png');
-		child_process.execFile('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix+ '.rrd:hums'+i+':AVERAGE','LINE2:hums'+i+'#000000:Humidity']);
+		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix+ '.rrd:hums'+i+':AVERAGE','LINE2:hums'+i+'#000000:Humidity']);
 		var pngPathName = path.join(pnpFolder, prefix + 'tempWeek'+ i +'.png');
 		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix+ '.rrd:temps'+i+':AVERAGE','LINE2:temps'+i+'#000000:Temp']);
 
@@ -467,8 +467,8 @@ setInterval(function() {
 
 setInterval(function() {
 	
-	updatePng('',8,'1');
-	updatePng('muc',4,'2');
+	updatePng('',9,'1');
+	updatePng('muc',5,'2');
 	updatePng('dra',2,'3');
 	
 },1000 * 60 * 10);  // every 10 minutes
