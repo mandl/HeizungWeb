@@ -28,7 +28,7 @@ const path = require('path');
 const jsonBody = require('body/json');
 const Rest = require('connect-rest');
 const bodyParser = require('body-parser');
-
+const logger = require('./lib/logger');
 
 var handlebars = require('express-handlebars')
 .create({
@@ -154,9 +154,9 @@ app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
 
 //async function service( request, content ){
-//    console.log( 'Received headers:' + JSON.stringify( request.headers ) )
-//    console.log( 'Received parameters:' + JSON.stringify( request.parameters ) )
-//    console.log( 'Received JSON object:' + JSON.stringify( content ) )
+//    logger.debug( 'Received headers:' + JSON.stringify( request.headers ) )
+//    logger.debug( 'Received parameters:' + JSON.stringify( request.parameters ) )
+//    logger.debug( 'Received JSON object:' + JSON.stringify( content ) )
 //    return 'ok'
 //}
 //
@@ -188,20 +188,20 @@ app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), funct
 
 app.get('/datastations',
 	function(req, res) {
-			//console.log(ar.getStationData());
+			//logger.debug(ar.getStationData());
 			res.json(ar.getStationData());
 });
 
 app.get('/datastationsmuc',
 		function(req, res) {
-				//console.log(stationsRemote);
+				//logger.debug(stationsRemote);
 				res.json(stationsRemote.toJSON());
 });
 
 
 app.get('/datastationsdra',
 		function(req, res) {
-				//console.log(stationsRemote);
+				//logger.debug(stationsRemote);
 				res.json(stationsDraRemote.toJSON());
 });
 
@@ -231,39 +231,39 @@ app.get('/heater',
 
 
 function updateBurner(err, payload) {
-    //console.log(payload);
+    //logger.debug(payload);
     ar.getHeater().set(payload);
     if(payload.burnerState === true)
     {
-    	 console.log('switch on');
+    	 logger.debug('switch on');
          ar.switchOn();
     }     
     else
     {
-    	 console.log('switch off');
+    	 logger.debug('switch off');
     	 ar.switchOff();
     }
     
     if (err) {
-      console.log(err);
+      logger.debug(err);
     } else {
 
 }};
 
 function getStationJson(err, payload) {
     
-	//console.log(payload);
+	//logger.debug(payload);
 	
 	var dataTemp = {}; 
 	stationsRemote.reset(payload);
     var TimeNow = Date.now();
-    //console.log(payload);
+    //logger.debug(payload);
     
     stationsRemote.each(function(model) {
-	//console.log(model.attributes);
+	//logger.debug(model.attributes);
 	//model.get('id');
 	//model.get('time');
-    	//console.log(TimeNow - model.get('time'));
+    	//logger.debug(TimeNow - model.get('time'));
 		if((TimeNow - model.get('time')) < (1000 * 60 * 30))
 		{	
 	    	var preFix = model.get('datasource');	
@@ -278,11 +278,11 @@ function getStationJson(err, payload) {
    
     if ( ol.length  > 0)
     {
-    	console.log("Save remote data");
+    	logger.debug("Save remote data");
     	ar.updateDB2(dataTemp);
     }
     if (err) {
-      console.log(err);
+      logger.debug(err);
     } else {
 
 }}
@@ -321,13 +321,13 @@ app.post('/dracam',
 
 		function(req, res) {
 		
-			console.log(req.headers);
+			logger.debug(req.headers);
 			var picFile = path.join(pnpFolder,"dracam.jpg");
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {
-		            console.log(err);
+		            logger.debug(err);
 		        } else {
-		        	console.log("pic save " + picFile);
+		        	logger.debug("pic save " + picFile);
 		        }
 		    });
 		    res.send('ok');
@@ -339,13 +339,13 @@ app.post('/muccam',
 
 		function(req, res) {
 		
-			//console.log(req.headers);
+			//logger.debug(req.headers);
 			var picFile  = path.join(pnpFolder,"muccam.jpg")
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {
-		            console.log(err);
+		            logger.debug(err);
 		        } else {
-		            console.log("pic save " + picFile);
+		            logger.debug("pic save " + picFile);
 		        }
 		    });
 		    res.send('ok');
@@ -356,13 +356,13 @@ app.post('/dipcam',
 
 		function(req, res) {
 		
-			console.log(req.headers);
+			logger.debug(req.headers);
 			var picFile = path.join(pnpFolder,"dipcam.jpg");
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {
-		            console.log(err);
+		            logger.debug(err);
 		        } else {
-		        	console.log("pic save " + picFile);
+		        	logger.debug("pic save " + picFile);
 		        }
 		    });
 		    res.send('ok');
@@ -401,7 +401,7 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 
 var updatePng = function(prefix,count,dbprefix){
 	
-	console.log("updatePng: " + prefix);
+	logger.info("updatePng: " + prefix);
 		
 	for(var i=1; i <= count; i++)
 	{
@@ -441,7 +441,7 @@ var server = https.createServer({
 
 
 server.on('error', function (e) {
-	console.log(e);
+	logger.error(e);
 	});
 
 server.listen(3000);
@@ -457,7 +457,7 @@ setTimeout(ar.connectDevice, 1000);
 setInterval(function() { 
 	
 	
-	console.log('Check state');
+	logger.debug('Check state');
 	var d = new Date();
 	var current_hour = d.getHours();
 	
@@ -470,20 +470,20 @@ setInterval(function() {
 		var start = ar.getHeater().get('dayNightTimeOn');
 		var end = ar.getHeater().get('dayNightTimeoff');
 		
-		console.log('dayNightTimeOn ' + start);
-		console.log('dayNightTimeoff ' + end);
+		logger.debug('dayNightTimeOn ' + start);
+		logger.debug('dayNightTimeoff ' + end);
 
 		
 		if(( current_hour >= start ) &&( current_hour < end ))
 		{
 			// on
-			console.log('switch on');
+			logger.debug('switch on');
 	        ar.switchOn();
 		}
 		else
 		{
 		   // off
-		   console.log('switch off');
+		   logger.debug('switch off');
 	       ar.switchOff();
 		}
 	}
