@@ -245,7 +245,7 @@ function updateBurner(err, payload) {
     }
     
     if (err) {
-      logger.debug(err);
+      logger.error(err);
     } else {
 
 }};
@@ -282,7 +282,7 @@ function getStationJson(err, payload) {
     	ar.updateDB2(dataTemp);
     }
     if (err) {
-      logger.debug(err);
+      logger.error(err);
     } else {
 
 }}
@@ -325,7 +325,7 @@ app.post('/dracam',
 			var picFile = path.join(pnpFolder,"dracam.jpg");
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {
-		            logger.debug(err);
+		            logger.error(err);
 		        } else {
 		        	logger.debug("pic save " + picFile);
 		        }
@@ -343,7 +343,7 @@ app.post('/muccam',
 			var picFile  = path.join(pnpFolder,"muccam.jpg")
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {
-		            logger.debug(err);
+		            logger.error(err);
 		        } else {
 		            logger.debug("pic save " + picFile);
 		        }
@@ -360,7 +360,7 @@ app.post('/dipcam',
 			var picFile = path.join(pnpFolder,"dipcam.jpg");
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {
-		            logger.debug(err);
+		            logger.error(err);
 		        } else {
 		        	logger.debug("pic save " + picFile);
 		        }
@@ -391,7 +391,7 @@ app.get('/profile', require('connect-ensure-login').ensureLoggedIn(), function(
 
 // log routes
 app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
-	var logtext = fs.readFileSync(path.join(__dirname, 'temp.log'))
+	var logtext = fs.readFileSync(path.join(__dirname, '/lib/temp.log'))
 	res.render('logfile', { layout:'main',logdata: logtext});
 
 });

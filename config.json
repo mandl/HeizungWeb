@@ -3,5 +3,6 @@
  "add_new_stations":false,
  "remote_cam":false,
  "location_temp":"/mucdata",
- "location_pic":"/muccam"
+ "location_pic":"/muccam",
+ "loglevel":"info"
  }
