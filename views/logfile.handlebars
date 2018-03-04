@@ -6,6 +6,10 @@
 <script>
  $(document).ready(function() {
     console.log('ready');
+    $.each($('#navbarNav').find('li'), function() {
+        $(this).toggleClass('active',
+            '/' + $(this).find('a').attr('href') == window.location.pathname);
+    }); 
     
   });
 </script>

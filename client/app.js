@@ -41,12 +41,11 @@ var crcError = 0;
 
 var sendOutData = function(data) {
 	
-	//logger.info(data);
+	// logger.info(data);
 	var headers = {
 		    'Content-Type': 'application/json',
 		    'Content-Length': Buffer.byteLength(data)
 		  };
-
 		const options = {
 		  hostname: configData.server_url,
 		  port: configData.server_port,
@@ -63,7 +62,7 @@ var sendOutData = function(data) {
 	  logger.info('headers:', res.headers);
 	
 	  res.on('data', (d) => {
-	    process.stdout.write(d);
+	    // process.stdout.write(d);
 	  });
 	});
 	
@@ -77,12 +76,12 @@ var sendOutData = function(data) {
 
 var sendPic = function() {
 	
-	//logger.info(data);
+	// logger.info(data);
 	var camFile = path.join(pnpFolder,'cam.jpg')
 	child_process.execSync('raspistill -a 12 -md 0 -o '+ camFile);
 	
 	var data = fs.readFileSync(camFile);
-	//logger.info(data);
+	// logger.info(data);
 	var headers = {
 		    'Content-Type': 'image/jpeg',
 		    'Content-Length': Buffer.byteLength(data)
@@ -104,7 +103,7 @@ var sendPic = function() {
 	  logger.info('headers:', res.headers);
 	
 	  res.on('data', (d) => {
-	    process.stdout.write(d);
+	    // process.stdout.write(d);
 	  });
 	});
 	
@@ -119,9 +118,9 @@ var sendPic = function() {
 var connectDevice = function() {
 	var port = SerialPort.list(function(err, ports) {
 		ports.forEach(function(port) {
-			//logger.info(port.comName);
-			//logger.info(port.pnpId);
-			//logger.info(port.manufacturer);
+			// logger.info(port.comName);
+			// logger.info(port.pnpId);
+			// logger.info(port.manufacturer);
 			if (port.manufacturer != undefined) {
 				var name = port.manufacturer;
 				if (name.startsWith('Arduino')) {
@@ -165,7 +164,7 @@ var DoConnect=function(port)
 		});
 		
 		serial.on('error', function(err) {
-		
+		    // error do reconnect
 			serial = null;
 			parser = null;
 			console.error("error", err);
@@ -175,20 +174,16 @@ var DoConnect=function(port)
 		parser.on('data', function(data) {
 	
 			var my = data.toString();
-	
 			// { ID: 5, Reset: 0, LOWBAT: 0, Temp: 22.3, Hygro: 47 }
-			
-			logger.info(my);
+			logger.debug(my);
 			try {
 				var obj = JSON.parse(my);
 				if (obj.frame == 'data')
 				{	
-				
-					var data = stations.findWhere({id: obj.ID});
-							
+					var data = stations.findWhere({id: obj.ID});						
 					if(data  === undefined)
 					{
-						logger.info('new id');
+						logger.debug('new id');
 						if((obj.Reset) && (configData.add_new_stations))
 						{
 							stations.add({id: obj.ID,
@@ -203,7 +198,7 @@ var DoConnect=function(port)
 						}	
 					}		
 					else{
-						//logger.info(data);
+						// logger.info(data);
 						// Update
 						data.set({"temp": obj.Temp});
 						data.set({"hum" : obj.Hygro});
@@ -211,21 +206,21 @@ var DoConnect=function(port)
 						data.set({"reset": obj.Reset});
 						data.set({"lowbattery": obj.LOWBAT});
 						data.set({"timestr": new Date().toLocaleString()});
-						//logger.info(dataTemp);
+						// logger.info(dataTemp);
 					}
 				}
 				else if (obj.frame == 'info')
 				{
+					// crc error
 					crcError = crcError + 1;
-					logger.info(crcError);
+					logger.error(crcError);
 				}	
 				else
-				{
-					
-					logger.info(obj);
+				{			
+					logger.error(obj);
 				}
-				} catch (e) {
-				
+			} catch (e) {
+				logger.error(e);
 			}
 		});
 };
@@ -245,8 +240,8 @@ logger.info('Path temp data:  ' + configData.location_temp);
 logger.info('Path pic data:   ' + configData.location_pic);
 logger.info('Add new station: ' + configData.add_new_stations);
 logger.info('Send picture:    ' + configData.remote_cam);
+logger.info('Log level   :    ' + configData.loglevel);
 setTimeout(connectDevice, 1000);
-
 
 setInterval(function() {
 	

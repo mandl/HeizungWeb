@@ -27,7 +27,7 @@
 
 
 
-#define RFM01
+//#define RFM01
 #define USE_DHT22
 
 #ifdef USE_DHT22
@@ -855,19 +855,19 @@ void loop()
   if (( BetriebsstundenOld == 1) && (BetriebsstundenNew == 0))
   {
     // Brenner laeuft
-    Serial.println("start");
+    //Serial.println("start");
     currentMillisStart = millis();
   }
 
   if (( BetriebsstundenOld == 0) && (BetriebsstundenNew == 1))
   {
     // Brenner stop
-    Serial.println("stop");
+    //Serial.println("stop");
     settings.runtime = settings.runtime + (millis() - currentMillisStart);
     settings.starts ++ ;
     eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
-    Serial.println(settings.runtime, DEC);
-    Serial.println(settings.starts, DEC);
+    //Serial.println(settings.runtime, DEC);
+    //Serial.println(settings.starts, DEC);
   }
 
   if (frameready == true)

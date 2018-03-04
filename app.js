@@ -139,29 +139,13 @@ app.use(bodyParser.raw( {inflate:false, limit:'6mb', type:'image/jpeg'} ));
 app.use(passport.initialize());
 app.use(passport.session());
 
+// static routes
 app.use(express.static(__dirname+'/public'));
 app.use('/picture',require('connect-ensure-login').ensureLoggedIn(),express.static(__dirname + '/picture'))
 
-
-//Helper is used to ease stringifying JSON
-//app.engine('handlebars', expressHandlebars({helpers: {
-// toJSON : function(object) {
-// return JSON.stringify(object);
-// }
-//}}));
-
+// view engine
 app.engine('handlebars', handlebars.engine);
 app.set('view engine', 'handlebars');
-
-//async function service( request, content ){
-//    logger.debug( 'Received headers:' + JSON.stringify( request.headers ) )
-//    logger.debug( 'Received parameters:' + JSON.stringify( request.parameters ) )
-//    logger.debug( 'Received JSON object:' + JSON.stringify( content ) )
-//    return 'ok'
-//}
-//
-//
-//rest.post('/demo',service);
 
 
 app.get('/login', function(req, res) {
@@ -205,11 +189,9 @@ app.get('/datastationsdra',
 				res.json(stationsDraRemote.toJSON());
 });
 
-app.get('/heizung',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
-
-	res.render('heizung', { layout:'main', title: 'Control'});
-
+	res.render('control', { layout:'main', title: 'Control'});
 });
 
 
@@ -253,7 +235,6 @@ function updateBurner(err, payload) {
 function getStationJson(err, payload) {
     
 	//logger.debug(payload);
-	
 	var dataTemp = {}; 
 	stationsRemote.reset(payload);
     var TimeNow = Date.now();
@@ -263,12 +244,12 @@ function getStationJson(err, payload) {
 	//logger.debug(model.attributes);
 	//model.get('id');
 	//model.get('time');
-    	//logger.debug(TimeNow - model.get('time'));
-		if((TimeNow - model.get('time')) < (1000 * 60 * 30))
-		{	
-	    	var preFix = model.get('datasource');	
-			dataTemp["temps"+preFix]  = model.get('temp');
-			dataTemp["hums"+preFix] = model.get('hum');
+	//logger.debug(TimeNow - model.get('time'));
+	if((TimeNow - model.get('time')) < (1000 * 60 * 30))
+	{	
+    	var preFix = model.get('datasource');	
+		dataTemp["temps"+preFix]  = model.get('temp');
+		dataTemp["hums"+preFix] = model.get('hum');
 		}
     });
     
@@ -382,12 +363,6 @@ app.get('/logout', function(req, res) {
 	res.redirect('/');
 });
 
-app.get('/profile', require('connect-ensure-login').ensureLoggedIn(), function(
-		req, res) {
-	res.render('profile', {
-		user : req.user
-	});
-});
 
 // log routes
 app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
@@ -398,10 +373,9 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 
 // update week and day graph
 
-
 var updatePng = function(prefix,count,dbprefix){
 	
-	logger.info("updatePng: " + prefix);
+	logger.debug("updatePng: " + prefix);
 		
 	for(var i=1; i <= count; i++)
 	{
