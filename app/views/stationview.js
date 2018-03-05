@@ -27,6 +27,7 @@ Backbone.$ = $;
 
 var StationView = Backbone.View.extend({
 	  
+	
 	events: {
 		'click': '_selectStation'
 		},
@@ -34,6 +35,7 @@ var StationView = Backbone.View.extend({
 		ev.preventDefault();
 		console.log($(ev.currentTarget).html());
 	},
+	tagName: 'tr',
 	template: _.template($('#view-station-template').html()),
     initialize: function() {
         this.listenTo(this.model, 'change', this.render);
@@ -49,7 +51,7 @@ var StationView = Backbone.View.extend({
 
   var StationsView = Backbone.View.extend({
 	   
-	tagName: 'section',
+	tagName: 'tr',
     
     render: function() {
    	

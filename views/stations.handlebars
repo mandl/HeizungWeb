@@ -1,22 +1,48 @@
 <div class="container-fluid">
 <h1>Active Tempstation</h1>
 <h2>Local</h1>
-<div id="stations"></div>
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Label</th>
+      <th>Name</th>
+      <th>Temperatur</th>
+      <th>Humidity</th>
+      <th>Datasource</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody id="stations"></tbody>
+</table>
+
 <h2>Muc</h1>
-<div id="stationsremote"></div>
-	
+<table class="table">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Label</th>
+      <th>Name</th>
+      <th>Temperatur</th>
+      <th>Humidity</th>
+      <th>Datasource</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody id="stationsremote"></tbody>
+</table>
+</div>	
 <script type="text/template" id="view-station-template">
-<div class="view">
-<label> ID:         <%= id %> </label>
-<label> Label:      <%= label %> </label>
-<label> Name:       <%= name %> </label>
-<label> Temperatur: <%= temp %> </label>
-<label> Humidity:   <%= hum %> </label>
-<label> Datasource: <%= datasource %> </label>
-<label> Time:       <%= timestr %> </label>
-</div>
+<td><%= id %></td>
+<td><%= label %></td>
+<td><%= name %></td>
+<td><%= temp %></td>
+<td><%= hum %></td>
+<td><%= datasource %></td>
+<td><%= timestr %></td>
+
 </script>
-</dic>
+
 {{#section 'jquery'}}
 <script src="js/bundle2.js"></script>
 <script src="js/mycode.js"></script>

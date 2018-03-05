@@ -115,10 +115,19 @@ var sendPic = function() {
 
 };
 
+
+var searchForDevice = function() {
+	logger.info('searchForDevice');
+	setTimeout(function() {
+		connectDevice();
+	}, 10000);
+};
+
 var connectDevice = function() {
-	var port = SerialPort.list(function(err, ports) {
+	var portFound=false;
+	SerialPort.list(function(err, ports) {
 		ports.forEach(function(port) {
-			// logger.info(port.comName);
+			logger.info(port.comName);
 			// logger.info(port.pnpId);
 			// logger.info(port.manufacturer);
 			if (port.manufacturer != undefined) {
@@ -126,14 +135,18 @@ var connectDevice = function() {
 				if (name.startsWith('Arduino')) {
 					logger.info('Found Arduino at: ' + port.comName);
 					DoConnect(port);
-					return;
+					portFound = true;
 				}
 			}
 		 
 		});
+		if(portFound == false)
+		{
+			searchForDevice();
+		}
 		
 	});
-	console.log(port);
+	
 };
 	
 var DoConnect=function(port)
