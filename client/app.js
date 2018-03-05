@@ -133,6 +133,7 @@ var connectDevice = function() {
 		});
 		
 	});
+	console.log(port);
 };
 	
 var DoConnect=function(port)
@@ -213,7 +214,7 @@ var DoConnect=function(port)
 				{
 					// crc error
 					crcError = crcError + 1;
-					logger.debug("CRC errors: "crcError);
+					logger.debug("CRC errors: ",crcError);
 				}	
 				else
 				{			

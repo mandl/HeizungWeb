@@ -1,8 +1,8 @@
-<div class="container">
+<div class="container-fluid">
 <button class="btn btn-primary" id="ShowWeek">Show week</button>
 <button class="btn btn-primary" id="ShowHumidity">Hide Humidity</button>
 </div>
-<div class="container">
+<div class="container-fluid">
 {{#each stations}}
     <h1>{{name}}</h1>
     <label> Sensor label: {{label}} </label><br>
@@ -43,15 +43,19 @@
     {{/each}}
     
     $('#ShowWeek').click(function(){
-    	{{#each stations}}
+    		var button = $(this);
+    		button.text(button.text() == "Show week" ? "Hide week" : "Show week") 
+    		{{#each stations}}
         $('#week{{datasource}}').toggle("slow");
-       {{/each}}
+       	{{/each}}
        //$('#ShowWeek').text('Hide week');
         
     }); 
     
     $('#ShowHumidity').click(function(){
-    	{{#each stations}}
+    		var button = $(this);
+		button.text(button.text() == "Hide Humidity" ? "Show Humidity" : "Hide Humidity") 
+    		{{#each stations}}
         $('#hum{{datasource}}').toggle("slow");
         $('#humWeek{{datasource}}').toggle("slow");
        {{/each}}
