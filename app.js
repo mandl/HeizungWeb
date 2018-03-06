@@ -376,20 +376,23 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 var updatePng = function(prefix,count,dbprefix){
 	
 	logger.debug("updatePng: " + prefix);
+	var pngPathName = path.join(pnpFolder, 'burner.png');
+	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:runtime1=./lib/burner.rrd:runtime1:AVERAGE','AREA:runtime1#000000:Runtime']);
+
 		
 	for(var i=1; i <= count; i++)
 	{
 		// Day
 		var pngPathName = path.join(pnpFolder, prefix + 'hum'+ i +'.png');
-		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix+ '.rrd:hums'+i+':AVERAGE','LINE2:hums'+i+'#000000:Humidity']);
+		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix + '.rrd:hums'+i+':AVERAGE','LINE1:hums'+i+'#000000:Humidity']);
 		var pngPathName = path.join(pnpFolder, prefix +  'temp'+ i +'.png');
-		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix+ '.rrd:temps'+i+':AVERAGE','LINE2:temps'+i+'#000000:Temp']);
+		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix + '.rrd:temps'+i+':AVERAGE','LINE1:temps'+i+'#000000:Temp']);
 		
 		// week
 		var pngPathName = path.join(pnpFolder, prefix + 'humWeek'+ i +'.png');
-		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix+ '.rrd:hums'+i+':AVERAGE','LINE2:hums'+i+'#000000:Humidity']);
+		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix + '.rrd:hums'+i+':AVERAGE','LINE1:hums'+i+'#000000:Humidity']);
 		var pngPathName = path.join(pnpFolder, prefix + 'tempWeek'+ i +'.png');
-		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix+ '.rrd:temps'+i+':AVERAGE','LINE2:temps'+i+'#000000:Temp']);
+		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix + '.rrd:temps'+i+':AVERAGE','LINE1:temps'+i+'#000000:Temp']);
 
 	}
 }
