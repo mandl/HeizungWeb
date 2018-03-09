@@ -435,7 +435,7 @@ unsigned long currentMillisStart;
 
 struct settings_t
 {
-  unsigned long runtime;
+  int64_t runtime;
   unsigned int starts;
 } settings;
 
@@ -518,7 +518,7 @@ void cmd_unrecognized(SerialCommands* sender, const char* cmd)
 void cmd_led_on(SerialCommands* sender)
 {
   digitalWrite(HEIZUNG_AN, HIGH);
-  sender->GetSerial()->print("{\"result\":\"an_ok\"");
+  sender->GetSerial()->print("{\"frame\":\"an_ok\"");
   sender->GetSerial()->println("}");
 }
 
@@ -526,7 +526,7 @@ void cmd_led_on(SerialCommands* sender)
 void cmd_led_off(SerialCommands* sender)
 {
   digitalWrite(HEIZUNG_AN, LOW);
-  sender->GetSerial()->print("{\"result\":\"aus_ok\"");
+  sender->GetSerial()->print("{\"frame\":\"aus_ok\"");
   sender->GetSerial()->println("}");
 }
 
@@ -536,16 +536,18 @@ void cmd_resetRuntime(SerialCommands* sender)
   settings.runtime = 0;
   settings.starts = 0;
   eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
-  sender->GetSerial()->print("{\"result\":\"reset_ok\"");
+  sender->GetSerial()->print("{\"frame\":\"reset_ok\"");
   sender->GetSerial()->println("}");
 }
 
 // read saved data
 void cmd_readData(SerialCommands* sender)
 {
+  char sbuf[50];
   sender->GetSerial()->print("{\"frame\":\"rundata\"");
   sender->GetSerial()->print(",\"runtime\":");
-  sender->GetSerial()->print(settings.runtime);
+  sprintf(sbuf, "%ld", settings.runtime);
+  sender->GetSerial()->print(sbuf);
   sender->GetSerial()->print(",\"starts\":");
   sender->GetSerial()->print(settings.starts);
   sender->GetSerial()->println("}");
@@ -625,6 +627,10 @@ void setup() {
 
   pinMode(rfm_IRQPin, INPUT_PULLUP);
 
+  // internal LED off
+  pinMode(LED_BUILTIN, OUTPUT);
+  digitalWrite(LED_BUILTIN,LOW);
+  
   delay(500);
   rfm01_cmd(CMD_RESET);
 
@@ -855,19 +861,25 @@ void loop()
   if (( BetriebsstundenOld == 1) && (BetriebsstundenNew == 0))
   {
     // Brenner laeuft
-    //Serial.println("start");
+    Serial.print("{\"frame\":\"burnerrun\"");
+    Serial.println("}");
     currentMillisStart = millis();
   }
 
   if (( BetriebsstundenOld == 0) && (BetriebsstundenNew == 1))
   {
-    // Brenner stop
-    //Serial.println("stop");
-    settings.runtime = settings.runtime + (millis() - currentMillisStart);
+    // Brenner stop 
+    uint32_t runnow = currentMillisStart > millis() ? 1 + currentMillisStart + ~millis() : millis() - currentMillisStart;
+    settings.runtime = settings.runtime + runnow;
     settings.starts ++ ;
     eeprom_write_block((const void*)&settings, (void*)0, sizeof(settings));
-    //Serial.println(settings.runtime, DEC);
-    //Serial.println(settings.starts, DEC);
+    Serial.print("{\"frame\":\"burnerstop\"");
+    Serial.print(",\"runtime\":");
+    Serial.print(runnow, DEC);
+    Serial.print(",\"starts\":");
+    Serial.print(settings.starts, DEC);
+    Serial.println("}");
+    
   }
 
   if (frameready == true)

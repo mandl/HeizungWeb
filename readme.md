@@ -36,6 +36,9 @@
     npm run-script build-2
     
     
+    
+    
+    
 
 # Create rrd Database
 
@@ -62,3 +65,20 @@
     sudo apt-get install fswebcam
 
     LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam  --save cam.jpg
+
+    
+# Nginx
+
+    sudo apt-get install nginx -y
+    
+    sudo systemctl enable nginx
+    
+    sudo rm /etc/nginx/sites-available/default
+    
+    sudo nano /etc/nginx/sites-available/default
+
+    sudo nginx -t
+
+    sudo /etc/init.d/nginx reload
+
+    sudo apt-get install certbot 

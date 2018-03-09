@@ -20,7 +20,7 @@
 const fs = require('fs');
 const child_process = require('child_process');
 const express = require('express');
-const https = require('https')
+//const https = require('https')
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
 const db = require('./db');
@@ -194,6 +194,11 @@ app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(r
 	res.render('control', { layout:'main', title: 'Control'});
 });
 
+app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+	
+	res.render('admin', { layout:'main', title: 'Admin'});
+});
+
 
 app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 
@@ -358,6 +363,25 @@ app.post('/login', passport.authenticate('local', {
 });
 
 
+// Control admin
+app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+	console.log(req.body.ControlSelectDayOn);
+	
+	console.log(req.body.ControlSelectDayOff);
+	
+	ar.getHeater().set({
+		"dayNightTimeOn" : req.body.ControlSelectDayOn
+	});
+	
+	ar.getHeater().set({
+		"dayNightTimeoff" : req.body.ControlSelectDayOff
+	});
+	
+	console.log(req.body.dayNightTimeoff);
+	
+	res.redirect('/');	
+});
+
 app.get('/logout', function(req, res) {
 	req.logout();
 	res.redirect('/');
@@ -411,17 +435,21 @@ app.use(function(req, res, next) {
     
 });
 
-var server = https.createServer({
-    key: fs.readFileSync(path.join(__dirname,'ssl','key.pem')),
-    cert: fs.readFileSync(path.join(__dirname,'ssl','cert.pem'))
-  }, app);
+app.listen(3000, function () {
+	  logger.info('Heizung listening on port 3000!');
+});
+//var server = https.createServer({
+
+//key: fs.readFileSync(path.join(__dirname,'ssl','key.pem')),
+//    cert: fs.readFileSync(path.join(__dirname,'ssl','cert.pem'))
+//  }, app);
 
 
-server.on('error', function (e) {
-	logger.error(e);
-	});
+//server.on('error', function (e) {
+//	logger.error(e);
+//	});
 
-server.listen(3000);
+//server.listen(3000);
 
 updatePng('',8,'1');
 updatePng('muc',4,'2');
