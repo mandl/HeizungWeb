@@ -2,6 +2,7 @@
  "server_port": 3000,
  "add_new_stations":false,
  "remote_cam":false,
+ "remote_temp":true,
  "location_temp":"/mucdata",
  "location_pic":"/muccam",
  "loglevel":"info"

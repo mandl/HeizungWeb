@@ -342,7 +342,7 @@ app.post('/dipcam',
 
 		function(req, res) {
 		
-			logger.debug(req.headers);
+			//logger.debug(req.headers);
 			var picFile = path.join(pnpFolder,"dipcam.jpg");
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {

@@ -45,11 +45,12 @@ var heizungControlsView = Backbone.View.extend({
 		this.$onDayNight = this.$('#onDayNight');
 		if (this.model.get('burnerState'))
 		{
-			this.$onHeizung.text('On');
-			this.$onHeizung.removeClass("btn-danger").addClass( "btn-success");
+			this.$onHeizung.text('Off');
+			this.$onHeizung.removeClass("btn-danger").addClass("btn-success");
 	    }
 		else
-			this.$onHeizung.text('Off');
+			this.$onHeizung.text('On');
+		    //this.$onHeizung.removeClass("btn-success").addClass( "btn-danger");
 		if (this.model.get('dayNightState'))
 			
 			this.$onDayNight.text('DayNight Off');

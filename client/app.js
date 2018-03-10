@@ -241,21 +241,26 @@ var DoConnect=function(port)
 
 // check for connection errors or drops and reconnect
 var reconnectDevice = function() {
-	logger.info('INITIATING RECONNECT');
+	logger.info('initiating reconnect');
 	setTimeout(function() {
-		logger.info('RECONNECTING TO ARDUINO');
+		logger.info('reconnecting to arduino');
 		connectDevice();
 	}, 10000);
 };
 
-logger.info('Connect to:      ' + configData.server_url);
-logger.info('Using port:      ' + configData.server_port);
-logger.info('Path temp data:  ' + configData.location_temp);
-logger.info('Path pic data:   ' + configData.location_pic);
-logger.info('Add new station: ' + configData.add_new_stations);
-logger.info('Send picture:    ' + configData.remote_cam);
-logger.info('Log level   :    ' + configData.loglevel);
-setTimeout(connectDevice, 1000);
+logger.info('Connect to:          ' + configData.server_url);
+logger.info('Using port:          ' + configData.server_port);
+logger.info('Path temp data:      ' + configData.location_temp);
+logger.info('Path pic data:       ' + configData.location_pic);
+logger.info('Add new station:     ' + configData.add_new_stations);
+logger.info('Send remote picture: ' + configData.remote_cam);
+logger.info('Send temp data:      ' + configData.remote_temp);
+logger.info('Log level   :        ' + configData.loglevel);
+
+if(configData.remote_temp)
+{	
+	setTimeout(connectDevice, 1000);
+}
 
 setInterval(function() {
 	
