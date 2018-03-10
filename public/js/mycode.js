@@ -34,4 +34,5 @@ $(document).ready(function() {
 	console.log('ready');
 	localStationData.render();  
 	remoteStationData.render(); 
+	remoteStationData2.render(); 
   });

@@ -273,6 +273,39 @@ function getStationJson(err, payload) {
 
 }}
 
+function getStationDraJson(err, payload) {
+    
+	//logger.debug(payload);
+	var dataTemp = {}; 
+	stationsDraRemote.reset(payload);
+    var TimeNow = Date.now();
+    //logger.debug(payload);
+    
+    stationsDraRemote.each(function(model) {
+	
+	if((TimeNow - model.get('time')) < (1000 * 60 * 30))
+	{	
+    	var preFix = model.get('datasource');	
+		dataTemp["temps"+preFix]  = model.get('temp');
+		dataTemp["hums"+preFix] = model.get('hum');
+		}
+    });
+    
+    delete dataTemp['hums-1'];
+    delete dataTemp['temps-1'];
+    var ol = Object.keys(dataTemp);
+   
+    if ( ol.length  > 0)
+    {
+    	logger.debug("Save remote data");
+    	ar.updateDB3(dataTemp);
+    }
+    if (err) {
+      logger.error(err);
+    } else {
+
+}}
+
 //
 //  Client data
 
@@ -285,7 +318,7 @@ app.post('/mucdata',
 
 app.post('/dradata',
 		function(req, res) {
-	    //jsonBody(req, res, getStationJson);
+	    jsonBody(req, res, getStationDraJson);
 		res.send('ok');
 		res.end();		
 });
@@ -379,7 +412,7 @@ app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), func
 	
 	console.log(req.body.dayNightTimeoff);
 	
-	res.redirect('/');	
+	res.redirect('/control');	
 });
 
 app.get('/logout', function(req, res) {

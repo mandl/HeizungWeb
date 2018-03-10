@@ -24,11 +24,13 @@
 <li class="list-group-item">Stunden:     <%= hours %></li>
 <li class="list-group-item">Starts:      <%= burnerStarts %></li>
 <li class="list-group-item">Heizung:     <%= burnerState %></li>
-<li class="list-group-item">Battery:     <%= voltageBattery %></li>
+<li class="list-group-item">Battery:     <%= voltageBattery %> Volt</li>
 <li class="list-group-item">Temperature: <%= temp %></label>
 <li class="list-group-item">Day on:      <%= dayNightTimeOn %> Uhr</li>
 <li class="list-group-item">Day off:     <%= dayNightTimeoff %> Uhr</li>
 <li class="list-group-item">Day active:  <%= dayNightState %> </li>
+<li class="list-group-item">Brenner ausgefallen:  <%= burnerFault %> </li>
+<li class="list-group-item">Brenner läuft:  <%= burnerRun %> </li>
 </script>
 
 {{#section 'jquery'}}	

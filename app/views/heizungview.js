@@ -43,6 +43,19 @@ var heizungControlsView = Backbone.View.extend({
 		this.$el.html(this.template(this.model.attributes));		
 		this.$onHeizung = this.$('#onHeizung');
 		this.$onDayNight = this.$('#onDayNight');
+		this.$status = this.$('#status');
+		
+		console.log(this.$status);
+		
+		if (this.model.get('burnerState'))
+		{
+			//this.$HeizungRun.removeClass('list-group-item-dark').addClass('list-group-item-success');
+		}
+		else
+		{
+			//this.$HeizungRun.removeClass('list-group-item-success').addClass('list-group-item-dark');
+		}	
+		
 		if (this.model.get('burnerState'))
 		{
 			this.$onHeizung.text('Off');

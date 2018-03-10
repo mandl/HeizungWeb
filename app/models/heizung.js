@@ -22,7 +22,8 @@ var Backbone = require('backbone');
 var HeizungModel = Backbone.Model.extend({
        defaults: {
      
-       burnerState : false,
+       burnerState : false,  
+       burnerRun :   false,
        burnerFault : false,
        hours : 0,
        burnerStarts : 0,

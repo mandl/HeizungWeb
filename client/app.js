@@ -24,13 +24,14 @@ const child_process = require('child_process');
 const querystring = require('querystring');
 const SerialPort = require('serialport');
 const TempStations = require('../app/models/tempstation');
-const stationData = require('../stationRemote1.json');
+
 const configData = require('../config.json');
 const logger = require('../lib/logger');
 const fs = require('fs');
 const path = require('path');
 const pnpFolder = path.join('../' ,'picture');
 
+const stationData = require(configData.station_file);
 var stations = new TempStations.TempStations(stationData);
 
 const  Readline = SerialPort.parsers.Readline;
@@ -67,7 +68,7 @@ var sendOutData = function(data) {
 	});
 	
 	req.on('error', (e) => {
-	  console.error(e);
+	  logger.error(e);
 	});
 	req.write(data);
 	req.end();
@@ -108,7 +109,7 @@ var sendPic = function() {
 	});
 	
 	req.on('error', (e) => {
-	  console.error(e);
+	  logger.error(e);
 	});
 	req.write(data);
 	req.end();
@@ -181,7 +182,7 @@ var DoConnect=function(port)
 		    // error do reconnect
 			serial = null;
 			parser = null;
-			console.error("error", err);
+			logger.error("error", err);
 			reconnectDevice();
 		});
 	
@@ -255,7 +256,8 @@ logger.info('Path pic data:       ' + configData.location_pic);
 logger.info('Add new station:     ' + configData.add_new_stations);
 logger.info('Send remote picture: ' + configData.remote_cam);
 logger.info('Send temp data:      ' + configData.remote_temp);
-logger.info('Log level   :        ' + configData.loglevel);
+logger.info('Log level:           ' + configData.loglevel);
+logger.info('Station filename:    ' + configData.station_file);
 
 if(configData.remote_temp)
 {	

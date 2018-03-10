@@ -4,6 +4,7 @@
  "remote_cam":false,
  "remote_temp":true,
  "location_temp":"/mucdata",
+ "station_file":"../stationRemote1.json",
  "location_pic":"/muccam",
  "loglevel":"info"
  }

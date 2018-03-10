@@ -82,3 +82,12 @@
     sudo /etc/init.d/nginx reload
 
     sudo apt-get install certbot 
+
+/etc/nginx/nginx.conf
+    
+http {
+    client_max_body_size 10M;
+...
+...
+}    
+    

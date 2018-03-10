@@ -422,6 +422,7 @@ volatile byte frameready = false; // neuer Frame
 
 int Betriebsstunden = 1;
 int BrennerStoerung = 1;
+int HeizungActive    = 0;
 int Spannung = 0; // Akku Spannung
 int PT1000_1 = 0; // Temperatur
 int reset = 1;
@@ -518,6 +519,7 @@ void cmd_unrecognized(SerialCommands* sender, const char* cmd)
 void cmd_led_on(SerialCommands* sender)
 {
   digitalWrite(HEIZUNG_AN, HIGH);
+  HeizungActive = 1;
   sender->GetSerial()->print("{\"frame\":\"an_ok\"");
   sender->GetSerial()->println("}");
 }
@@ -526,6 +528,7 @@ void cmd_led_on(SerialCommands* sender)
 void cmd_led_off(SerialCommands* sender)
 {
   digitalWrite(HEIZUNG_AN, LOW);
+  HeizungActive = 0;
   sender->GetSerial()->print("{\"frame\":\"aus_ok\"");
   sender->GetSerial()->println("}");
 }
@@ -566,7 +569,7 @@ void cmd_status(SerialCommands* sender)
   PT1000_1 = analogRead(1);
 
   sender->GetSerial()->print("{\"frame\":\"statusdata\"");
-  sender->GetSerial()->print(",\"status\":");
+  sender->GetSerial()->print(",\"reset\":");
   sender->GetSerial()->print(reset);
   sender->GetSerial()->print(",\"BrennerStoerung\":");
   sender->GetSerial()->print(!BrennerStoerung);
@@ -574,6 +577,8 @@ void cmd_status(SerialCommands* sender)
   sender->GetSerial()->print(Spannung);
   sender->GetSerial()->print(",\"PT1000_1\":");
   sender->GetSerial()->print(PT1000_1);
+  sender->GetSerial()->print(",\"HeizungActive\":");
+  sender->GetSerial()->print(HeizungActive);
   sender->GetSerial()->println("}");
 
   reset = 0;
