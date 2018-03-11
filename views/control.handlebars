@@ -23,14 +23,14 @@
 <script type="text/template" id="view-template">
 <li class="list-group-item">Stunden:     <%= hours %></li>
 <li class="list-group-item">Starts:      <%= burnerStarts %></li>
-<li class="list-group-item">Heizung:     <%= burnerState %></li>
+<li id="IdHeizungRun" class="list-group-item">Heizung:     <%= burnerState %></li>
 <li class="list-group-item">Battery:     <%= voltageBattery %> Volt</li>
 <li class="list-group-item">Temperature: <%= temp %></label>
 <li class="list-group-item">Day on:      <%= dayNightTimeOn %> Uhr</li>
 <li class="list-group-item">Day off:     <%= dayNightTimeoff %> Uhr</li>
-<li class="list-group-item">Day active:  <%= dayNightState %> </li>
-<li class="list-group-item">Brenner ausgefallen:  <%= burnerFault %> </li>
-<li class="list-group-item">Brenner läuft:  <%= burnerRun %> </li>
+<li id="IdDayNightState" class="list-group-item">Day active:  <%= dayNightState %> </li>
+<li id="IdBurnerFault" class="list-group-item">Brenner ausgefallen:  <%= burnerFault %> </li>
+<li id="IdBurnerRun" class="list-group-item">Brenner läuft:  <%= burnerRun %> </li>
 </script>
 
 {{#section 'jquery'}}	

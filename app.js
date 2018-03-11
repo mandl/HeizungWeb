@@ -196,7 +196,7 @@ app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(r
 
 app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
-	res.render('admin', { layout:'main', title: 'Admin'});
+	res.render('admin', { layout:'main', title: 'Admin',dayOn:ar.getHeater().get('dayNightTimeOn'),dayOff:ar.getHeater().get('dayNightTimeoff')});
 });
 
 
@@ -398,9 +398,6 @@ app.post('/login', passport.authenticate('local', {
 
 // Control admin
 app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
-	console.log(req.body.ControlSelectDayOn);
-	
-	console.log(req.body.ControlSelectDayOff);
 	
 	ar.getHeater().set({
 		"dayNightTimeOn" : req.body.ControlSelectDayOn
@@ -410,8 +407,16 @@ app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), func
 		"dayNightTimeoff" : req.body.ControlSelectDayOff
 	});
 	
-	console.log(req.body.dayNightTimeoff);
-	
+	if (req.body.CheckResetRuntime !== undefined)
+	{
+		ar.ResetRuntimeData();
+	}
+	if(req.body.CheckResetStationList !== undefined)
+	{
+		stationsDraRemote.reset();
+		stationsRemote.reset();
+		
+	}		
 	res.redirect('/control');	
 });
 
@@ -533,6 +538,6 @@ setInterval(function() {
 	
 	updatePng('',9,'1');
 	updatePng('muc',5,'2');
-	updatePng('dra',2,'3');
+	updatePng('dra',3,'3');
 	
 },1000 * 60 * 10);  // every 10 minutes

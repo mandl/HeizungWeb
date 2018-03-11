@@ -22,61 +22,45 @@ var _ = require('underscore');
 var $ = require('jquery');
 Backbone.$ = $;
 
-
 var heizungControlsView = Backbone.View.extend({
 
-	
 	// Cache the template function for a single item.
 	template : _.template($('#controls-template').html()),
 	events : {
-		'click #onHeizung': 'handleOn',
-		'click #onDayNight':'handleDayNight'
-		
+		'click #onHeizung' : 'handleOn',
+		'click #onDayNight' : 'handleDayNight'
+
 	},
 	// Called when the view is first created
 	initialize : function() {
-		 this.listenTo(this.model, 'change', this.render);
-		
+		this.listenTo(this.model, 'change', this.render);
+
 	},
 	// Re-render the titles of the todo item.
 	render : function() {
-		this.$el.html(this.template(this.model.attributes));		
+		this.$el.html(this.template(this.model.attributes));
 		this.$onHeizung = this.$('#onHeizung');
 		this.$onDayNight = this.$('#onDayNight');
-		this.$status = this.$('#status');
-		
-		console.log(this.$status);
-		
-		if (this.model.get('burnerState'))
-		{
-			//this.$HeizungRun.removeClass('list-group-item-dark').addClass('list-group-item-success');
-		}
-		else
-		{
-			//this.$HeizungRun.removeClass('list-group-item-success').addClass('list-group-item-dark');
-		}	
-		
-		if (this.model.get('burnerState'))
-		{
+
+		if (this.model.get('burnerState')) {
 			this.$onHeizung.text('Off');
 			this.$onHeizung.removeClass("btn-danger").addClass("btn-success");
-	    }
-		else
+		} else
 			this.$onHeizung.text('On');
-		    //this.$onHeizung.removeClass("btn-success").addClass( "btn-danger");
+		// this.$onHeizung.removeClass("btn-success").addClass( "btn-danger");
 		if (this.model.get('dayNightState'))
-			
+
 			this.$onDayNight.text('DayNight Off');
 		else
 			this.$onDayNight.text('DayNight On');
 		return this;
 	},
-	
-	handleOn : function () {
+
+	handleOn : function() {
 		console.log('on');
 		this.model.switchBurn();
 	},
-	handleDayNight : function () {
+	handleDayNight : function() {
 		console.log('handleDayNight');
 		this.model.switchDayNight();
 	}
@@ -84,17 +68,47 @@ var heizungControlsView = Backbone.View.extend({
 });
 
 var heizungStatusView = Backbone.View.extend({
-	   
- tagName: 'li',
- template : _.template($('#view-template').html()),
-  render: function() {
- 	
- 	 this.$el.html(this.template(this.model.attributes));
-    
-  },
-  initialize: function() {
-    this.listenTo(this.model, 'change', this.render);
-  }
+
+	tagName : 'li',
+	template : _.template($('#view-template').html()),
+	render : function() {
+
+		this.$el.html(this.template(this.model.attributes));
+		this.$HeizungRun = this.$('#IdHeizungRun');
+		this.$DayNightState = this.$('#IdDayNightState');
+		this.$BurnerFault = this.$('#IdBurnerFault');
+		this.$BurnerRun = this.$('#IdBurnerRun');
+
+		if (this.model.get('burnerState')) {
+			this.$HeizungRun.removeClass('list-group-item-dark').addClass('list-group-item-success');
+		} else {
+			this.$HeizungRun.removeClass('list-group-item-success').addClass('list-group-item-dark');
+		}
+		if (this.model.get('burnerRun')) {
+			this.$BurnerRun.addClass('list-group-item-warning'); 
+		}
+		else
+		{
+			this.$BurnerRun.removeClass('list-group-item-warning'); 
+		}
+		if (this.model.get('dayNightState')) {
+			this.$DayNightState.addClass('list-group-item-success'); 
+		}
+		else
+		{
+			this.$DayNightState.removeClass('list-group-item-success'); 
+		}
+		if (this.model.get('burnerFault')) {
+			this.$BurnerFault.addClass('list-group-item-danger'); 
+		}
+		else
+		{
+			this.$BurnerFault.removeClass('list-group-item-danger'); 
+		}
+	},
+	initialize : function() {
+		this.listenTo(this.model, 'change', this.render);
+	}
 });
 
 module.exports.heizungControlsView = heizungControlsView;

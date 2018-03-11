@@ -422,6 +422,7 @@ volatile byte frameready = false; // neuer Frame
 
 int Betriebsstunden = 1;
 int BrennerStoerung = 1;
+int BrennerRun      = 0;
 int HeizungActive    = 0;
 int Spannung = 0; // Akku Spannung
 int PT1000_1 = 0; // Temperatur
@@ -579,6 +580,8 @@ void cmd_status(SerialCommands* sender)
   sender->GetSerial()->print(PT1000_1);
   sender->GetSerial()->print(",\"HeizungActive\":");
   sender->GetSerial()->print(HeizungActive);
+  sender->GetSerial()->print(",\"BrennerRun\":");
+  sender->GetSerial()->print(BrennerRun);
   sender->GetSerial()->println("}");
 
   reset = 0;
@@ -869,11 +872,13 @@ void loop()
     Serial.print("{\"frame\":\"burnerrun\"");
     Serial.println("}");
     currentMillisStart = millis();
+    BrennerRun = 1;
   }
 
   if (( BetriebsstundenOld == 0) && (BetriebsstundenNew == 1))
   {
     // Brenner stop 
+    BrennerRun = 0;
     uint32_t runnow = currentMillisStart > millis() ? 1 + currentMillisStart + ~millis() : millis() - currentMillisStart;
     settings.runtime = settings.runtime + runnow;
     settings.starts ++ ;
