@@ -48,8 +48,10 @@
     
     $('form').submit(function(e) {
     	//e.preventDefault();
-    	
+        var subButton = $(this).find(':submit')
+        subButton.prop('disabled',true)
         $.post("admincontrol",$('#admindata').serialize());
+        subButton.val('...sending')
 
        });
     $.each($('#navbarNav').find('li'), function() {

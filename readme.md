@@ -36,9 +36,6 @@
     npm run-script build-2
     
     
-    
-    
-    
 
 # Create rrd Database
 
@@ -48,9 +45,14 @@
 
     sudo nano /etc/fstab
 
-    tmpfs /mnt/RAMDisk tmpfs nodev,nosuid,size=32M 0 0
+    tmpfs /mnt/RAMDisk tmpfs defaults nodev,nosuid,size=32M 0 0
+    
+    tmpfs /tmp tmpfs defaults,noatime,nosuid,size=100m 0 0
+    
+    tmpfs /var/tmp tmpfs defaults,noatime,nosuid,size=30m 0 0
 
     ln -s /mnt/RAMDisk /home/pi/HeizungWeb/picture
+  
 
 # Service
 
@@ -81,6 +83,21 @@
 
     sudo /etc/init.d/nginx reload
 
+
+# lets encrypt
+
     sudo apt-get install certbot 
 
+# Logging
+
+
+Edit the file /etc/rsyslog.conf and just after the section starting
+
+###############
+#### RULES ####
+###############
+
+add the following line.
+
+    *.*     ~
 
