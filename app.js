@@ -428,7 +428,9 @@ app.get('/logout', function(req, res) {
 
 // log routes
 app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
-	var logtext = fs.readFileSync(path.join(__dirname, '/lib/temp.log'))
+	var logtext = fs.readFileSync(path.join(__dirname, '/lib/temp.log'),'utf8')
+	
+	logtext = logtext.replace(/\n/g,'<br>');
 	res.render('logfile', { layout:'main',logdata: logtext});
 
 });
