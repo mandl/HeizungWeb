@@ -28,7 +28,7 @@
 
 
 //#define RFM01
-#define USE_DHT22
+//#define USE_DHT22
 
 #ifdef USE_DHT22
 #include <Adafruit_Sensor.h>
@@ -446,6 +446,9 @@ typedef struct t  {
   unsigned long tTimeout;
 };
 
+
+inline void ResetFiFO(void) __attribute__((always_inline));
+
 //Tasks and their Schedules.
 t t_func1 = {0, 100}; //Run every 100ms
 t t_func2 = {0, 4000}; //Run every 4 seconds.
@@ -656,7 +659,7 @@ void setup() {
 #endif
 
   //digitalem Pin3
-  attachInterrupt(1, rf12_interrupt, LOW);
+  attachInterrupt(digitalPinToInterrupt(3), rf12_interrupt, LOW);
 
   // initialize the digital pin as an output.
   pinMode(HEIZUNG_AN, OUTPUT);
@@ -753,16 +756,12 @@ void rfm12_init()
   //	1	1	0	0	0	1	1	0	0	 0	0	 1	0	 0	1	 1
   rfm01_cmd(0xC613);			// DATA RATE 17.241 kbps
 
-  //	1	0	0	1	0	p16	d1 d0	i2 i1	i0	g1	g0	r2	r1	r0
-  //	1 0	0	1	0	1	  1	 0	1	 0	1	  0	  0	  0	  0	  1
-  //rfm01_cmd(0x94A8);			// VDI, fast, 134khz, LNA 0dB, DRRSI -103 dB
-
   rfm01_cmd(0x9000 |        // -------- Receiver Setting Command --------
             PIN16_VDI_output |
             VDI_SLOW |              //
             BW_134 |
             LNA_0 |                 // LNA gain set to 0dB
-            RSSI_97);               // threshold of the RSSI detector set to 97dB
+            RSSI_103);               // threshold of the RSSI detector set to 97dB
 
 
   //	1	1	0	0	1	1	1	0	b7	b6	b5	b4	b3	b2	b1	b0	0xCED4
@@ -785,7 +784,7 @@ void rfm12_init()
   //	1	1	0	0	0	1	0	0 1	 0	0	  0	  0	 0	1	  1	  0xC483
   //rfm01_cmd(0xC483);			// AFC if VDI=0, unlimited range, AFC OE+EN
   rfm01_cmd(CMD_AFC |         // -------- AFC Command --------
-            AFC_KEEP |
+            AFC_KEEP_REC |
             AFC_RL_15 |                 // limits the value of the frequency offset register to +15/-16
             AFC_STROBE |                // the actual latest calculated frequency error is stored into the output registers of the AFC block
             AFC_FINE |                  // switches the circuit to high accuracy (fine) mode
@@ -962,7 +961,7 @@ void loop()
       Serial.print(crc, HEX);
       Serial.println("\"}");
     }
-    rxfill = 0;
+    //rxfill = 0;
     frameready = false;
   }
  
@@ -1011,13 +1010,13 @@ void rf12_interrupt() {
   // take the chip select high to de-select:
   digitalWrite(chipSelectPin, HIGH);
 
-#ifdef RFM01
+//#ifdef RFM01
   if ((val & STATUS_FFIT) && (val & STATUS_DRSSI) && (val & STATUS_DQD) && (val & STATUS_CRL))
-#else
-  if (val & STATUS_FFIT)
-#endif
+//#else
+//  if (val & STATUS_FFIT)
+//#endif
   {
-    if (((data3 & 0xf0) == 0x90) && (rxfill == 0))
+    if (((data3 & 0xf0) == 0x90) && (rxfill == 0) && (frameready == false))
     {
       // new frame
       frame[0] = data3;
@@ -1032,12 +1031,15 @@ void rf12_interrupt() {
     {
       // laste bye
       frame[4] = data3;
-      //rxfill = 0;
+      rxfill = 0;
       frameready = true;
 
       // reset and restart FIFO
       ResetFiFO();
 
+    }
+    else{
+      ResetFiFO();
     }
   }
   else {

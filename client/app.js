@@ -30,6 +30,9 @@ const logger = require('../lib/logger');
 const fs = require('fs');
 const path = require('path');
 const pnpFolder = path.join('../' ,'picture');
+const rpio = require('../lib/sx1276');
+
+var buf = new Buffer(300);
 
 const stationData = require(configData.station_file);
 var stations = new TempStations.TempStations(stationData);
@@ -169,12 +172,7 @@ var DoConnect=function(port)
 		
 		serial.on('open', function() {
 			logger.info('port open ');
-			setInterval(function() {
-				logger.debug('send data');
-				logger.debug(JSON.stringify(stations));		
-				sendOutData(JSON.stringify(stations));	
-				
-			}, 1000 * 60 * 5); // send every 5 minutes
+			
 			
 		});
 		
@@ -191,55 +189,61 @@ var DoConnect=function(port)
 			var my = data.toString();
 			// { ID: 5, Reset: 0, LOWBAT: 0, Temp: 22.3, Hygro: 47 }
 			logger.debug(my);
-			try {
-				var obj = JSON.parse(my);
-				if (obj.frame == 'data')
-				{	
-					var data = stations.findWhere({id: obj.ID});						
-					if(data  === undefined)
-					{
-						logger.debug('new id');
-						if((obj.Reset) && (configData.add_new_stations))
-						{
-							stations.add({id: obj.ID,
-							       label: 0,
-							       name : "New",
-							       state : 0,
-							       time : Date.now(),
-							       reset : obj.Reset,
-							       lowbattery : obj.LOWBAT,
-							       timestr: new Date().toLocaleString(),
-							       datasource: "-1"});
-						}	
-					}		
-					else{
-						// logger.info(data);
-						// Update
-						data.set({"temp": obj.Temp});
-						data.set({"hum" : obj.Hygro});
-						data.set({"time": Date.now()});
-						data.set({"reset": obj.Reset});
-						data.set({"lowbattery": obj.LOWBAT});
-						data.set({"timestr": new Date().toLocaleString()});
-						// logger.info(dataTemp);
-					}
-				}
-				else if (obj.frame == 'info')
-				{
-					// crc error
-					crcError = crcError + 1;
-					logger.debug("CRC errors: ",crcError);
-				}	
-				else
-				{			
-					logger.error(obj);
-				}
-			} catch (e) {
-				logger.error(e);
-			}
+			TempDataParse(my);
+	
 		});
 };
 
+var TempDataParse = function(my)
+{
+	try {
+		var obj = JSON.parse(my);
+		if (obj.frame == 'data')
+		{	
+			var data = stations.findWhere({id: obj.ID});						
+			if(data  === undefined)
+			{
+				logger.debug('new id');
+				if((obj.Reset) && (configData.add_new_stations))
+				{
+					stations.add({id: obj.ID,
+					       label: 0,
+					       name : "New",
+					       state : 0,
+					       time : Date.now(),
+					       reset : obj.Reset,
+					       lowbattery : obj.LOWBAT,
+					       timestr: new Date().toLocaleString(),
+					       datasource: "-1"});
+				}	
+			}		
+			else{
+				// logger.info(data);
+				// Update
+				data.set({"temp": obj.Temp});
+				data.set({"hum" : obj.Hygro});
+				data.set({"time": Date.now()});
+				data.set({"reset": obj.Reset});
+				data.set({"lowbattery": obj.LOWBAT});
+				data.set({"timestr": new Date().toLocaleString()});
+				// logger.info(dataTemp);
+			}
+		}
+		else if (obj.frame == 'info')
+		{
+			// crc error
+			crcError = crcError + 1;
+			logger.debug("CRC errors: ",crcError);
+		}	
+		else
+		{			
+			logger.error(obj);
+		}
+	} catch (e) {
+		logger.error(e);
+	}
+
+}
 // check for connection errors or drops and reconnect
 var reconnectDevice = function() {
 	logger.info('initiating reconnect');
@@ -258,21 +262,60 @@ logger.info('Send remote picture: ' + configData.remote_cam);
 logger.info('Send temp data:      ' + configData.remote_temp);
 logger.info('Log level:           ' + configData.loglevel);
 logger.info('Station filename:    ' + configData.station_file);
+logger.info('Use loocal RFM95:    ' + configData.localRFM95);
 
+
+// use arduino board
 if(configData.remote_temp)
 {	
 	setTimeout(connectDevice, 1000);
 }
 
 setInterval(function() {
+	logger.debug('send data');
+	logger.debug(JSON.stringify(stations));		
+	sendOutData(JSON.stringify(stations));	
 	
-	if(configData.remote_cam)
-	{	
-		var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') 
-		logger.debug('send image: ' + strDate);
-		sendPic();
-	}
+}, 1000 * 60 * 5); // send every 5 minutes
+
+// send a remote picture
+if(configData.remote_cam)
+{	
+	setInterval(function() {
+		
+			var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') 
+			logger.debug('send image: ' + strDate);
+			sendPic();	
+		
+	}, 1000 * 60 * 30); // send every 30 minutes
+
+}
+
+// use local RFM95 receiver
+if(configData.localRFM95)
+{
 	
-}, 1000 * 60 * 30); // send every 30 minutes
+	
+	rpio.FSKBegin();
+	rpio.FSKReset();
+	rpio.FSKRxChainCalibration();
+	
+	var version  = rpio.FSKGetVersion();
+	
+	logger.info('RFM95 version: ' + version);
+	
+	rpio.FSKOn();
+	
+	setInterval(function() {	
+	 
+		if (rpio.FSKGetData(buf,200) == 1)
+		{	
+			var data = buf.toString('ascii');
+			logger.debug(data);
+			TempDataParse(data.replace(/\0/g, ''));
+		}		
+	
+	},10); // every 10 ms
 
 
+}
