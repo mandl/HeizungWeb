@@ -45,7 +45,7 @@
 
     sudo nano /etc/fstab
 
-    tmpfs /mnt/RAMDisk tmpfs defaults nodev,nosuid,size=32M 0 0
+    tmpfs /mnt/RAMDisk tmpfs defaults,noatime,nodev,nosuid,size=32M 0 0
     
     tmpfs /tmp tmpfs defaults,noatime,nosuid,size=100m 0 0
     
@@ -88,10 +88,20 @@
 
     sudo apt-get install certbot 
 
+
+# Services
+
+    sudo systemctl disable bluetooth
+    sudo systemctl disable avahi-daemon
+    sudo systemctl disable hciuart
+    
+    systemctl list-unit-files | grep enabled
+    
+
 # Logging
 
 
-Edit the file /etc/rsyslog.conf and just after the section starting
+    sudo nano /etc/rsyslog.conf
 
 ###############
 #### RULES ####
