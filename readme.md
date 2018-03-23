@@ -12,6 +12,16 @@
     
     sudo apt-get install nodejs
     
+ARM v6
+
+    wget https://nodejs.org/dist/v9.9.0/node-v9.9.0-linux-armv6l.tar.xz
+    
+    tar xf  node-v9.9.0-linux-armv6l.tar.xz
+    
+    sudo cp -R * /usr/local/
+    
+    
+    
 
 # Create SSl
 
@@ -34,6 +44,8 @@
     npm run-script build-1
     
     npm run-script build-2
+    
+    node-gyp rebuild
     
     
 

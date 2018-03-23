@@ -51,17 +51,13 @@ NAN_METHOD(FSKOn)
 NAN_METHOD(FSKGetData)
 {
 
-	char *buf;
-	uint32_t rval;
+	char buf[100];
 
-	if ((info.Length() != 2) ||
-	    //!info[0]->IsObject() ||
-	    !info[1]->IsNumber())
-		return ThrowTypeError("Incorrect arguments");
+	//memzero(buf,100);
 
-	buf = node::Buffer::Data(info[0]->ToObject());
-	rval=SX1276FSKGetData(buf,info[1]->NumberValue());
-	info.GetReturnValue().Set(rval);
+	SX1276FSKGetData(buf,100);
+
+	info.GetReturnValue().Set(Nan::New(buf).ToLocalChecked());
 
 }
 

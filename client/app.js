@@ -45,7 +45,7 @@ var crcError = 0;
 
 var sendOutData = function(data) {
 	
-	// logger.info(data);
+	console.log(data);
 	var headers = {
 		    'Content-Type': 'application/json',
 		    'Content-Length': Buffer.byteLength(data)
@@ -240,6 +240,7 @@ var TempDataParse = function(my)
 			logger.error(obj);
 		}
 	} catch (e) {
+		logger.error(my);
 		logger.error(e);
 	}
 
@@ -271,12 +272,16 @@ if(configData.remote_temp)
 	setTimeout(connectDevice, 1000);
 }
 
-setInterval(function() {
-	logger.debug('send data');
-	logger.debug(JSON.stringify(stations));		
-	sendOutData(JSON.stringify(stations));	
+// send temp data
+if((configData.remote_temp) || (configData.localRFM95))
+{
+	setInterval(function() {
+		logger.debug('send data');
+		logger.debug(JSON.stringify(stations));		
+		sendOutData(JSON.stringify(stations));	
 	
-}, 1000 * 60 * 5); // send every 5 minutes
+	}, 1000 * 60 * 5); // send every 5 minutes
+}
 
 // send a remote picture
 if(configData.remote_cam)
@@ -295,7 +300,6 @@ if(configData.remote_cam)
 if(configData.localRFM95)
 {
 	
-	
 	rpio.FSKBegin();
 	rpio.FSKReset();
 	rpio.FSKRxChainCalibration();
@@ -308,14 +312,14 @@ if(configData.localRFM95)
 	
 	setInterval(function() {	
 	 
-		if (rpio.FSKGetData(buf,200) == 1)
-		{	
-			var data = buf.toString('ascii');
-			logger.debug(data);
-			TempDataParse(data.replace(/\0/g, ''));
-		}		
+	    var mystr;
+	    mystr = rpio.FSKGetData();
+	    if(mystr != "timeout")
+	    {	
+	    	// console.log(mystr);
+	    	logger.debug(mystr);
+	    	TempDataParse(mystr);
+		}
 	
-	},10); // every 10 ms
-
-
+	},500); // every 500 ms
 }
