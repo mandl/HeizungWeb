@@ -7,12 +7,13 @@
 	sudo rpi-update
 
 # Install Node.js
+## ARM v7
 
     curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
     
     sudo apt-get install nodejs
     
-ARM v6
+##ARM v6
 
     wget https://nodejs.org/dist/v9.9.0/node-v9.9.0-linux-armv6l.tar.xz
     
@@ -56,13 +57,11 @@ ARM v6
 # RAM Disk
 
     sudo nano /etc/fstab
-
+    
     tmpfs /mnt/RAMDisk tmpfs defaults,noatime,nodev,nosuid,size=32M 0 0
-    
     tmpfs /tmp tmpfs defaults,noatime,nosuid,size=100m 0 0
-    
     tmpfs /var/tmp tmpfs defaults,noatime,nosuid,size=30m 0 0
-
+   
     ln -s /mnt/RAMDisk /home/pi/HeizungWeb/picture
   
 
@@ -83,16 +82,16 @@ ARM v6
     
 # Nginx
 
-    sudo apt-get install nginx -y
+    sudo apt-get install nginx -y   
     
     sudo systemctl enable nginx
     
-    sudo rm /etc/nginx/sites-available/default
+    sudo rm /etc/nginx/sites-available/default  
     
     sudo nano /etc/nginx/sites-available/default
-
+    
     sudo nginx -t
-
+    
     sudo /etc/init.d/nginx reload
 
 
