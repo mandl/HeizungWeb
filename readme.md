@@ -109,10 +109,20 @@
     systemctl list-unit-files | grep enabled
     
 
+
+# IPTables
+
+    sudo apt-get install iptables-persistent
+
+    sudo /sbin/iptables -L
+    
+    sudo bash -c "iptables-save > /etc/iptables.rules"
+
 # Logging
 
 
     sudo nano /etc/rsyslog.conf
+    
 
 ###############
 #### RULES ####
