@@ -123,7 +123,7 @@ app.disable('x-powered-by');
 
 // Use application-level middleware for common functionality, including
 // logging, parsing, and session handling.
-//app.use(require('morgan')('dev'));
+// app.use(require('morgan')('dev'));
 app.use(require('cookie-parser')());
 app.use(bodyParser.urlencoded({ extended : true }));
 app.use(require('express-session')({
@@ -132,7 +132,7 @@ app.use(require('express-session')({
 	saveUninitialized : false
 }));
 
-app.use(bodyParser.raw( {inflate:false, limit:'6mb', type:'image/jpeg'} ));
+app.use(bodyParser.raw( {inflate:false, limit:'10mb', type:'image/jpeg'} ));
 
 // Initialize Passport and restore authentication state, if any, from the
 // session.
@@ -239,7 +239,7 @@ function updateBurner(err, payload) {
 
 function getStationJson(err, payload) {
     
-	//logger.debug(payload);
+	console.log(payload);
 	var dataTemp = {}; 
 	stationsRemote.reset(payload);
     var TimeNow = Date.now();
