@@ -321,6 +321,8 @@ uint32_t SX1276FSKGetData(char *buf, uint32_t len) {
 	uint8_t crc;
 
 	if(bcm2835_gpio_lev(RPI_V2_GPIO_P1_07) == LOW) {
+
+		snprintf(buf, len, "timeout");
 		return 0;
 	}
 
