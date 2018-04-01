@@ -60,6 +60,6 @@ RRA:MIN:0.5:96:3600 \
 RRA:MAX:0.5:96:3600 \
 RRA:AVERAGE:0.5:96:3600
 
-rrdtool create ./lib/burner.rrd --step 300 \
-DS:runtime1:GAUGE:600:10:36000 \
-RRA:AVERAGE:0.5:1:960
+rrdtool create ./lib/burner.rrd --step 5m \
+DS:runtime1:GAUGE:20m:0:36000 \
+RRA:LAST:0.5:1:960

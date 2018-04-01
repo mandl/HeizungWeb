@@ -116,7 +116,7 @@
 
     sudo /sbin/iptables -L
     
-    sudo bash -c "iptables-save > /etc/iptables.rules"
+    sudo bash -c "iptables-save > /etc/iptables/rules.v4"
 
 # Logging
 

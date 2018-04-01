@@ -410,6 +410,7 @@ app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), func
 	if (req.body.CheckResetRuntime !== undefined)
 	{
 		ar.ResetRuntimeData();
+		ar.getHeizungData();
 	}
 	if(req.body.CheckResetStationList !== undefined)
 	{
