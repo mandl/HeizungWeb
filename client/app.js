@@ -317,7 +317,7 @@ if(configData.localRFM95)
 	    mystr = rpio.FSKGetData();
 	    if(mystr != "timeout")
 	    {	
-	    	console.log(mystr);
+	    	//console.log(mystr);
 	    	logger.debug(mystr);
 	    	TempDataParse(mystr);
 		}
@@ -337,7 +337,7 @@ if(configData.localDHT22)
 		  {
 			  var strData = "{\"frame\":\"data\",\"ID\":99,\"Reset\":0,\"LOWBAT\":0,\"Temp\":" + readout.temperature.toFixed(1) + ",\"Hygro\":"+readout.humidity.toFixed(1)+"}";
 		  
-			  console.log(strData);
+			  //console.log(strData);
 			  logger.debug(strData);
 			  TempDataParse(strData);
 		  }

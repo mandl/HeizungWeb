@@ -20,7 +20,6 @@
 const fs = require('fs');
 const child_process = require('child_process');
 const express = require('express');
-//const https = require('https')
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
 const db = require('./db');
