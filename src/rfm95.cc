@@ -53,7 +53,7 @@ NAN_METHOD(FSKGetData)
 
 	char buf[100];
 
-	//memzero(buf,100);
+	memset(buf, 0, sizeof(char));
 
 	SX1276FSKGetData(buf,100);
 
