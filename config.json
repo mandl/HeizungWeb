@@ -1,11 +1,12 @@
-{"server_url": "localhost", 
+{"server_url": "heizung3", 
  "server_port": 443,
  "add_new_stations":false,
- "remote_cam":true,
+ "remote_cam":false,
  "remote_temp":false,
  "localRFM95":true,
+ "localDHT22":true,
  "location_temp":"/mucdata",
  "station_file":"../stationRemote1.json",
  "location_pic":"/muccam",
- "loglevel":"info"
+ "loglevel":"debug"
  }

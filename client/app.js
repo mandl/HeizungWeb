@@ -31,8 +31,8 @@ const fs = require('fs');
 const path = require('path');
 const pnpFolder = path.join('../' ,'picture');
 const rpio = require('../lib/sx1276');
+const sensor = require('../build/Release/dht22');
 
-var buf = new Buffer(300);
 
 const stationData = require(configData.station_file);
 var stations = new TempStations.TempStations(stationData);
@@ -263,7 +263,8 @@ logger.info('Send remote picture: ' + configData.remote_cam);
 logger.info('Send temp data:      ' + configData.remote_temp);
 logger.info('Log level:           ' + configData.loglevel);
 logger.info('Station filename:    ' + configData.station_file);
-logger.info('Use loocal RFM95:    ' + configData.localRFM95);
+logger.info('Use local RFM95:     ' + configData.localRFM95);
+logger.info('Use local DHT22:     ' + configData.localDHT22);
 
 
 // use arduino board
@@ -273,7 +274,7 @@ if(configData.remote_temp)
 }
 
 // send temp data
-if((configData.remote_temp) || (configData.localRFM95))
+if((configData.remote_temp) || (configData.localRFM95)  || (configData.localDHT22))
 {
 	setInterval(function() {
 		logger.debug('send data');
@@ -316,10 +317,29 @@ if(configData.localRFM95)
 	    mystr = rpio.FSKGetData();
 	    if(mystr != "timeout")
 	    {	
-	    	// console.log(mystr);
+	    	console.log(mystr);
 	    	logger.debug(mystr);
 	    	TempDataParse(mystr);
 		}
 	
 	},500); // every 500 ms
+}
+
+// use local DHT sensor
+if(configData.localDHT22)
+{
+	setInterval(function() {
+		   
+		  // Sensor DHT22, Pin 2
+		  var readout = sensor.read(22, 2);
+		  
+		  if(readout.isValid)
+		  {
+			  var strData = "{\"frame\":\"data\",\"ID\":99,\"Reset\":0,\"LOWBAT\":0,\"Temp\":" + readout.temperature.toFixed(1) + ",\"Hygro\":"+readout.humidity.toFixed(1)+"}";
+		  
+			  console.log(strData);
+			  logger.debug(strData);
+			  TempDataParse(strData);
+		  }
+		}, 10000);
 }

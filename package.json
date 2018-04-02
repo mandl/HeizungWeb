@@ -38,7 +38,7 @@
     "passport-local": "^1.0.0",
     "rrdtool": "^0.1.1",
     "serialport": "^6.1.1",
-    "socket.io": "^2.0.4",
+    "socket.io": "^2.1.0",
     "winston": "^3.0.0-rc3"
   }
 }
