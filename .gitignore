@@ -6,13 +6,17 @@ node_modules/
 npm-debug.log
 
 ssl/
-
+build/
+libNaN
+picture/*
 temp.log
 
 public/*png
 public/*jpg
+public/js/bundle2.js
+public/js/main.js
 
 lib/*.rrd
 
-public/images/*png
+
 

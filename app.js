@@ -103,12 +103,12 @@ passport.deserializeUser(function(id, cb) {
 
 
 
-//initial configuration of connect-rest. all-of-them are optional.
-//default context is /api, all services are off by default
+// initial configuration of connect-rest. all-of-them are optional.
+// default context is /api, all services are off by default
 var options = {
 	context: '/api'
-	//logger:{ file: 'mochaTest.log', level: 'debug' },
-	//apiKeys: [ '849b7648-14b8-4154-9ef2-8d1dc4c2b7e9' ],
+	// logger:{ file: 'mochaTest.log', level: 'debug' },
+	// apiKeys: [ '849b7648-14b8-4154-9ef2-8d1dc4c2b7e9' ],
 	// discover: { path: 'discover', secure: true },
 	// proto: { path: 'proto', secure: true }
 };
@@ -158,7 +158,8 @@ app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(
 app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
 	
 	var camFile = path.join(pnpFolder,'cam.jpg')
-	//child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so fswebcam --save '+ camFile);
+	// child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so
+	// fswebcam --save '+ camFile);
 	child_process.execSync('raspistill -a 12 -md 0 -o '+ camFile);
 	res.render('webcam', { layout:'main', title: 'Webcam'});
 });
@@ -171,20 +172,20 @@ app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), funct
 
 app.get('/datastations',
 	function(req, res) {
-			//logger.debug(ar.getStationData());
+			// logger.debug(ar.getStationData());
 			res.json(ar.getStationData());
 });
 
 app.get('/datastationsmuc',
 		function(req, res) {
-				//logger.debug(stationsRemote);
+				// logger.debug(stationsRemote);
 				res.json(stationsRemote.toJSON());
 });
 
 
 app.get('/datastationsdra',
 		function(req, res) {
-				//logger.debug(stationsRemote);
+				// logger.debug(stationsRemote);
 				res.json(stationsDraRemote.toJSON());
 });
 
@@ -217,7 +218,7 @@ app.get('/heater',
 
 
 function updateBurner(err, payload) {
-    //logger.debug(payload);
+    // logger.debug(payload);
     ar.getHeater().set(payload);
     if(payload.burnerState === true)
     {
@@ -242,13 +243,13 @@ function getStationJson(err, payload) {
 	var dataTemp = {}; 
 	stationsRemote.reset(payload);
     var TimeNow = Date.now();
-    //logger.debug(payload);
+    // logger.debug(payload);
     
     stationsRemote.each(function(model) {
-	//logger.debug(model.attributes);
-	//model.get('id');
-	//model.get('time');
-	//logger.debug(TimeNow - model.get('time'));
+	// logger.debug(model.attributes);
+	// model.get('id');
+	// model.get('time');
+	// logger.debug(TimeNow - model.get('time'));
 	if((TimeNow - model.get('time')) < (1000 * 60 * 30))
 	{	
     	var preFix = model.get('datasource');	
@@ -274,11 +275,11 @@ function getStationJson(err, payload) {
 
 function getStationDraJson(err, payload) {
     
-	//logger.debug(payload);
+	// logger.debug(payload);
 	var dataTemp = {}; 
 	stationsDraRemote.reset(payload);
     var TimeNow = Date.now();
-    //logger.debug(payload);
+    // logger.debug(payload);
     
     stationsDraRemote.each(function(model) {
 	
@@ -306,7 +307,7 @@ function getStationDraJson(err, payload) {
 }}
 
 //
-//  Client data
+// Client data
 
 app.post('/mucdata',
 		function(req, res) {
@@ -357,7 +358,7 @@ app.post('/muccam',
 
 		function(req, res) {
 		
-			//logger.debug(req.headers);
+			// logger.debug(req.headers);
 			var picFile  = path.join(pnpFolder,"muccam.jpg")
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {
@@ -370,12 +371,29 @@ app.post('/muccam',
 		    res.end();		
 	});
 
-app.post('/dipcam',
+app.post('/dipcam1',
 
 		function(req, res) {
 		
-			//logger.debug(req.headers);
-			var picFile = path.join(pnpFolder,"dipcam.jpg");
+			// logger.debug(req.headers);
+			var picFile = path.join(pnpFolder,"dipcam1.jpg");
+			fs.writeFile(picFile, req.body, function(err) {
+		        if(err) {
+		            logger.error(err);
+		        } else {
+		        	logger.debug("pic save " + picFile);
+		        }
+		    });
+		    res.send('ok');
+		    res.end();		
+	});
+
+app.post('/dipcam2',
+
+		function(req, res) {
+		
+			// logger.debug(req.headers);
+			var picFile = path.join(pnpFolder,"dipcam2.jpg");
 			fs.writeFile(picFile, req.body, function(err) {
 		        if(err) {
 		            logger.error(err);
@@ -478,18 +496,7 @@ app.use(function(req, res, next) {
 app.listen(3000, function () {
 	  logger.info('Heizung listening on port 3000!');
 });
-//var server = https.createServer({
 
-//key: fs.readFileSync(path.join(__dirname,'ssl','key.pem')),
-//    cert: fs.readFileSync(path.join(__dirname,'ssl','cert.pem'))
-//  }, app);
-
-
-//server.on('error', function (e) {
-//	logger.error(e);
-//	});
-
-//server.listen(3000);
 
 updatePng('',8,'1');
 updatePng('muc',4,'2');
