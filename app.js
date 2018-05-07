@@ -500,7 +500,7 @@ app.listen(3000, function () {
 
 updatePng('',8,'1');
 updatePng('muc',4,'2');
-updatePng('dra',2,'3');
+updatePng('dra',7,'3');
 
 // connect Arduino
 setTimeout(ar.connectDevice, 1000);
@@ -547,6 +547,6 @@ setInterval(function() {
 	
 	updatePng('',9,'1');
 	updatePng('muc',5,'2');
-	updatePng('dra',3,'3');
+	updatePng('dra',7,'3');
 	
 },1000 * 60 * 10);  // every 10 minutes

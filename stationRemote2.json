@@ -1,3 +1,8 @@
-[{"id": 36, "label": 11, "name": "Keller", "state": 0, "datasource" : "1"},
-{"id": 61, "label": 5,"name": "Wohnung","state": 0, "datasource" : "2"},
-{"id": 99, "label": 0,"name": "Board","state": 0, "datasource" : "3"}]
+[{"id": 5, "label": 13, "name": "Living", "state": 0, "datasource" : "1"},
+{"id": 59, "label": 6,"name": "Keller Tief","state": 0, "datasource" : "2"},
+{"id": 99, "label": 0,"name": "Kitchen","state": 0, "datasource" : "3"},
+{"id": 30, "label": 4,"name": "Waschkeller","state": 0, "datasource" : "4"},
+{"id": 2, "label": 15,"name": "Bad","state": 0, "datasource" : "5"},
+{"id": 46, "label": 16,"name": "Hobby","state": 0, "datasource" : "6"},
+{"id": 35, "label": 14,"name": "Outside","state": 0, "datasource" : "7"}
+]

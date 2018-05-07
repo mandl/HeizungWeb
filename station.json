@@ -5,5 +5,5 @@
 {"id": 46, "label": 8,"name": "Wasch","state": 0, "datasource" : "5"},
 {"id": 55, "label": 17,"name": "Roof","state": 0, "datasource" : "6"},
 {"id": 51, "label": 5,"name": "Heater","state": 0, "datasource" : "7"},
-{"id": 19, "label": 9,"name": "Bad","state": 0, "datasource" : "8"},
-{"id": 99, "label": 99,"name": "Board","state": 0, "datasource" : "9"}]
+{"id": 19, "label": 9,"name": "Bad","state": 0, "datasource" : "8"}
+]
