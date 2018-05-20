@@ -28,6 +28,8 @@ const jsonBody = require('body/json');
 const Rest = require('connect-rest');
 const bodyParser = require('body-parser');
 const logger = require('./lib/logger');
+const forcast = require('./lib/forcast');
+
 
 var handlebars = require('express-handlebars')
 .create({
@@ -39,6 +41,11 @@ var handlebars = require('express-handlebars')
             }
             this._sections[name] = options.fn(this);
             return null;
+        },
+        formatTimeTwc:function(strTime) {
+        	strTime = strTime.toString();
+            // 2018-05-19T20:00:00+0200
+            return strTime.substr(11,8);
         }
     }
 });
@@ -189,6 +196,17 @@ app.get('/datastationsdra',
 				res.json(stationsDraRemote.toJSON());
 });
 
+app.get('/weather',
+		function(req, res) {
+				// logger.debug(stationsRemote);
+				console.log(req.query.lon);
+				console.log(req.query.lat);
+				var pos = req.query.lat + "/" + req.query.lon;
+				console.log(pos);
+				forcast.get15Forcast(res,pos)
+});
+
+
 app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
 	res.render('control', { layout:'main', title: 'Control'});
@@ -205,9 +223,64 @@ app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, 
 	res.render('mainview', { layout:'main', title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
 });
 
-app.get('/dra',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+app.get('/dra', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
 	res.render('mainview', { layout:'main', title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
+});
+
+app.get('/map', function(req, res) {
+	
+	res.render('map', { layout:'main', title: 'Dra'});
+});
+
+//app.get('/twc', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+app.get('/twc', function(req, res) {
+	
+	forcast.doForcast();
+	
+	try{
+	
+	
+	var contents = fs.readFileSync('./lib/forcasts.json');
+	// Define to JSON type
+	var forcastData = JSON.parse(contents);
+	 
+	var contents = fs.readFileSync('./lib/garden.json');
+	// Define to JSON type
+	var gardenData = JSON.parse(contents);
+	
+	var contents = fs.readFileSync('./lib/hourforcasts.json');
+	// Define to JSON type
+	var forcastsHourData = JSON.parse(contents);
+	
+	var contents = fs.readFileSync('./lib/airquality.json');
+	// Define to JSON type
+	var airqualityData = JSON.parse(contents);
+	
+	var gardenNewData = {"data":[]};
+	
+	
+	
+	for( i in gardenData.wateringNeedsIndex12hour.daypartName)
+	{
+	
+		var day = gardenData.wateringNeedsIndex12hour.daypartName[i];
+		
+		var watering = gardenData.wateringNeedsIndex12hour.wateringNeedsCategory[i];
+		
+		var me = {"day":day,"watering":watering};
+		gardenNewData.data.push(me);
+		
+	}	
+	//console.log(airqualityData);
+	res.render('forcast', { layout:'main', title: 'TWC',data:forcastData,garden:gardenNewData,forcastsHour:forcastsHourData,airquality:airqualityData});
+	}
+	catch (error) {
+		 
+		 console.log(error);
+		 res.render('forcast', { layout:'main', title: 'TWC'});
+		}
+	
 });
 
 app.get('/heater',
@@ -239,11 +312,11 @@ function updateBurner(err, payload) {
 
 function getStationJson(err, payload) {
     
-	console.log(payload);
+	
 	var dataTemp = {}; 
 	stationsRemote.reset(payload);
     var TimeNow = Date.now();
-    // logger.debug(payload);
+    logger.debug(payload);
     
     stationsRemote.each(function(model) {
 	// logger.debug(model.attributes);
