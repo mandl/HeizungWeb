@@ -1,0 +1,141 @@
+<h2>Forcast</h2>
+<a href="#forcast15min" class="btn btn-primary" data-toggle="collapse">15 min</a>
+<div id="forcast15min" class="collapse">
+<div class="table-responsive">
+<table class="table table-striped table-sm">
+<caption>Villa</caption>
+  <thead>
+    <tr>
+      <th scope="col">Time</th>
+      <th scope="col">Temp</th>
+      <th scope="col">Humidity</th>
+      <th scope="col">Sky</th>
+      <th scope="col">Rain</th>
+      <th scope="col">%</th>
+    </tr>
+  </thead>
+  <tbody>
+{{#each data.forecasts}}
+    <tr>
+        <td>{{formatTimeTwc fcst_valid_local}}</td>
+        <td>{{temp}}</td>
+        <td>{{rh}}</td>
+        <td>{{phrase_32char}}</td>
+        <td>{{precip_rate}}</td>
+         <td>{{pop}}</td>
+    </tr>
+{{/each}}
+</tbody>
+</table>
+</div>
+</div>
+
+<h2>Forcast</h2>
+<a href="#demo" class="btn btn-primary" data-toggle="collapse">Garden</a>
+<div id="demo" class="collapse">
+
+<div class="table-responsive">
+<table class="table table-striped table-sm">
+<caption>Villa garden</caption>
+  <thead>
+    <tr>
+      <th scope="col">Time</th>
+      <th scope="col">Water</th>
+    </tr>
+  </thead>
+  <tbody>
+{{#each garden.data}}
+    <tr>
+        <td>{{day}}</td>
+        <td>{{watering}}</td>
+    </tr>
+{{/each}}
+</tbody>
+</table>
+</div>
+ </div>
+ 
+<h2>Forcast</h2>
+<a href="#forcast15day" class="btn btn-primary" data-toggle="collapse">15 day</a>
+<div id="forcast15day" class="collapse">
+<h2>Filterable List</h2>
+<input class="form-control" id="myInput" type="text" placeholder="Search..">
+<br>
+<div class="table-responsive">
+<table id="myTable" class="table table-striped table-sm">
+<caption>Muc forcast</caption>
+  <thead>
+    <tr>
+      <th scope="col">Time</th>
+      <th scope="col">Day</th>
+      <th scope="col">Temp</th>
+      <th scope="col">Humidity</th>
+      <th scope="col">Sky</th>
+      <th scope="col">Rain %</th>
+      <th scope="col">Wind speed</th>
+      <th scope="col">Wind dir</th>
+    </tr>
+  </thead>
+  <tbody>
+{{#each forcastsHour.forecasts}}
+    <tr>
+        <td>{{formatTimeTwc fcst_valid_local}}</td>
+        <td>{{dow}}</td>
+        <td>{{temp}}</td>
+        <td>{{rh}}</td>
+        <td>{{phrase_32char}}</td>
+        <td>{{pop}}</td>
+        <td>{{wspd}}</td>
+        <td>{{wdir_cardinal}}</td>
+    </tr>
+{{/each}}
+</tbody>
+</table>
+</div>
+</div>
+
+<h2>Airquality</h2>
+<a href="#airquality" class="btn btn-primary" data-toggle="collapse">Airquality</a>
+<div id="airquality" class="collapse">
+<div class="table-responsive">
+<table class="table table-striped table-sm">
+<caption>Muc forcast</caption>
+  <thead>
+    <tr>
+      <th scope="col">Name</th>
+      <th scope="col">Time</th>
+      <th scope="col">Index</th>
+    </tr>
+  </thead>
+  <tbody>
+{{#each airquality.globalairquality}}
+    <tr>
+        <td>{{area_name}}</td>
+        <td>{{valid_time_lap}}</td>
+        <td>{{air_quality_cat}}</td>
+        
+    </tr>
+{{/each}}
+</tbody>
+</table>
+</div>
+</div>
+{{#section 'jquery'}}
+<script>
+
+ $(document).ready(function() {
+    console.log('ready');
+    $.each($('#navbarNav').find('li'), function() {
+        $(this).toggleClass('active',
+            '/' + $(this).find('a').attr('href') == window.location.pathname);
+    });
+    $("#myInput").on("keyup", function() {
+        var value = $(this).val().toLowerCase();
+        $("#myTable tr").filter(function() {
+          $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+        });
+      });
+  });
+
+</script>
+{{/section}}

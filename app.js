@@ -198,12 +198,11 @@ app.get('/datastationsdra',
 
 app.get('/weather',
 		function(req, res) {
-				// logger.debug(stationsRemote);
-				console.log(req.query.lon);
-				console.log(req.query.lat);
-				var pos = req.query.lat + "/" + req.query.lon;
-				console.log(pos);
-				forcast.get15Forcast(res,pos)
+				var lat = req.query.lat;
+				var lon = req.query.lon;
+				var range = req.query.range;
+				
+				forcast.get15Forcast(res,lat,lon,range)
 });
 
 

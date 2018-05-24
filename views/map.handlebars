@@ -1,0 +1,176 @@
+<div class="container-fluid">
+<div class="form-check form-check-inline">
+  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio1" value="min" checked>
+  <label class="form-check-label" for="inlineRadio1">15 min</label>
+</div>
+<div class="form-check form-check-inline">
+  <input class="form-check-input" type="radio" name="inlineRadioOptions" id="inlineRadio2" value="day">
+  <label class="form-check-label" for="inlineRadio2">15 day</label>
+</div>
+<br>
+</div> 
+<div class="container-fluid">
+<br>
+<button type="button" id="Niederbayern" class="btn btn-outline-primary">Niederbayern</button>
+<button type="button" id="drahome" class="btn btn-outline-primary">Wald</button>
+<button type="button" id="IOTCenter" class="btn btn-outline-primary">Muc center</button>
+<br>
+</div>
+<div class="container-fluid">
+<br>
+<div id="map" class="map container-fluid"></div>
+</div>
+<div id="forcastTable" class="container-fluid"></div>
+<div style="display: none;">
+  <!-- Clickable label for center -->
+  <div id="marker" title="IOT Center"></div>
+  <div id="waldmarker" title="Wald"></div>
+  <!-- Popup -->
+  <div id="popup" title="Welcome to TWC"></div>
+</div>
+
+
+{{#section 'jquery'}}
+
+<link rel="stylesheet" href="https://openlayers.org/en/v4.6.5/css/ol.css" type="text/css">
+<!-- The line below is only needed for old environments like Internet Explorer and Android 4.x -->
+<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=requestAnimationFrame,Element.prototype.classList,URL"></script>
+<script src="https://openlayers.org/en/v4.6.5/build/ol.js"></script>
+<style>
+#marker {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #088;
+  border-radius: 10px;
+  background-color: #0FF;
+  opacity: 0.5;
+}
+
+#waldmarker {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #088;
+  border-radius: 10px;
+  background-color: #0FF;
+  opacity: 0.5;
+}
+
+.popover-content {
+  min-width: 180px;
+}
+</style>
+<script>
+
+var niederbayern = ol.proj.fromLonLat([12.7008, 48.4802]);
+var pos=ol.proj.fromLonLat([11.5920, 48.1772]);
+var dra=ol.proj.fromLonLat([13.0089, 49.1098]);
+
+var layer = new ol.layer.Tile({
+  source: new ol.source.OSM()
+});
+
+
+var view = new ol.View({
+    center: pos,
+    zoom: 10
+  });
+  
+var map = new ol.Map({
+  layers: [layer],
+  target: 'map',
+  view: view
+});
+
+// Center marker
+var marker = new ol.Overlay({
+  position: pos,
+  positioning: 'center-center',
+  element: document.getElementById('marker'),
+  stopEvent: false
+});
+map.addOverlay(marker);
+
+//wald marker
+var waldmarker = new ol.Overlay({
+  position: dra,
+  positioning: 'center-center',
+  element: document.getElementById('waldmarker'),
+  stopEvent: false
+});
+map.addOverlay(waldmarker);
+
+
+// Popup showing the position the user clicked
+var popup = new ol.Overlay({
+  element: document.getElementById('popup')
+});
+map.addOverlay(popup);
+
+// move map - clear popover
+map.on('moveend', function (evt) {
+    //console.log("moved");
+    var element = popup.getElement();
+    $(element).popover('dispose');
+})
+
+
+map.on('click', function(evt) {
+  var element = popup.getElement();
+  var coordinate = evt.coordinate;
+  var hdms = ol.coordinate.toStringHDMS(ol.proj.transform(
+      coordinate, 'EPSG:3857', 'EPSG:4326'));
+  var stcoordinate = ol.coordinate.toStringXY(ol.proj.transform(
+          coordinate, 'EPSG:3857', 'EPSG:4326'),4);
+  $(element).popover('dispose');
+  popup.setPosition(coordinate);
+  var lonstr = stcoordinate.split(',');
+  var range = $("input:checked").val();
+ 
+  $.get( "weather",{ lon:lonstr[0], lat:lonstr[1].trim(),range } , function( data ) {
+	 
+	  $("#forcastTable" ).replaceWith(data);
+	  //console.log(data);
+	});
+  // the keys are quoted to prevent renaming in ADVANCED mode.
+  $(element).popover({
+    'placement': 'top',
+    'animation': false,
+    'html': true,
+    'content': '<p>The location you clicked was:</p><code>' + stcoordinate + '</code>'
+  });
+  $(element).popover('show');
+});
+
+
+$(document).ready(function() {
+	
+    $("#Niederbayern").on( "click", function() {
+        console.log("click");
+        view.animate({
+            center: niederbayern,
+            duration: 2000
+          });
+    });
+    $("#drahome").on( "click", function() {
+        console.log("click");
+        view.animate({
+            center: dra,
+            duration: 2000
+          });
+    });    
+    $("#IOTCenter").on( "click", function() {
+        console.log("click");
+        view.animate({
+            center: pos,
+            duration: 2000
+          });
+    });	
+ 
+   $.each($('#navbarNav').find('li'), function() {
+       $(this).toggleClass('active',
+           '/' + $(this).find('a').attr('href') == window.location.pathname);
+   });
+ });
+
+</script>
+{{/section}}

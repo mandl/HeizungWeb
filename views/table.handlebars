@@ -1,0 +1,29 @@
+<div id="forcastTable" class="container-fluid">
+<div class="table-responsive-sm">
+<table class="table table-striped table-sm">
+<caption>{{locdata}}</caption>
+  <thead>
+    <tr>
+      <th scope="col">Time</th>
+      <th scope="col">Temp</th>
+      <th scope="col">Humidity</th>
+      <th scope="col">Sky</th>
+      <th scope="col">Rain</th>
+      <th scope="col">%</th>
+    </tr>
+  </thead>
+  <tbody>
+{{#each data.forecasts}}
+    <tr>
+        <td>{{formatTimeTwc fcst_valid_local}}</td>
+        <td>{{temp}}</td>
+        <td>{{rh}}</td>
+        <td>{{phrase_32char}}</td>
+        <td>{{precip_rate}}</td>
+         <td>{{pop}}</td>
+    </tr>
+{{/each}}
+</tbody>
+</table>
+</div>
+</div>
