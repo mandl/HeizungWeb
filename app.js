@@ -27,7 +27,7 @@ const path = require('path');
 const jsonBody = require('body/json');
 const Rest = require('connect-rest');
 const bodyParser = require('body-parser');
-const logger = require('./lib/logger');
+const {logger, logfolder} = require('./lib/logger');
 const forcast = require('./lib/forcast');
 
 
@@ -232,7 +232,8 @@ app.get('/map', function(req, res) {
 	res.render('map', { layout:'main', title: 'Dra'});
 });
 
-//app.get('/twc', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+// app.get('/twc',
+// require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 app.get('/twc', function(req, res) {
 	
 	forcast.doForcast();
@@ -271,7 +272,7 @@ app.get('/twc', function(req, res) {
 		gardenNewData.data.push(me);
 		
 	}	
-	//console.log(airqualityData);
+	// console.log(airqualityData);
 	res.render('forcast', { layout:'main', title: 'TWC',data:forcastData,garden:gardenNewData,forcastsHour:forcastsHourData,airquality:airqualityData});
 	}
 	catch (error) {
@@ -525,6 +526,15 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 
 });
 
+// delete log
+app.get('/deleteLog', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+	
+	fs.writeFileSync(logfolder(),"");
+	res.send('ok');
+	res.end();		
+});
+
+
 // update week and day graph
 
 var updatePng = function(prefix,count,dbprefix){
@@ -579,8 +589,6 @@ setTimeout(ar.connectDevice, 1000);
 
 // Check night/day switch
 setInterval(function() { 
-	
-	
 	logger.debug('Check state');
 	var d = new Date();
 	var current_hour = d.getHours();
@@ -614,7 +622,6 @@ setInterval(function() {
 },1000 * 60 * 1);  // every minute
 
 // Update data graph
-
 setInterval(function() {
 	
 	updatePng('',9,'1');
