@@ -26,7 +26,7 @@ const SerialPort = require('serialport');
 const TempStations = require('../app/models/tempstation');
 
 const configData = require('../config.json');
-const logger = require('../lib/logger');
+const {logger, logfolder} = require('../lib/logger');
 const fs = require('fs');
 const path = require('path');
 const pnpFolder = path.join('../' ,'picture');

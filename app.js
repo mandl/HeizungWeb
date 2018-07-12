@@ -227,61 +227,11 @@ app.get('/dra', require('connect-ensure-login').ensureLoggedIn(),function(req, r
 	res.render('mainview', { layout:'main', title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
 });
 
-app.get('/map', function(req, res) {
+app.get('/map', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
 	res.render('map', { layout:'main', title: 'Dra'});
 });
 
-// app.get('/twc',
-// require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-app.get('/twc', function(req, res) {
-	
-	forcast.doForcast();
-	
-	try{
-	
-	
-	var contents = fs.readFileSync('./lib/forcasts.json');
-	// Define to JSON type
-	var forcastData = JSON.parse(contents);
-	 
-	var contents = fs.readFileSync('./lib/garden.json');
-	// Define to JSON type
-	var gardenData = JSON.parse(contents);
-	
-	var contents = fs.readFileSync('./lib/hourforcasts.json');
-	// Define to JSON type
-	var forcastsHourData = JSON.parse(contents);
-	
-	var contents = fs.readFileSync('./lib/airquality.json');
-	// Define to JSON type
-	var airqualityData = JSON.parse(contents);
-	
-	var gardenNewData = {"data":[]};
-	
-	
-	
-	for( i in gardenData.wateringNeedsIndex12hour.daypartName)
-	{
-	
-		var day = gardenData.wateringNeedsIndex12hour.daypartName[i];
-		
-		var watering = gardenData.wateringNeedsIndex12hour.wateringNeedsCategory[i];
-		
-		var me = {"day":day,"watering":watering};
-		gardenNewData.data.push(me);
-		
-	}	
-	// console.log(airqualityData);
-	res.render('forcast', { layout:'main', title: 'TWC',data:forcastData,garden:gardenNewData,forcastsHour:forcastsHourData,airquality:airqualityData});
-	}
-	catch (error) {
-		 
-		 console.log(error);
-		 res.render('forcast', { layout:'main', title: 'TWC'});
-		}
-	
-});
 
 app.get('/heater',
 
