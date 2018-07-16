@@ -79,11 +79,14 @@ passport.use(new Strategy(function(username, password, cb) {
 			return cb(err);
 		}
 		if (!user) {
+			logger.info("Login fail: "+ username);
 			return cb(null, false);
 		}
 		if (user.password != password) {
+			logger.info("Login fail: "+ username + " " + password );
 			return cb(null, false);
 		}
+		logger.info("Login ok: "+ username);
 		return cb(null, user);
 	});
 }));
@@ -427,6 +430,24 @@ app.post('/dipcam2',
 		    res.send('ok');
 		    res.end();		
 	});
+
+app.post('/dipcam3',
+
+		function(req, res) {
+		
+			// logger.debug(req.headers);
+			var picFile = path.join(pnpFolder,"dipcam3.jpg");
+			fs.writeFile(picFile, req.body, function(err) {
+		        if(err) {
+		            logger.error(err);
+		        } else {
+		        	logger.debug("pic save " + picFile);
+		        }
+		    });
+		    res.send('ok');
+		    res.end();		
+	});
+
 
 // Login
 app.post('/login', passport.authenticate('local', {
