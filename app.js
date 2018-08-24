@@ -19,6 +19,7 @@
 
 const fs = require('fs');
 const child_process = require('child_process');
+const { exec } = require('child_process');
 const express = require('express');
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
@@ -29,6 +30,9 @@ const Rest = require('connect-rest');
 const bodyParser = require('body-parser');
 const {logger, logfolder} = require('./lib/logger');
 const forcast = require('./lib/forcast');
+const configData = require('./config.json');
+const os = require('os');
+
 
 
 var handlebars = require('express-handlebars')
@@ -53,11 +57,16 @@ var handlebars = require('express-handlebars')
 
 const stationData = require('./stationRemote1.json');
 const stationData2 = require('./stationRemote2.json');
+
+const allPiData = require('./allPiRemote.json');
+
 const pnpFolder = path.join(__dirname ,'picture');
 
 const ar = require('./lib/temp');
 
 const TempStations = require('./app/models/tempstation');
+
+const RemotePiCollection = require('./app/models/remotestationpi');
 
 
 var stationsRemote = new TempStations.TempStations();
@@ -66,6 +75,8 @@ var stationsDraRemote = new TempStations.TempStations();
 
 var stationsMuc = new TempStations.TempStations(stationData);
 var stationsDra = new TempStations.TempStations(stationData2);
+
+var allpis = new RemotePiCollection.RemotePiCollection(allPiData);
 
 // Configure the local strategy for use by Passport.
 //
@@ -165,18 +176,31 @@ app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(
 	res.render('stations', { layout:'main', title: 'Stations'});
 });
 
+
 app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
 	
-	var camFile = path.join(pnpFolder,'cam.jpg')
+	var camFile = path.join(pnpFolder,'cam.jpg');
+	var ipcam1File = path.join(pnpFolder,'ipcam1.jpg');
+	var ipcam2File = path.join(pnpFolder,'ipcam2.jpg');
+	var ipcam3File = path.join(pnpFolder,'ipcam3.jpg');
+	
+	logger.info("capture cam and ipcam");
 	// child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so
 	// fswebcam --save '+ camFile);
-	child_process.execSync('raspistill -a 12 -md 0 -o '+ camFile);
+	child_process.execSync('wget -O '+ ipcam1File + ' ' + configData.ipcam1 +'/cgi-bin/getsnapshot.cgi');
+	child_process.execSync('wget -O '+ ipcam2File + ' ' + configData.ipcam2 +'/cgi-bin/getsnapshot.cgi');
+	child_process.execSync('wget -O '+ ipcam3File + ' ' + configData.ipcam3 +'/cgi-bin/getsnapshot.cgi');
+	child_process.execSync('raspistill -rot 90 -a 12 -md 0 -o '+ camFile);
 	res.render('webcam', { layout:'main', title: 'Webcam'});
 });
 
 app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+	logger.info("webcamRemote");
 	res.render('webcamRemote', { layout:'main', title: 'Webcam remote'});
 });
+
+
+
 
 // get stations data
 
@@ -211,27 +235,28 @@ app.get('/weather',
 
 app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
+	logger.info("Control page");
 	res.render('control', { layout:'main', title: 'Control'});
 });
 
 app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-	
-	res.render('admin', { layout:'main', title: 'Admin',dayOn:ar.getHeater().get('dayNightTimeOn'),dayOff:ar.getHeater().get('dayNightTimeoff')});
+	logger.info("Admin page");
+	runVersion = os.platform() + " " + os.release() + "    Node version: " + process.version;
+	res.render('admin', { layout:'main', title: 'Admin',dayOn:ar.getHeater().get('dayNightTimeOn'),dayOff:ar.getHeater().get('dayNightTimeoff'),osVersion:runVersion,PiStations:allpis.toJSON()});
 });
 
-
 app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-
+	logger.info("Muc page");
 	res.render('mainview', { layout:'main', title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
 });
 
 app.get('/dra', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-	
+	logger.info("Dra page");
 	res.render('mainview', { layout:'main', title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
 });
 
 app.get('/map', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-	
+	logger.info("Map page");
 	res.render('map', { layout:'main', title: 'Dra'});
 });
 
@@ -470,20 +495,41 @@ app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), func
 	
 	if (req.body.CheckResetRuntime !== undefined)
 	{
+		logger.info("Reset runtim");
 		ar.ResetRuntimeData();
 		ar.getHeizungData();
 	}
 	if(req.body.CheckResetStationList !== undefined)
 	{
+		logger.info("Reset station list");
 		stationsDraRemote.reset();
 		stationsRemote.reset();
 		
-	}		
+	}	
+	
+	if(req.body.UpgradePI !== undefined)
+	{
+		logger.info("Upgrade system");
+		child_process.execSync('apt-get update');
+		child_process.execSync('apt-get -y upgrade');
+	}
+	
+	if(req.body.CheckReboot !== undefined)
+	{
+		logger.info("Reboot system");
+		req.logout();
+		res.redirect('/');
+		exec('/sbin/reboot');
+		
+	}	
+
 	res.redirect('/control');	
 });
 
 app.get('/logout', function(req, res) {
+	
 	req.logout();
+	logger.info("Logout");
 	res.redirect('/');
 });
 
@@ -536,6 +582,7 @@ app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 
 		 function(req, res) {
 	  		var my = ar.getStationData()
+	  		logger.info("Villa main page");
 			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
 
 });
@@ -547,7 +594,7 @@ app.use(function(req, res, next) {
 });
 
 app.listen(3000, function () {
-	  logger.info('Heizung listening on port 3000!');
+	  logger.info('Heizung listening on port 3000');
 });
 
 

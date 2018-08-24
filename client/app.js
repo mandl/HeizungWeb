@@ -45,7 +45,7 @@ var crcError = 0;
 
 var sendOutData = function(data) {
 	
-	console.log(data);
+	//console.log(data);
 	var headers = {
 		    'Content-Type': 'application/json',
 		    'Content-Length': Buffer.byteLength(data)

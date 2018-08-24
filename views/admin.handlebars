@@ -1,5 +1,14 @@
 <div class="container-fluid">
 <h1>Admin</h1>
+<p>{{osVersion}}</p>
+
+{{#each PiStations}}
+<p>{{hostname}}</p>
+<p>{{release}}</p>
+<p>{{node}}</p>
+
+{{/each}}
+
 <form id="admindata" action="/admincontrol" method="post">  
     <div class="form-group">
     <label for="ControlSelectDayOn">Day on</label>
@@ -33,6 +42,18 @@
   <input class="form-check-input" type="checkbox" value="" id="CheckResetRuntime" name="CheckResetRuntime">
   <label class="form-check-label" for="CheckResetRuntime">
     Reset runtime
+  </label>
+  </div><br>
+   <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="CheckReboot" name="CheckReboot">
+  <label class="form-check-label" for="CheckReboot">
+    Reboot the system
+  </label>
+  </div><br>
+    <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="" id="UpgradePI" name="UpgradePI">
+  <label class="form-check-label" for="UpgradePI">
+    Upgrade the system
   </label>
   </div><br>
   <button type="submit" class="btn btn-primary">Submit</button>  
