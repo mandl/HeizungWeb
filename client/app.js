@@ -45,8 +45,8 @@ var parser;
 var crcError = 0;
 
 var hostname = os.hostname()
-
-var hostdata = {hostname:hostname, release:os.release(), node:process.version};
+var piHardwareVersion = fs.readFileSync('/proc/device-tree/model',{encoding: 'utf8'});
+var hostdata = {hostname:hostname, release:os.release(), node:process.version,piHardwareVersion:piHardwareVersion};
 
 var sendOutData = function(data) {
 	
