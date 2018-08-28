@@ -4,7 +4,9 @@
 # Node.js
 node_modules/
 npm-debug.log
-
+config.json
+users.json
+allPiRemote.json
 ssl/
 build/
 libNaN

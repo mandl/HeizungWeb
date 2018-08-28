@@ -32,6 +32,7 @@ const path = require('path');
 const pnpFolder = path.join('../' ,'picture');
 const rpio = require('../lib/sx1276');
 const sensor = require('../build/Release/dht22');
+const os = require('os');
 
 
 const stationData = require(configData.station_file);
@@ -42,6 +43,10 @@ const  Readline = SerialPort.parsers.Readline;
 var serial;
 var parser;
 var crcError = 0;
+
+var hostname = os.hostname()
+
+var hostdata = {hostname:hostname, release:os.release(), node:process.version};
 
 var sendOutData = function(data) {
 	
@@ -78,6 +83,40 @@ var sendOutData = function(data) {
 
 };
 
+var sendHostdata = function(data) 
+{
+	
+	
+	var headers = {
+		    'Content-Type': 'application/json',
+		    'Content-Length': Buffer.byteLength(data)
+		  };
+		const options = {
+		  hostname: configData.server_url,
+		  port: configData.server_port,
+		  path: "/hostdata",
+		  rejectUnauthorized: false,
+		  encoding: "utf8",
+		  method: 'POST',
+		  headers: headers,
+		  json: true
+		  
+		};
+	const req = https.request(options, (res) => {
+	  logger.debug('statusCode:', res.statusCode);
+	  logger.debug('headers:', res.headers);
+	
+	  res.on('data', (d) => {
+	    // process.stdout.write(d);
+	  });
+	});
+	
+	req.on('error', (e) => {
+	  logger.error(e);
+	});
+	req.write(data);
+	req.end();
+}
 var sendPic = function() {
 	
 	// logger.info(data);
@@ -279,10 +318,19 @@ if((configData.remote_temp) || (configData.localRFM95)  || (configData.localDHT2
 	setInterval(function() {
 		logger.debug('send data');
 		logger.debug(JSON.stringify(stations));		
-		sendOutData(JSON.stringify(stations));	
+		sendOutData(JSON.stringify(stations));
 	
 	}, 1000 * 60 * 5); // send every 5 minutes
 }
+
+setInterval(function() {
+	logger.debug('send hostdata');
+	logger.debug(JSON.stringify(hostdata));		
+	
+	sendHostdata(JSON.stringify(hostdata));
+
+}, 1000 * 60 * 1); // send every 5 minutes
+
 
 // send a remote picture
 if(configData.remote_cam)

@@ -184,7 +184,7 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(re
 	var ipcam2File = path.join(pnpFolder,'ipcam2.jpg');
 	var ipcam3File = path.join(pnpFolder,'ipcam3.jpg');
 	
-	logger.info("capture cam and ipcam");
+	logger.info("Webcam and ipcam page");
 	// child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so
 	// fswebcam --save '+ camFile);
 	child_process.execSync('wget -O '+ ipcam1File + ' ' + configData.ipcam1 +'/cgi-bin/getsnapshot.cgi');
@@ -195,7 +195,7 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(re
 });
 
 app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
-	logger.info("webcamRemote");
+	logger.info("Webcam remote page");
 	res.render('webcamRemote', { layout:'main', title: 'Webcam remote'});
 });
 
@@ -241,7 +241,8 @@ app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(r
 
 app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	logger.info("Admin page");
-	runVersion = os.platform() + " " + os.release() + "    Node version: " + process.version;
+	piHardwareVersion = fs.readFileSync('/proc/device-tree/model');
+	runVersion = os.platform() + " " + os.release() + "    Node version: " + process.version + " " + piHardwareVersion;
 	res.render('admin', { layout:'main', title: 'Admin',dayOn:ar.getHeater().get('dayNightTimeOn'),dayOff:ar.getHeater().get('dayNightTimeoff'),osVersion:runVersion,PiStations:allpis.toJSON()});
 });
 
@@ -324,6 +325,30 @@ function getStationJson(err, payload) {
 
 }}
 
+function getHostdata(err, payload) {
+	
+	var data = allpis.findWhere({
+		hostname : payload.hostname
+	});
+	if (data === undefined) {
+		logger.info('found new hostname '+ payload.hostname);
+		
+	} else {
+		
+		data.set({
+			"release" :payload.release
+		});
+		
+		data.set({
+			"node" :payload.node
+		});
+		data.set({
+			"piHardwareVersion" :payload.piHardwareVersion
+		});
+		//console.log(data);
+	}
+}
+
 function getStationDraJson(err, payload) {
     
 	// logger.debug(payload);
@@ -370,6 +395,13 @@ app.post('/mucdata',
 app.post('/dradata',
 		function(req, res) {
 	    jsonBody(req, res, getStationDraJson);
+		res.send('ok');
+		res.end();		
+});
+
+app.post('/hostdata',
+		function(req, res) {
+	    jsonBody(req, res, getHostdata);
 		res.send('ok');
 		res.end();		
 });
