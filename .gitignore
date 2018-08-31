@@ -10,7 +10,7 @@ allPiRemote.json
 ssl/
 build/
 libNaN
-picture/*
+/picture/*
 temp.log
 
 public/*png

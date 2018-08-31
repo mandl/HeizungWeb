@@ -55,7 +55,7 @@
 <td><%= label %></td>
 <td><%= name %></td>
 <td><%= temp %></td>
-<td><%= hum %></td>
+<td><%= (hum)!== 106 ?  hum : '' %></td>
 <td><%= datasource %></td>
 <td><%= timestr %></td>
 </script>

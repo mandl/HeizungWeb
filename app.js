@@ -332,6 +332,14 @@ function getHostdata(err, payload) {
 	});
 	if (data === undefined) {
 		logger.info('found new hostname '+ payload.hostname);
+		allpis.add({
+		   hostname : payload.hostname,
+	       release : payload.release,
+	       node  : payload.node,
+	       location: "?",
+	       piHardwareVersion:piHardwareVersion,
+	       pingDate:new Date().toLocaleString('de-DE')
+		});
 		
 	} else {
 		
@@ -344,6 +352,9 @@ function getHostdata(err, payload) {
 		});
 		data.set({
 			"piHardwareVersion" :payload.piHardwareVersion
+		});
+		data.set({
+			"pingDate" : new Date().toLocaleString('de-DE')
 		});
 		//console.log(data);
 	}

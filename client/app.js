@@ -252,7 +252,7 @@ var TempDataParse = function(my)
 					       time : Date.now(),
 					       reset : obj.Reset,
 					       lowbattery : obj.LOWBAT,
-					       timestr: new Date().toLocaleString(),
+					       timestr: new Date().toLocaleString('de-DE'),
 					       datasource: "-1"});
 				}	
 			}		
@@ -264,7 +264,7 @@ var TempDataParse = function(my)
 				data.set({"time": Date.now()});
 				data.set({"reset": obj.Reset});
 				data.set({"lowbattery": obj.LOWBAT});
-				data.set({"timestr": new Date().toLocaleString()});
+				data.set({"timestr": new Date().toLocaleString('de-DE')});
 				// logger.info(dataTemp);
 			}
 		}
@@ -329,7 +329,7 @@ setInterval(function() {
 	
 	sendHostdata(JSON.stringify(hostdata));
 
-}, 1000 * 60 * 1); // send every 5 minutes
+}, 1000 * 60 * 5); // send every 5 minutes
 
 
 // send a remote picture
