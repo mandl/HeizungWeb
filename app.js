@@ -26,13 +26,12 @@ const Strategy = require('passport-local').Strategy;
 const db = require('./db');
 const path = require('path');
 const jsonBody = require('body/json');
-const Rest = require('connect-rest');
 const bodyParser = require('body-parser');
 const {logger, logfolder} = require('./lib/logger');
 const forcast = require('./lib/forcast');
 const configData = require('./config.json');
 const os = require('os');
-
+const proxy = require('express-http-proxy');
 
 
 var handlebars = require('express-handlebars')
@@ -124,16 +123,6 @@ passport.deserializeUser(function(id, cb) {
 
 
 
-// initial configuration of connect-rest. all-of-them are optional.
-// default context is /api, all services are off by default
-var options = {
-	context: '/api'
-	// logger:{ file: 'mochaTest.log', level: 'debug' },
-	// apiKeys: [ '849b7648-14b8-4154-9ef2-8d1dc4c2b7e9' ],
-	// discover: { path: 'discover', secure: true },
-	// proto: { path: 'proto', secure: true }
-};
-
 
 
 // Create a new Express application.
@@ -147,7 +136,7 @@ app.disable('x-powered-by');
 app.use(require('cookie-parser')());
 app.use(bodyParser.urlencoded({ extended : true }));
 app.use(require('express-session')({
-	secret : 'keyboard cat',
+	secret : configData.secret,
 	resave : false,
 	saveUninitialized : false
 }));
@@ -337,7 +326,7 @@ function getHostdata(err, payload) {
 	       release : payload.release,
 	       node  : payload.node,
 	       location: "?",
-	       piHardwareVersion:piHardwareVersion,
+	       piHardwareVersion:payload.piHardwareVersion,
 	       pingDate:new Date().toLocaleString('de-DE')
 		});
 		
@@ -425,6 +414,12 @@ app.post('/heater',
 	    res.send('ok');
 	    res.end();		
 });
+
+
+
+//app.use('/vdr', proxy(configDataserverOne));
+
+
 
 //
 // Camera post
