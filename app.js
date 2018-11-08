@@ -18,8 +18,9 @@
  */
 
 const fs = require('fs');
-const child_process = require('child_process');
 const { exec } = require('child_process');
+const { execFileSync} = require('child_process');
+const { execSync} = require('child_process');
 const express = require('express');
 const passport = require('passport');
 const Strategy = require('passport-local').Strategy;
@@ -32,6 +33,8 @@ const forcast = require('./lib/forcast');
 const configData = require('./config.json');
 const os = require('os');
 const proxy = require('express-http-proxy');
+const math = require('mathjs');
+const moment = require('moment');
 
 
 var handlebars = require('express-handlebars')
@@ -174,12 +177,12 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(re
 	var ipcam3File = path.join(pnpFolder,'ipcam3.jpg');
 	
 	logger.info("Webcam and ipcam page");
-	// child_process.exec('LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libv4l/v4l1compat.so
-	// fswebcam --save '+ camFile);
-	child_process.execSync('wget -O '+ ipcam1File + ' ' + configData.ipcam1 +'/cgi-bin/getsnapshot.cgi');
-	child_process.execSync('wget -O '+ ipcam2File + ' ' + configData.ipcam2 +'/cgi-bin/getsnapshot.cgi');
-	child_process.execSync('wget -O '+ ipcam3File + ' ' + configData.ipcam3 +'/cgi-bin/getsnapshot.cgi');
-	child_process.execSync('raspistill -rot 90 -a 12 -md 0 -o '+ camFile);
+	
+	execSync('wget -q -O '+ ipcam1File + ' ' + configData.ipcam1 +'/cgi-bin/getsnapshot.cgi');
+	execSync('wget -q -O '+ ipcam2File + ' ' + configData.ipcam2 +'/cgi-bin/getsnapshot.cgi');
+	execSync('wget -q -O '+ ipcam3File + ' ' + configData.ipcam3 +'/cgi-bin/getsnapshot.cgi');
+	execSync('raspistill -rot 90 -a 12 -md 0 -o '+ camFile);
+	
 	res.render('webcam', { layout:'main', title: 'Webcam'});
 });
 
@@ -188,6 +191,273 @@ app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), funct
 	res.render('webcamRemote', { layout:'main', title: 'Webcam remote'});
 });
 
+
+app.get('/', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+	logger.info("villa page");
+    var dataJson = path.join(pnpFolder, 'temp1.json');
+    var humDataJson = path.join(pnpFolder, 'hum1.json');
+    
+    var count = 8;
+    
+    var chartColors = {
+            red: 'rgb(255, 99, 132)',
+            orange: 'rgb(255, 159, 64)',
+            yellow: 'rgb(255, 205, 86)',
+            green: 'rgb(75, 192, 192)',
+            blue: 'rgb(54, 162, 235)',
+            purple: 'rgb(153, 102, 255)',
+            grey: 'rgb(201, 203, 207)'
+        };
+   
+    var chartData2 = {
+           
+            labels: [],
+            datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
+                       {data: [],label:"Living",backgroundColor:chartColors.orange,fill: false},
+                       {data: [],label:"Dining",backgroundColor:chartColors.yellow,fill: false},
+                       {data: [],label:"Plants",backgroundColor:chartColors.green,fill: false},
+                       {data: [],label:"Wasch",backgroundColor:chartColors.blue,fill: false},
+                       {data: [],label:"Roof",backgroundColor:chartColors.purple,fill: false},
+                       {data: [],label:"Heater",backgroundColor:chartColors.grey,fill: false},
+                       {data: [],label:"Bad",backgroundColor:chartColors.red,fill: false}
+                      ]
+           
+    };
+    
+    var chartHumData = {
+            
+            labels: [],
+            datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
+                       {data: [],label:"Living",backgroundColor:chartColors.orange,fill: false},
+                       {data: [],label:"Dining",backgroundColor:chartColors.yellow,fill: false},
+                       {data: [],label:"Plants",backgroundColor:chartColors.green,fill: false},
+                       {data: [],label:"Wasch",backgroundColor:chartColors.blue,fill: false},
+                       {data: [],label:"Roof",backgroundColor:chartColors.purple,fill: false},
+                       {data: [],label:"Heater",backgroundColor:chartColors.grey,fill: false},
+                       {data: [],label:"Bad",backgroundColor:chartColors.red,fill: false}
+                       ]
+           
+    };
+    
+    let rawdata = fs.readFileSync(dataJson); 
+    let rawhumdata = fs.readFileSync(humDataJson); 
+    var tempdata = JSON.parse(rawdata);  
+    var humdata = JSON.parse(rawhumdata);  
+    var startTime = tempdata.meta.start;
+    // console.log(tempdata.data[0]);
+    // console.log(tempdata.data.length);
+    
+    moment.locale('de');
+    const date = moment.unix(startTime);
+ 
+    for(var i=0; i<tempdata.data.length; i++)
+    {// console.log(typeof tempdata.data[i][0]);
+        chartData2.labels[i]=date.format("LT");
+        for(var n=0; n < count; n++)
+        {
+           if( tempdata.data[i][n] != null)
+           {
+               chartData2.datasets[n].data[i] = math.round(tempdata.data[i][n],1);   
+           }
+        }  
+        date.add(900, 'seconds');
+    }
+    
+    const date2 = moment.unix(startTime);
+    
+    for(var i=0; i<humdata.data.length; i++)
+    {// console.log(typeof tempdata.data[i][0]);
+        chartHumData.labels[i]=date2.format("LT");
+        for(var n=0; n < count ; n++)
+        {
+           if( humdata.data[i][n] != null)
+           {
+               chartHumData.datasets[n].data[i] = math.round(humdata.data[i][n],1);   
+           }
+        }  
+        date2.add(900, 'seconds');
+    }
+   
+    //console.log(JSON.stringify(chartHumData));
+ 
+	res.render('graphview', { layout:'main', title: 'Villa', tempData : encodeURIComponent(JSON.stringify(chartData2)),humData: encodeURIComponent(JSON.stringify(chartHumData))});
+});
+
+
+
+app.get('/dra', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+    logger.info("dra page");
+    var dataJson = path.join(pnpFolder, 'temp3.json');
+    var humDataJson = path.join(pnpFolder, 'hum3.json');
+    
+    var count = 7;
+    
+    var chartColors = {
+            red: 'rgb(255, 99, 132)',
+            orange: 'rgb(255, 159, 64)',
+            yellow: 'rgb(255, 205, 86)',
+            green: 'rgb(75, 192, 192)',
+            blue: 'rgb(54, 162, 235)',
+            purple: 'rgb(153, 102, 255)',
+            grey: 'rgb(201, 203, 207)'
+        };
+   
+    var chartData2 = {
+           
+            labels: [],
+            datasets: [{data: [],label:"Living",borderColor:chartColors.red,fill: false},
+                       {data: [],label:"Keller Tief",backgroundColor:chartColors.orange,fill: false},
+                       {data: [],label:"Kitchen",backgroundColor:chartColors.yellow,fill: false},
+                       {data: [],label:"Waschkeller",backgroundColor:chartColors.green,fill: false},
+                       {data: [],label:"Bad",backgroundColor:chartColors.blue,fill: false},
+                       {data: [],label:"Hobby",backgroundColor:chartColors.purple,fill: false},
+                       {data: [],label:"Outside",backgroundColor:chartColors.grey,fill: false}
+                      ]
+           
+    };
+    
+    var chartHumData = {
+            
+            labels: [],
+            datasets: [{data: [],label:"Living",borderColor:chartColors.red,fill: false},
+                       {data: [],label:"Keller Tief",backgroundColor:chartColors.orange,fill: false},
+                       {data: [],label:"Kitchen",backgroundColor:chartColors.yellow,fill: false},
+                       {data: [],label:"Waschkeller",backgroundColor:chartColors.green,fill: false},
+                       {data: [],label:"Bad",backgroundColor:chartColors.blue,fill: false},
+                       {data: [],label:"Hobby",backgroundColor:chartColors.purple,fill: false},
+                       {data: [],label:"Outside",backgroundColor:chartColors.grey,fill: false}
+                       ]
+           
+    };
+    
+    let rawdata = fs.readFileSync(dataJson); 
+    let rawhumdata = fs.readFileSync(humDataJson); 
+    var tempdata = JSON.parse(rawdata);  
+    var humdata = JSON.parse(rawhumdata);  
+    var startTime = tempdata.meta.start;
+    // console.log(tempdata.data[0]);
+    // console.log(tempdata.data.length);
+    
+    moment.locale('de');
+    const date = moment.unix(startTime);
+ 
+    for(var i=0; i<tempdata.data.length; i++)
+    {// console.log(typeof tempdata.data[i][0]);
+        chartData2.labels[i]=date.format("LT");
+        for(var n=0; n < count; n++)
+        {
+           if( tempdata.data[i][n] != null)
+           {
+               chartData2.datasets[n].data[i] = math.round(tempdata.data[i][n],1);   
+           }
+        }  
+        date.add(900, 'seconds');
+    }
+    
+    const date2 = moment.unix(startTime);
+    
+    for(var i=0; i<humdata.data.length; i++)
+    {// console.log(typeof tempdata.data[i][0]);
+        chartHumData.labels[i]=date2.format("LT");
+        for(var n=0; n < count ; n++)
+        {
+           if( humdata.data[i][n] != null)
+           {
+               chartHumData.datasets[n].data[i] = math.round(humdata.data[i][n],1);   
+           }
+        }  
+        date2.add(900, 'seconds');
+    }
+   
+    //console.log(JSON.stringify(chartHumData));
+ 
+    res.render('graphview', { layout:'main', title: 'Dra', tempData : encodeURIComponent(JSON.stringify(chartData2)),humData: encodeURIComponent(JSON.stringify(chartHumData))});
+});
+
+app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
+    logger.info("villatest");
+    var dataJson = path.join(pnpFolder, 'temp2.json');
+    var humDataJson = path.join(pnpFolder, 'hum2.json');
+    
+    var count = 5;
+    
+    var chartColors = {
+            red: 'rgb(255, 99, 132)',
+            orange: 'rgb(255, 159, 64)',
+            yellow: 'rgb(255, 205, 86)',
+            green: 'rgb(75, 192, 192)',
+            blue: 'rgb(54, 162, 235)',
+            purple: 'rgb(153, 102, 255)',
+            grey: 'rgb(201, 203, 207)'
+        };
+   
+    var chartData2 = {
+           
+            labels: [],
+            datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
+                       {data: [],label:"Bad",backgroundColor:chartColors.orange,fill: false},
+                       {data: [],label:"",backgroundColor:chartColors.yellow,fill: false},
+                       {data: [],label:"Living",backgroundColor:chartColors.green,fill: false},
+                       {data: [],label:"Board",backgroundColor:chartColors.blue,fill: false}
+                      ]
+           
+    };
+    
+    var chartHumData = {
+            
+            labels: [],
+            datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
+                       {data: [],label:"Bad",backgroundColor:chartColors.orange,fill: false},
+                       {data: [],label:"",backgroundColor:chartColors.yellow,fill: false},
+                       {data: [],label:"Living",backgroundColor:chartColors.green,fill: false},
+                       {data: [],label:"Board",backgroundColor:chartColors.blue,fill: false}
+                       ]
+           
+    };
+    
+    let rawdata = fs.readFileSync(dataJson); 
+    let rawhumdata = fs.readFileSync(humDataJson); 
+    var tempdata = JSON.parse(rawdata);  
+    var humdata = JSON.parse(rawhumdata);  
+    var startTime = tempdata.meta.start;
+    // console.log(tempdata.data[0]);
+    // console.log(tempdata.data.length);
+    
+    moment.locale('de');
+    const date = moment.unix(startTime);
+ 
+    for(var i=0; i<tempdata.data.length; i++)
+    {// console.log(typeof tempdata.data[i][0]);
+        chartData2.labels[i]=date.format("LT");
+        for(var n=0; n < count; n++)
+        {
+           if( tempdata.data[i][n] != null)
+           {
+               chartData2.datasets[n].data[i] = math.round(tempdata.data[i][n],1);   
+           }
+        }  
+        date.add(900, 'seconds');
+    }
+    
+    const date2 = moment.unix(startTime);
+    
+    for(var i=0; i<humdata.data.length; i++)
+    {// console.log(typeof tempdata.data[i][0]);
+        chartHumData.labels[i]=date2.format("LT");
+        for(var n=0; n < count ; n++)
+        {
+           if( humdata.data[i][n] != null)
+           {
+               chartHumData.datasets[n].data[i] = math.round(humdata.data[i][n],1);   
+           }
+        }  
+        date2.add(900, 'seconds');
+    }
+   
+    //console.log(JSON.stringify(chartHumData));
+ 
+    res.render('graphview', { layout:'main', title: 'Muc', tempData : encodeURIComponent(JSON.stringify(chartData2)),humData: encodeURIComponent(JSON.stringify(chartHumData))});
+});
 
 
 
@@ -235,15 +505,15 @@ app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req
 	res.render('admin', { layout:'main', title: 'Admin',dayOn:ar.getHeater().get('dayNightTimeOn'),dayOff:ar.getHeater().get('dayNightTimeoff'),osVersion:runVersion,PiStations:allpis.toJSON()});
 });
 
-app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-	logger.info("Muc page");
-	res.render('mainview', { layout:'main', title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
-});
+//app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+//	logger.info("Muc page");
+//	res.render('mainview', { layout:'main', title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
+//});
 
-app.get('/dra', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-	logger.info("Dra page");
-	res.render('mainview', { layout:'main', title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
-});
+//app.get('/dra', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+//	logger.info("Dra page");
+//	res.render('mainview', { layout:'main', title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
+//});
 
 app.get('/map', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	logger.info("Map page");
@@ -345,7 +615,7 @@ function getHostdata(err, payload) {
 		data.set({
 			"pingDate" : new Date().toLocaleString('de-DE')
 		});
-		//console.log(data);
+		// console.log(data);
 	}
 }
 
@@ -417,7 +687,7 @@ app.post('/heater',
 
 
 
-//app.use('/vdr', proxy(configDataserverOne));
+// app.use('/vdr', proxy(configDataserverOne));
 
 
 
@@ -548,8 +818,8 @@ app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), func
 	if(req.body.UpgradePI !== undefined)
 	{
 		logger.info("Upgrade system");
-		child_process.execSync('apt-get update');
-		child_process.execSync('apt-get -y upgrade');
+		execSync('apt-get update');
+		execSync('apt-get -y upgrade');
 	}
 	
 	if(req.body.CheckReboot !== undefined)
@@ -590,40 +860,54 @@ app.get('/deleteLog', require('connect-ensure-login').ensureLoggedIn(), function
 });
 
 
-// update week and day graph
-
+// update JSON
+var updateJSON = function(){
+    
+    for(var i=1; i <= 3; i++)
+    {
+        var pngPathName = path.join(pnpFolder,'hum'+ i +'.json');
+        const child = execFileSync('rrdtool',['xport','-s now-24h','-e now','--json','DEF:hums1=./lib/weather'+ i + '.rrd:hums1:AVERAGE','DEF:hums2=./lib/weather'+ i + '.rrd:hums2:AVERAGE','DEF:hums3=./lib/weather'+ i + '.rrd:hums3:AVERAGE','DEF:hums4=./lib/weather'+ i + '.rrd:hums4:AVERAGE','DEF:hums5=./lib/weather'+ i + '.rrd:hums5:AVERAGE','DEF:hums6=./lib/weather'+ i + '.rrd:hums6:AVERAGE','DEF:hums7=./lib/weather'+ i + '.rrd:hums7:AVERAGE','DEF:hums8=./lib/weather'+ i + '.rrd:hums8:AVERAGE','XPORT:hums1:humity1','XPORT:hums2:humity2','XPORT:hums3:humity3','XPORT:hums4:humity4','XPORT:hums5:humity5','XPORT:hums6:humity6']);
+        fs.writeFileSync(pngPathName, child);
+        
+        var pngPathName = path.join(pnpFolder,'temp'+ i +'.json');
+        const child2 = execFileSync('rrdtool',['xport','-s now-24h','-e now','--json','DEF:temps1=./lib/weather'+ i + '.rrd:temps1:AVERAGE','DEF:temps2=./lib/weather'+ i + '.rrd:temps2:AVERAGE','DEF:temps3=./lib/weather'+ i + '.rrd:temps3:AVERAGE','DEF:temps4=./lib/weather'+ i + '.rrd:temps4:AVERAGE','DEF:temps5=./lib/weather'+ i + '.rrd:temps5:AVERAGE','DEF:temps6=./lib/weather'+ i + '.rrd:temps6:AVERAGE','DEF:temps7=./lib/weather'+ i + '.rrd:temps7:AVERAGE','DEF:temps8=./lib/weather'+ i + '.rrd:temps8:AVERAGE','DEF:temps9=./lib/weather'+ i + '.rrd:temps9:AVERAGE','XPORT:temps1:temp1','XPORT:temps2:temp2','XPORT:temps3:temp3','XPORT:temps4:temp4','XPORT:temps5:temp5','XPORT:temps6:temp6','XPORT:temps7:temp7','XPORT:temps8:temp8','XPORT:temps9:temp9']);
+        fs.writeFileSync(pngPathName, child2);
+    }
+	// rrdtool xport --start now-24h --end now --json
+    // DEF:temps1=./lib/weather1.rrd:temps1:AVERAGE XPORT:temps1:"my"
+}
 var updatePng = function(prefix,count,dbprefix){
 	
 	logger.debug("updatePng: " + prefix);
 	var pngPathName = path.join(pnpFolder, 'burner.png');
-	child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:runtime1=./lib/burner.rrd:runtime1:AVERAGE','AREA:runtime1#000000:Runtime']);
+	execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:runtime1=./lib/burner.rrd:runtime1:AVERAGE','AREA:runtime1#000000:Runtime']);
 
 		
 	for(var i=1; i <= count; i++)
 	{
 		// Day
 		var pngPathName = path.join(pnpFolder, prefix + 'hum'+ i +'.png');
-		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix + '.rrd:hums'+i+':AVERAGE','LINE1:hums'+i+'#000000:Humidity']);
+		execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix + '.rrd:hums'+i+':AVERAGE','LINE1:hums'+i+'#000000:Humidity']);
 		var pngPathName = path.join(pnpFolder, prefix +  'temp'+ i +'.png');
-		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix + '.rrd:temps'+i+':AVERAGE','LINE1:temps'+i+'#000000:Temp']);
+		execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 day','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix + '.rrd:temps'+i+':AVERAGE','LINE1:temps'+i+'#000000:Temp']);
 		
 		// week
 		var pngPathName = path.join(pnpFolder, prefix + 'humWeek'+ i +'.png');
-		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix + '.rrd:hums'+i+':AVERAGE','LINE1:hums'+i+'#000000:Humidity']);
+		execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:hums'+i+'=./lib/weather'+ dbprefix + '.rrd:hums'+i+':AVERAGE','LINE1:hums'+i+'#000000:Humidity']);
 		var pngPathName = path.join(pnpFolder, prefix + 'tempWeek'+ i +'.png');
-		child_process.execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix + '.rrd:temps'+i+':AVERAGE','LINE1:temps'+i+'#000000:Temp']);
+		execFileSync('rrdtool',['graph',pngPathName,'-s now - 1 week','-e now','DEF:temps'+i+'=./lib/weather'+ dbprefix + '.rrd:temps'+i+':AVERAGE','LINE1:temps'+i+'#000000:Temp']);
 
 	}
 }
 
-app.get('/',require('connect-ensure-login').ensureLoggedIn(),
-
-		 function(req, res) {
-	  		var my = ar.getStationData()
-	  		logger.info("Villa main page");
-			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
-
-});
+//app.get('/',require('connect-ensure-login').ensureLoggedIn(),
+//
+//		 function(req, res) {
+//	  		var my = ar.getStationData()
+//	  		logger.info("Villa main page");
+//			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
+//
+//});
 
 // Handle 404
 app.use(function(req, res, next) {
@@ -634,11 +918,6 @@ app.use(function(req, res, next) {
 app.listen(3000, function () {
 	  logger.info('Heizung listening on port 3000');
 });
-
-
-updatePng('',8,'1');
-updatePng('muc',4,'2');
-updatePng('dra',7,'3');
 
 // connect Arduino
 setTimeout(ar.connectDevice, 1000);
@@ -678,10 +957,18 @@ setInterval(function() {
 },1000 * 60 * 1);  // every minute
 
 // Update data graph
-setInterval(function() {
-	
+var updateAllData = function(){
 	updatePng('',9,'1');
 	updatePng('muc',5,'2');
 	updatePng('dra',7,'3');
+	
+	updateJSON();
+}
+
+updateAllData();
+
+setInterval(function() {
+	
+	updateAllData();
 	
 },1000 * 60 * 10);  // every 10 minutes
