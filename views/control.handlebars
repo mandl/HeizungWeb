@@ -11,7 +11,15 @@
 </div>
 <div class="container">
 <h1>Runtime</h1>
-<img  src="/picture/burner.png" class="img-fluid" alt="Burner">
+<div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <canvas id="runtimeBar"></canvas>
+                </div>
+            </div>
+        </div>
+     </div> 
 </div>
 </div>
 
@@ -33,10 +41,40 @@
 <li id="IdBurnerRun" class="list-group-item">Brenner läuft:  <%= burnerRun %> </li>
 </script>
 
-{{#section 'jquery'}}	
+{{#section 'jquery'}}
+<script src= "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.3/Chart.bundle.min.js"></script>	
 <script src="js/main.js"></script>
 <script src="js/mycode2.js"></script>
 <script>
+
+const chLine = document.getElementById("runtimeBar");
+var decodedJson = decodeURIComponent("{{{burnerData}}}");
+var chartData = JSON.parse(decodedJson);
+
+if (chLine) {
+  var tempChart = new Chart(chLine, {
+  type: 'line',
+  data: chartData,
+  options: {
+    title: {
+      display: true,
+      text: 'Runtime'
+    },
+    scales: {
+      yAxes: [{
+        ticks: {
+          beginAtZero: false
+        }
+      }]
+    },
+    legend: {
+      display: true
+    }
+  }
+  });
+ } 
+  
+
  $(document).ready(function() {
     console.log('ready');
     $.each($('#navbarNav').find('li'), function() {

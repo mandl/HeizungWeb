@@ -37,6 +37,7 @@ const math = require('mathjs');
 const moment = require('moment');
 
 
+
 var handlebars = require('express-handlebars')
 .create({
     defaultLayout: 'main',
@@ -278,7 +279,7 @@ app.get('/', require('connect-ensure-login').ensureLoggedIn(), function(req, res
         date2.add(900, 'seconds');
     }
    
-    //console.log(JSON.stringify(chartHumData));
+    // console.log(JSON.stringify(chartHumData));
  
 	res.render('graphview', { layout:'main', title: 'Villa', tempData : encodeURIComponent(JSON.stringify(chartData2)),humData: encodeURIComponent(JSON.stringify(chartHumData))});
 });
@@ -369,7 +370,7 @@ app.get('/dra', require('connect-ensure-login').ensureLoggedIn(), function(req, 
         date2.add(900, 'seconds');
     }
    
-    //console.log(JSON.stringify(chartHumData));
+    // console.log(JSON.stringify(chartHumData));
  
     res.render('graphview', { layout:'main', title: 'Dra', tempData : encodeURIComponent(JSON.stringify(chartData2)),humData: encodeURIComponent(JSON.stringify(chartHumData))});
 });
@@ -454,7 +455,7 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, 
         date2.add(900, 'seconds');
     }
    
-    //console.log(JSON.stringify(chartHumData));
+    // console.log(JSON.stringify(chartHumData));
  
     res.render('graphview', { layout:'main', title: 'Muc', tempData : encodeURIComponent(JSON.stringify(chartData2)),humData: encodeURIComponent(JSON.stringify(chartHumData))});
 });
@@ -495,7 +496,53 @@ app.get('/weather',
 app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
 	logger.info("Control page");
-	res.render('control', { layout:'main', title: 'Control'});
+	   var dataJson = path.join(pnpFolder, 'burner.json');
+	  
+	    
+	    var count = 1;
+	    
+	    var chartColors = {
+	            red: 'rgb(255, 99, 132)',
+	            orange: 'rgb(255, 159, 64)',
+	            yellow: 'rgb(255, 205, 86)',
+	            green: 'rgb(75, 192, 192)',
+	            blue: 'rgb(54, 162, 235)',
+	            purple: 'rgb(153, 102, 255)',
+	            grey: 'rgb(201, 203, 207)'
+	        };
+	   
+	    var chartData2 = {
+	           
+	            labels: [],
+	            datasets: [{data: [],label:"Runtime",borderColor:chartColors.red,fill: false}
+	                     
+	                      ]      
+	    };
+	    
+	    
+	    let rawdata = fs.readFileSync(dataJson); 
+	  
+	    var tempdata = JSON.parse(rawdata);  
+	    var startTime = tempdata.meta.start;
+	
+	    
+	    moment.locale('de');
+	    const date = moment.unix(startTime);
+	 
+	    for(var i=0; i<tempdata.data.length; i++)
+	    {
+	        chartData2.labels[i]=date.format("LT");
+	        for(var n=0; n < count; n++)
+	        {
+	           if( tempdata.data[i][n] != null)
+	           {
+	               chartData2.datasets[n].data[i] = math.round(tempdata.data[i][n],1);   
+	           }
+	        }  
+	        date.add(300, 'seconds');
+	    }
+	    
+	res.render('control', { layout:'main', title: 'Control',burnerData : encodeURIComponent(JSON.stringify(chartData2))});
 });
 
 app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
@@ -505,15 +552,14 @@ app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req
 	res.render('admin', { layout:'main', title: 'Admin',dayOn:ar.getHeater().get('dayNightTimeOn'),dayOff:ar.getHeater().get('dayNightTimeoff'),osVersion:runVersion,PiStations:allpis.toJSON()});
 });
 
-//app.get('/muc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-//	logger.info("Muc page");
-//	res.render('mainview', { layout:'main', title: 'Muc',stations:stationsMuc.toJSON(),prefix:'muc'});
-//});
 
-//app.get('/dra', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-//	logger.info("Dra page");
-//	res.render('mainview', { layout:'main', title: 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
-//});
+
+// app.get('/dra',
+// require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+// logger.info("Dra page");
+// res.render('mainview', { layout:'main', title:
+// 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
+// });
 
 app.get('/map', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	logger.info("Map page");
@@ -862,7 +908,7 @@ app.get('/deleteLog', require('connect-ensure-login').ensureLoggedIn(), function
 
 // update JSON
 var updateJSON = function(){
-    
+    logger.debug("updateJSON");
     for(var i=1; i <= 3; i++)
     {
         var pngPathName = path.join(pnpFolder,'hum'+ i +'.json');
@@ -873,6 +919,11 @@ var updateJSON = function(){
         const child2 = execFileSync('rrdtool',['xport','-s now-24h','-e now','--json','DEF:temps1=./lib/weather'+ i + '.rrd:temps1:AVERAGE','DEF:temps2=./lib/weather'+ i + '.rrd:temps2:AVERAGE','DEF:temps3=./lib/weather'+ i + '.rrd:temps3:AVERAGE','DEF:temps4=./lib/weather'+ i + '.rrd:temps4:AVERAGE','DEF:temps5=./lib/weather'+ i + '.rrd:temps5:AVERAGE','DEF:temps6=./lib/weather'+ i + '.rrd:temps6:AVERAGE','DEF:temps7=./lib/weather'+ i + '.rrd:temps7:AVERAGE','DEF:temps8=./lib/weather'+ i + '.rrd:temps8:AVERAGE','DEF:temps9=./lib/weather'+ i + '.rrd:temps9:AVERAGE','XPORT:temps1:temp1','XPORT:temps2:temp2','XPORT:temps3:temp3','XPORT:temps4:temp4','XPORT:temps5:temp5','XPORT:temps6:temp6','XPORT:temps7:temp7','XPORT:temps8:temp8','XPORT:temps9:temp9']);
         fs.writeFileSync(pngPathName, child2);
     }
+    
+    var pngPathName = path.join(pnpFolder, 'burner.json');
+    const child3 = execFileSync('rrdtool',['xport','-s now-24h','-e now','--json','DEF:runtime1=./lib/burner.rrd:runtime1:AVERAGE','XPORT:runtime1:runtime']);
+    fs.writeFileSync(pngPathName, child3);
+  
 	// rrdtool xport --start now-24h --end now --json
     // DEF:temps1=./lib/weather1.rrd:temps1:AVERAGE XPORT:temps1:"my"
 }
@@ -900,14 +951,14 @@ var updatePng = function(prefix,count,dbprefix){
 	}
 }
 
-//app.get('/',require('connect-ensure-login').ensureLoggedIn(),
+// app.get('/',require('connect-ensure-login').ensureLoggedIn(),
 //
-//		 function(req, res) {
-//	  		var my = ar.getStationData()
-//	  		logger.info("Villa main page");
-//			res.render('mainview', { title: 'Villa',stations:my,prefix:''});
+// function(req, res) {
+// var my = ar.getStationData()
+// logger.info("Villa main page");
+// res.render('mainview', { title: 'Villa',stations:my,prefix:''});
 //
-//});
+// });
 
 // Handle 404
 app.use(function(req, res, next) {
@@ -956,19 +1007,12 @@ setInterval(function() {
 	}
 },1000 * 60 * 1);  // every minute
 
-// Update data graph
-var updateAllData = function(){
-	updatePng('',9,'1');
-	updatePng('muc',5,'2');
-	updatePng('dra',7,'3');
-	
-	updateJSON();
-}
 
-updateAllData();
+
+updateJSON();
 
 setInterval(function() {
 	
-	updateAllData();
+	updateJSON();
 	
 },1000 * 60 * 10);  // every 10 minutes
