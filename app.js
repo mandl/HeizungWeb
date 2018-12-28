@@ -162,7 +162,9 @@ app.set('view engine', 'handlebars');
 
 
 app.get('/login', function(req, res) {
-	 res.sendFile(path.join(__dirname, '/public/login.html'));
+	 //res.sendFile(path.join(__dirname, '/public/login.html'));
+    res.render('login', { layout:'main', title: 'Login'});
+    
 });
 
 app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {	
