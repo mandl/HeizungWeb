@@ -378,7 +378,7 @@ app.get('/dra', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 });
 
 app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
-    logger.info("villatest");
+    logger.info("muc");
     var dataJson = path.join(pnpFolder, 'temp2.json');
     var humDataJson = path.join(pnpFolder, 'hum2.json');
     
@@ -735,9 +735,9 @@ app.post('/heater',
 
 
 
-// app.use('/vdr', proxy(configDataserverOne));
+app.use('/vdr', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverOne));
 
-
+app.use('/video', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverTwo));
 
 //
 // Camera post
