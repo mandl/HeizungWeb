@@ -1,9 +1,9 @@
 [{"id": 60, "label": 1, "name": "Living", "state": 0, "datasource" : "2"},
-{"id": 16, "label": 0,"name": "Outside","state": 0, "datasource" : "1"},
+{"id": 25, "label": 0,"name": "Outside","state": 0, "datasource" : "1"},
 {"id": 56, "label": 2,"name": "Dining","state": 0, "datasource" : "3"},
 {"id": 45, "label": 3,"name": "Plants","state": 0, "datasource" : "4"},
 {"id": 46, "label": 8,"name": "Wasch","state": 0, "datasource" : "5"},
-{"id": 55, "label": 17,"name": "Roof","state": 0, "datasource" : "6"},
+{"id": 58, "label": 17,"name": "Roof","state": 0, "datasource" : "6"},
 {"id": 51, "label": 5,"name": "Heater","state": 0, "datasource" : "7"},
 {"id": 19, "label": 9,"name": "Bad","state": 0, "datasource" : "8"}
 ]

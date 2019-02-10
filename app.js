@@ -1,7 +1,7 @@
 /*
     Heizung
     
-    Copyright (C) 2018 Mandl
+    Copyright (C) 2018- 2019 Mandl
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -563,10 +563,6 @@ app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req
 // 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
 // });
 
-app.get('/map', require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-	logger.info("Map page");
-	res.render('map', { layout:'main', title: 'Dra'});
-});
 
 
 app.get('/heater',
@@ -734,10 +730,15 @@ app.post('/heater',
 });
 
 
+// config proxy
+
 
 app.use('/vdr', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverOne));
 
 app.use('/video', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverTwo));
+
+app.use('/motion', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverThree));
+
 
 //
 // Camera post
