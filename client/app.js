@@ -1,7 +1,7 @@
 /*
     Heizung
     
-    Copyright (C) 2018 Mandl
+    Copyright (C) 2018-2019 Mandl
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -82,6 +82,40 @@ var sendOutData = function(data) {
 	req.end();
 
 };
+
+var pollStatus = function()
+{
+    var headers = {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(data)
+          };
+        const options = {
+          hostname: configData.server_url,
+          port: configData.server_port,
+          path: "/mucon",
+          rejectUnauthorized: false,
+          encoding: "utf8",
+          method: 'GET',
+          headers: headers,
+          json: true
+          
+        };
+    const req = https.request(options, (res) => {
+      logger.debug('statusCode:', res.statusCode);
+      logger.debug('headers:', res.headers);
+    
+      res.on('data', (d) => {
+        // process.stdout.write(d);
+      });
+    });
+    
+    req.on('error', (e) => {
+      logger.error(e);
+    });
+    req.write();
+    req.end();
+}
+
 
 var sendHostdata = function(data) 
 {
@@ -345,6 +379,15 @@ if(configData.remote_cam)
 
 }
 
+//send a remote picture
+if(configData.muc_power)
+{   
+    setInterval(function() { 
+        
+    }, 1000 * 60 * 3); // send every 3 minutes
+
+}
+
 // use local RFM95 receiver
 if(configData.localRFM95)
 {
@@ -365,7 +408,6 @@ if(configData.localRFM95)
 	    mystr = rpio.FSKGetData();
 	    if(mystr != "timeout")
 	    {	
-	    	//console.log(mystr);
 	    	logger.debug(mystr);
 	    	TempDataParse(mystr);
 		}
@@ -384,8 +426,7 @@ if(configData.localDHT22)
 		  if(readout.isValid)
 		  {
 			  var strData = "{\"frame\":\"data\",\"ID\":99,\"Reset\":0,\"LOWBAT\":0,\"Temp\":" + readout.temperature.toFixed(1) + ",\"Hygro\":"+readout.humidity.toFixed(1)+"}";
-		  
-			  //console.log(strData);
+			  
 			  logger.debug(strData);
 			  TempDataParse(strData);
 		  }

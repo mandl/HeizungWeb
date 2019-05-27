@@ -2,6 +2,7 @@
  "server_port": 443,
  "add_new_stations":false,
  "remote_cam":false,
+ "muc_power":false,
  "remote_temp":false,
  "localRFM95":true,
  "localDHT22":true,

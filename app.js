@@ -75,6 +75,9 @@ const RemotePiCollection = require('./app/models/remotestationpi');
 var stationsRemote = new TempStations.TempStations();
 var stationsDraRemote = new TempStations.TempStations();
 
+const powerData = require('./PowerData.json');
+const power = require('./app/models/heizungPower');
+var myPower = new power.PowerModel(powerData);
 
 var stationsMuc = new TempStations.TempStations(stationData);
 var stationsDra = new TempStations.TempStations(stationData2);
@@ -126,9 +129,6 @@ passport.deserializeUser(function(id, cb) {
 });
 
 
-
-
-
 // Create a new Express application.
 var app = express();
 
@@ -162,9 +162,14 @@ app.set('view engine', 'handlebars');
 
 
 app.get('/login', function(req, res) {
-	 //res.sendFile(path.join(__dirname, '/public/login.html'));
+    
     res.render('login', { layout:'main', title: 'Login'});
     
+});
+
+app.get('/mucon', function(req, res) {
+    res.send('ok');
+    res.end();      
 });
 
 app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {	
@@ -494,6 +499,11 @@ app.get('/weather',
 				forcast.get15Forcast(res,lat,lon,range)
 });
 
+app.get('/controlmuc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+    logger.info("Controlmuc page"); 
+    res.render('controlpower', { layout:'main', title: 'Muc'});
+    
+});
 
 app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
 	
@@ -569,8 +579,41 @@ app.get('/heater',
 
 		 function(req, res) {
 			res.json(ar.getHeater().toJSON());			
-		});
+});
 
+app.get('/power',
+
+        function(req, res) {
+           res.json(myPower.toJSON());          
+});
+
+function updatePower(err, payload) {
+   
+    myPower.set(payload);
+    if(payload.PowerState === true)
+    {
+         logger.debug('switch on');
+         //ar.switchOn();
+    }     
+    else
+    {
+         logger.debug('switch off');
+         //ar.switchOff();
+    }
+    
+    if (err) {
+      logger.error(err);
+    } else {
+
+}};
+
+app.post('/power',
+
+        function(req, res) {
+        jsonBody(req, res, updatePower)
+        res.send('ok');
+        res.end();      
+    });
 
 function updateBurner(err, payload) {
     // logger.debug(payload);

@@ -1,26 +1,29 @@
 <div class="container-fluid">
-<h1>Web cam</h1>
 <div class="container">
-<img  src="/picture/cam.jpg" class="img-fluid"  alt="Offline">
-</div>
+<h1>Control Center</h1> 
+<div id="controls"></div>
+<br>
 <div class="container">
-<img  src="/picture/ipcam1.jpg" class="img-fluid"  alt="Offline">
 </div>
-<div class="container">
-<img  src="/picture/ipcam2.jpg" class="img-fluid"  alt="Offline">
 </div>
-<div class="container">
-<img  src="/picture/ipcam3.jpg" class="img-fluid"  alt="Offline">
 </div>
-</div>	
+
+<script type="text/template" id="controls-template">
+<button class="btn btn-danger btn-lg" id="onPower">On</button>
+</script>
+	
 {{#section 'jquery'}}
+<script src="js/main2.js"></script>
+<script src="js/mycode3.js"></script>
 <script>
+   
  $(document).ready(function() {
     console.log('ready');
     $.each($('#navbarNav').find('li'), function() {
         $(this).toggleClass('active',
             '/' + $(this).find('a').attr('href') == window.location.pathname);
     }); 
+    
   });
-</script>
-{{/section}}
+ </script>
+{{/section}} 	
