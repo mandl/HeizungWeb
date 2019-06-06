@@ -21,7 +21,6 @@
     "build-1": "browserify -r ./app/models/tempstation.js:Temp -r ./app/views/stationview.js:View  -o public/js/bundle2.js",
     "build-2": "browserify -r ./app/models/heizung.js:Heizung -r ./app/views/heizungview.js:HeizungView -o public/js/main.js",
     "build-3": "browserify -r ./app/models/heizungPower.js:Power -r ./app/views/powerview.js:PowerView -o public/js/main2.js"
-        
   },
   "dependencies": {
     "backbone": "^1.4.0",

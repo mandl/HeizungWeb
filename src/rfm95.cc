@@ -5,6 +5,7 @@
 #include <nan.h>
 #include "bcm2835.h"
 #include "sx1276.h"
+#include "relais.h"
 
 
 using namespace Nan;
@@ -69,6 +70,28 @@ NAN_METHOD(FSKClose)
 
 
 
+NAN_METHOD(RelaisInit)
+{
+
+	RelaisInit();
+}
+
+NAN_METHOD(RelaisClose)
+{
+
+	RelaisClose();
+}
+NAN_METHOD(RelaisOn)
+{
+
+	RelaisOn();
+}
+NAN_METHOD(RelaisOff)
+{
+
+	RelaisOff();
+}
+
 NAN_MODULE_INIT(setup)
 {
 	NAN_EXPORT(target, FSKInit);
@@ -78,6 +101,12 @@ NAN_MODULE_INIT(setup)
 	NAN_EXPORT(target, FSKRxChainCalibration);
 	NAN_EXPORT(target, FSKOn);
 	NAN_EXPORT(target, FSKGetData);
+	NAN_EXPORT(target, RelaisInit);
+	NAN_EXPORT(target, RelaisClose);
+	NAN_EXPORT(target, RelaisOn);
+	NAN_EXPORT(target, RelaisOff);
+
+
 
 }
 

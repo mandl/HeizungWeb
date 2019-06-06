@@ -6,6 +6,7 @@
       "sources": [
         "src/bcm2835.c",
         "src/sx1276.c",
+        "src/relais.c",
         "src/rfm95.cc"
       ]
     },

@@ -32,6 +32,9 @@ const path = require('path');
 const pnpFolder = path.join('../' ,'picture');
 const rpio = require('../lib/sx1276');
 const sensor = require('../build/Release/dht22');
+const powerData = require('../PowerData.json');
+const power = require('../app/models/heizungPower');
+
 const os = require('os');
 
 
@@ -83,8 +86,9 @@ var sendOutData = function(data) {
 
 };
 
-var pollStatus = function()
+var pollStatus = function(data)
 {
+   
     var headers = {
             'Content-Type': 'application/json',
             'Content-Length': Buffer.byteLength(data)
@@ -105,14 +109,27 @@ var pollStatus = function()
       logger.debug('headers:', res.headers);
     
       res.on('data', (d) => {
-        // process.stdout.write(d);
+          
+          try {
+       
+          let result = JSON.parse(d.toString('utf8'));
+          console.log(result)
+          if (result.PowerState === true)
+              rpio.RelaisOn();
+          else
+              rpio.RelaisOff();
+          }
+          catch(e)
+          {
+              logger.debug(e)
+          }
       });
     });
     
     req.on('error', (e) => {
       logger.error(e);
     });
-    req.write();
+    req.write(data);
     req.end();
 }
 
@@ -357,6 +374,7 @@ if((configData.remote_temp) || (configData.localRFM95)  || (configData.localDHT2
 	}, 1000 * 60 * 5); // send every 5 minutes
 }
 
+// send host data
 setInterval(function() {
 	logger.debug('send hostdata');
 	logger.debug(JSON.stringify(hostdata));		
@@ -376,15 +394,6 @@ if(configData.remote_cam)
 			sendPic();	
 		
 	}, 1000 * 60 * 30); // send every 30 minutes
-
-}
-
-//send a remote picture
-if(configData.muc_power)
-{   
-    setInterval(function() { 
-        
-    }, 1000 * 60 * 3); // send every 3 minutes
 
 }
 
@@ -414,6 +423,23 @@ if(configData.localRFM95)
 	
 	},500); // every 500 ms
 }
+
+// power switch muc
+if(configData.muc_power)
+{
+    
+    rpio.RelaisInit();
+    
+    // switch on = no power at heater
+    rpio.RelaisOn();
+    
+    setInterval(function() {    
+     
+        pollStatus(JSON.stringify(hostdata))
+    
+    },10000); // every 10 seconds 
+}
+
 
 // use local DHT sensor
 if(configData.localDHT22)
