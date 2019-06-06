@@ -29,7 +29,6 @@ const path = require('path');
 const jsonBody = require('body/json');
 const bodyParser = require('body-parser');
 const {logger, logfolder} = require('./lib/logger');
-const forcast = require('./lib/forcast');
 const configData = require('./config.json');
 const os = require('os');
 const proxy = require('express-http-proxy');
@@ -168,7 +167,9 @@ app.get('/login', function(req, res) {
 });
 
 app.get('/mucon', function(req, res) {
-    res.send('ok');
+    
+   
+    res.send(JSON.stringify(myPower))
     res.end();      
 });
 
