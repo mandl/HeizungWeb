@@ -491,14 +491,7 @@ app.get('/datastationsdra',
 				res.json(stationsDraRemote.toJSON());
 });
 
-app.get('/weather',
-		function(req, res) {
-				var lat = req.query.lat;
-				var lon = req.query.lon;
-				var range = req.query.range;
-				
-				forcast.get15Forcast(res,lat,lon,range)
-});
+
 
 app.get('/controlmuc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
     logger.info("Controlmuc page"); 
@@ -1019,6 +1012,16 @@ app.listen(3000, function () {
 
 // connect Arduino
 setTimeout(ar.connectDevice, 1000);
+
+
+// Check weather
+setInterval(function() { 
+    
+},1000 * 60 * 1);  // every minute
+
+
+//http://api.openweathermap.org/data/2.5/forecast?units=metric&q=&appid=
+
 
 // Check night/day switch
 setInterval(function() { 
