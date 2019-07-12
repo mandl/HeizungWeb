@@ -113,15 +113,20 @@ var pollStatus = function(data)
           try {
        
           let result = JSON.parse(d.toString('utf8'));
-          console.log(result)
+          // console.log(result)
           if (result.PowerState === true)
-              rpio.RelaisOn();
-          else
+          {   
+              logger.info('Relais off');
               rpio.RelaisOff();
+          }
+          else
+              logger.info('Relais on');
+              rpio.RelaisOn();
           }
           catch(e)
           {
-              logger.debug(e)
+   
+              //logger.debug(e)
           }
       });
     });
@@ -431,6 +436,7 @@ if(configData.muc_power)
     rpio.RelaisInit();
     
     // switch on = no power at heater
+    logger.info('Relais on');
     rpio.RelaisOn();
     
     setInterval(function() {    
