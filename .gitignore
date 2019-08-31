@@ -10,13 +10,14 @@ allPiRemote.json
 ssl/
 build/
 libNaN
-/picture/*
+picture
 temp.log
-
 public/*png
 public/*jpg
 public/js/bundle2.js
 public/js/main.js
+public/js/main2.js
+public/js/mycode3.js
 
 lib/*.rrd
 

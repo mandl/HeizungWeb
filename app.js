@@ -141,6 +141,7 @@ app.use(bodyParser.urlencoded({ extended : true }));
 app.use(require('express-session')({
 	secret : configData.secret,
 	resave : false,
+        cookie : { maxAge : (10 * 60 * 1000)},
 	saveUninitialized : false
 }));
 
@@ -190,7 +191,7 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(re
 	execSync('wget -q -O '+ ipcam1File + ' ' + configData.ipcam1 +'/cgi-bin/getsnapshot.cgi');
 	execSync('wget -q -O '+ ipcam2File + ' ' + configData.ipcam2 +'/cgi-bin/getsnapshot.cgi');
 	execSync('wget -q -O '+ ipcam3File + ' ' + configData.ipcam3 +'/cgi-bin/getsnapshot.cgi');
-	execSync('raspistill -rot 90 -a 12 -md 0 -o '+ camFile);
+	execSync('raspistill -rot 90 --colfx 128:128 -a 12 -md 0 -o '+ camFile);
 	
 	res.render('webcam', { layout:'main', title: 'Webcam'});
 });
@@ -388,7 +389,7 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, 
     var dataJson = path.join(pnpFolder, 'temp2.json');
     var humDataJson = path.join(pnpFolder, 'hum2.json');
     
-    var count = 5;
+    var count = 4;
     
     var chartColors = {
             red: 'rgb(255, 99, 132)',
@@ -405,7 +406,7 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, 
             labels: [],
             datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
                        {data: [],label:"Bad",backgroundColor:chartColors.orange,fill: false},
-                       {data: [],label:"",backgroundColor:chartColors.yellow,fill: false},
+                       //{data: [],label:"",backgroundColor:chartColors.yellow,fill: false},
                        {data: [],label:"Living",backgroundColor:chartColors.green,fill: false},
                        {data: [],label:"Board",backgroundColor:chartColors.blue,fill: false}
                       ]
@@ -417,7 +418,7 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, 
             labels: [],
             datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
                        {data: [],label:"Bad",backgroundColor:chartColors.orange,fill: false},
-                       {data: [],label:"",backgroundColor:chartColors.yellow,fill: false},
+                       //{data: [],label:"",backgroundColor:chartColors.yellow,fill: false},
                        {data: [],label:"Living",backgroundColor:chartColors.green,fill: false},
                        {data: [],label:"Board",backgroundColor:chartColors.blue,fill: false}
                        ]
@@ -491,14 +492,7 @@ app.get('/datastationsdra',
 				res.json(stationsDraRemote.toJSON());
 });
 
-app.get('/weather',
-		function(req, res) {
-				var lat = req.query.lat;
-				var lon = req.query.lon;
-				var range = req.query.range;
-				
-				forcast.get15Forcast(res,lat,lon,range)
-});
+
 
 app.get('/controlmuc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
     logger.info("Controlmuc page"); 
@@ -1019,6 +1013,16 @@ app.listen(3000, function () {
 
 // connect Arduino
 setTimeout(ar.connectDevice, 1000);
+
+
+// Check weather
+setInterval(function() { 
+    
+},1000 * 60 * 1);  // every minute
+
+
+//http://api.openweathermap.org/data/2.5/forecast?units=metric&q=&appid=
+
 
 // Check night/day switch
 setInterval(function() { 
