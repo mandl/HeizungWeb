@@ -116,11 +116,11 @@ var pollStatus = function(data)
           // console.log(result)
           if (result.PowerState === true)
           {   
-              logger.info('Relais off');
+              //logger.info('Relais off');
               rpio.RelaisOff();
           }
           else
-              logger.info('Relais on');
+              //logger.info('Relais on');
               rpio.RelaisOn();
           }
           catch(e)
