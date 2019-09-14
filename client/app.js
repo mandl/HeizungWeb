@@ -47,6 +47,8 @@ var serial;
 var parser;
 var crcError = 0;
 
+var RelaisStat = true;
+
 var hostname = os.hostname()
 var piHardwareVersion = fs.readFileSync('/proc/device-tree/model',{encoding: 'utf8'});
 var hostdata = {hostname:hostname, release:os.release(), node:process.version,piHardwareVersion:piHardwareVersion};
@@ -79,7 +81,7 @@ var sendOutData = function(data) {
 	});
 	
 	req.on('error', (e) => {
-	  logger.error(e);
+	  logger.debug(e);
 	});
 	req.write(data);
 	req.end();
@@ -110,24 +112,36 @@ var pollStatus = function(data)
     
       res.on('data', (d) => {
           
-          try {
-       
-          let result = JSON.parse(d.toString('utf8'));
-          // console.log(result)
-          if (result.PowerState === true)
-          {   
-              //logger.info('Relais off');
-              rpio.RelaisOff();
-          }
-          else
-              //logger.info('Relais on');
-              rpio.RelaisOn();
-          }
-          catch(e)
+          try 
           {
+       
+             let result = JSON.parse(d.toString('utf8'));
+             // console.log(result)
+             if (result.PowerState === true)
+             {
+                 if (RelaisStat === true)
+                 {
+                    logger.info('Relais off');
+                    rpio.RelaisOff();
+                    RelaisStat = false;
+                 }
+             }
+             else
+             {
+                 if (RelaisStat === false)
+                 {
+                    logger.info('Relais on');
+                    rpio.RelaisOn();
+                    RelaisStat = true;
+                 }
+             }
+
+            }catch(e)
+             {
    
-              //logger.debug(e)
-          }
+              logger.debug(e)
+             }
+          
       });
     });
     
@@ -168,7 +182,7 @@ var sendHostdata = function(data)
 	});
 	
 	req.on('error', (e) => {
-	  logger.error(e);
+	  logger.debug(e);
 	});
 	req.write(data);
 	req.end();
@@ -207,7 +221,7 @@ var sendPic = function() {
 	});
 	
 	req.on('error', (e) => {
-	  logger.error(e);
+	  logger.debug(e);
 	});
 	req.write(data);
 	req.end();
@@ -437,6 +451,7 @@ if(configData.muc_power)
     
     // switch on = no power at heater
     logger.info('Relais on');
+    RelaisStat = true;
     rpio.RelaisOn();
     
     setInterval(function() {    
