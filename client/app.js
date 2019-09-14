@@ -374,7 +374,7 @@ logger.info('Log level:           ' + configData.loglevel);
 logger.info('Station filename:    ' + configData.station_file);
 logger.info('Use local RFM95:     ' + configData.localRFM95);
 logger.info('Use local DHT22:     ' + configData.localDHT22);
-
+logger.info('Use relais muc:      ' + configData.muc_power);
 
 // use arduino board
 if(configData.remote_temp)
