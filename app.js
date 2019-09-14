@@ -473,20 +473,20 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, 
 
 // get stations data
 
-app.get('/datastations',
+app.get('/datastations', require('connect-ensure-login').ensureLoggedIn(),
 	function(req, res) {
 			// logger.debug(ar.getStationData());
 			res.json(ar.getStationData());
 });
 
-app.get('/datastationsmuc',
+app.get('/datastationsmuc', require('connect-ensure-login').ensureLoggedIn(),
 		function(req, res) {
 				// logger.debug(stationsRemote);
 				res.json(stationsRemote.toJSON());
 });
 
 
-app.get('/datastationsdra',
+app.get('/datastationsdra', require('connect-ensure-login').ensureLoggedIn(),
 		function(req, res) {
 				// logger.debug(stationsRemote);
 				res.json(stationsDraRemote.toJSON());
@@ -587,13 +587,13 @@ function updatePower(err, payload) {
     myPower.set(payload);
     if(payload.PowerState === true)
     {
-         logger.debug('switch on');
-         //ar.switchOn();
+         logger.info('switch muc on');
+    
     }     
     else
     {
-         logger.debug('switch off');
-         //ar.switchOff();
+         logger.info('switch muc off');
+
     }
     
     if (err) {
@@ -602,7 +602,7 @@ function updatePower(err, payload) {
 
 }};
 
-app.post('/power',
+app.post('/power', require('connect-ensure-login').ensureLoggedIn(),
 
         function(req, res) {
         jsonBody(req, res, updatePower)
@@ -991,15 +991,6 @@ var updatePng = function(prefix,count,dbprefix){
 
 	}
 }
-
-// app.get('/',require('connect-ensure-login').ensureLoggedIn(),
-//
-// function(req, res) {
-// var my = ar.getStationData()
-// logger.info("Villa main page");
-// res.render('mainview', { title: 'Villa',stations:my,prefix:''});
-//
-// });
 
 // Handle 404
 app.use(function(req, res, next) {
