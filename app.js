@@ -141,7 +141,7 @@ app.use(bodyParser.urlencoded({ extended : true }));
 app.use(require('express-session')({
 	secret : configData.secret,
 	resave : false,
-        cookie : { maxAge : (10 * 60 * 1000)},
+        cookie : { maxAge : (60 * 60 * 1000)},
 	saveUninitialized : false
 }));
 
@@ -867,6 +867,24 @@ app.post('/dipcam3',
 		    res.send('ok');
 		    res.end();		
 	});
+
+app.post('/muccam2',
+
+                function(req, res) {
+                
+                        // logger.debug(req.headers);
+                        var picFile  = path.join(pnpFolder,"muccam2.jpg")
+                        fs.writeFile(picFile, req.body, function(err) {
+                        if(err) {
+                            logger.error(err);
+                        } else {
+                            logger.debug("pic save " + picFile);
+                        }
+                    });
+                    res.send('ok');
+                    res.end();          
+        });
+
 
 
 // Login
