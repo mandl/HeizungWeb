@@ -1,7 +1,7 @@
 /*
     Heizung
     
-    Copyright (C) 2018- 2019 Mandl
+    Copyright (C) 2018- 2020 Mandl
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -207,14 +207,18 @@ app.get('/', require('connect-ensure-login').ensureLoggedIn(), function(req, res
     var dataJson = path.join(pnpFolder, 'temp1.json');
     var humDataJson = path.join(pnpFolder, 'hum1.json');
     
-    var count = 8;
+    var count = 12;
     
     var chartColors = {
             red: 'rgb(255, 99, 132)',
             orange: 'rgb(255, 159, 64)',
             yellow: 'rgb(255, 205, 86)',
             green: 'rgb(75, 192, 192)',
+            green1: 'rgb(35, 74, 52)',
+            green2: 'rgb(134, 247, 47)',
             blue: 'rgb(54, 162, 235)',
+            blue1: 'rgb(59, 191, 212)',
+            blue2: 'rgb(67, 31, 209)',
             purple: 'rgb(153, 102, 255)',
             grey: 'rgb(201, 203, 207)'
         };
@@ -225,13 +229,16 @@ app.get('/', require('connect-ensure-login').ensureLoggedIn(), function(req, res
             datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
                        {data: [],label:"Living",backgroundColor:chartColors.orange,fill: false},
                        {data: [],label:"Dining",backgroundColor:chartColors.yellow,fill: false},
-                       {data: [],label:"Plants",backgroundColor:chartColors.green,fill: false},
+                       {data: [],label:"Zimmer2",backgroundColor:chartColors.green,fill: false,hidden:true},
                        {data: [],label:"Wasch",backgroundColor:chartColors.blue,fill: false},
                        {data: [],label:"Roof",backgroundColor:chartColors.purple,fill: false},
-                       {data: [],label:"Heater",backgroundColor:chartColors.grey,fill: false},
-                       {data: [],label:"Bad",backgroundColor:chartColors.red,fill: false}
+                       {data: [],label:"Heater",backgroundColor:chartColors.grey,fill: false,hidden:true},
+                       {data: [],label:"Schlafen",backgroundColor:chartColors.red,fill: false},
+                       {data: [],label:"Kueche",backgroundColor:chartColors.green1,fill: false,hidden:true},
+                       {data: [],label:"Zimmer1",backgroundColor:chartColors.green2,fill: false,hidden:true},
+                       {data: [],label:"Gang",backgroundColor:chartColors.blue1,fill: false,hidden:true},
+                       {data: [],label:"Dusche",backgroundColor:chartColors.blue2,fill: false,hidden:true}
                       ]
-           
     };
     
     var chartHumData = {
@@ -240,11 +247,16 @@ app.get('/', require('connect-ensure-login').ensureLoggedIn(), function(req, res
             datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
                        {data: [],label:"Living",backgroundColor:chartColors.orange,fill: false},
                        {data: [],label:"Dining",backgroundColor:chartColors.yellow,fill: false},
-                       {data: [],label:"Plants",backgroundColor:chartColors.green,fill: false},
+                       {data: [],label:"Zimmer2",backgroundColor:chartColors.green,fill: false,hidden:true},
                        {data: [],label:"Wasch",backgroundColor:chartColors.blue,fill: false},
                        {data: [],label:"Roof",backgroundColor:chartColors.purple,fill: false},
-                       {data: [],label:"Heater",backgroundColor:chartColors.grey,fill: false},
-                       {data: [],label:"Bad",backgroundColor:chartColors.red,fill: false}
+                       {data: [],label:"Heater",backgroundColor:chartColors.grey,fill: false,hidden:true},
+                       {data: [],label:"Schlafen",backgroundColor:chartColors.red,fill: false},
+                       {data: [],label:"Kueche",backgroundColor:chartColors.green1,fill: false,hidden:true},
+                       {data: [],label:"Zimmer1",backgroundColor:chartColors.green2,fill: false,hidden:true},
+                       {data: [],label:"Gang",backgroundColor:chartColors.blue1,fill: false,hidden:true},
+                       {data: [],label:"Dusche",backgroundColor:chartColors.blue2,fill: false,hidden:true}
+
                        ]
            
     };
@@ -389,7 +401,7 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, 
     var dataJson = path.join(pnpFolder, 'temp2.json');
     var humDataJson = path.join(pnpFolder, 'hum2.json');
     
-    var count = 4;
+    var count = 6;
     
     var chartColors = {
             red: 'rgb(255, 99, 132)',
@@ -406,9 +418,11 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, 
             labels: [],
             datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
                        {data: [],label:"Bad",backgroundColor:chartColors.orange,fill: false},
-                       //{data: [],label:"",backgroundColor:chartColors.yellow,fill: false},
                        {data: [],label:"Living",backgroundColor:chartColors.green,fill: false},
-                       {data: [],label:"Board",backgroundColor:chartColors.blue,fill: false}
+                       {data: [],label:"Board",backgroundColor:chartColors.blue,fill: false},
+                       {data: [],label:"Sleep",backgroundColor:chartColors.purple,fill: false},
+                       {data: [],label:"Kitchen",backgroundColor:chartColors.yellow,fill: false}
+
                       ]
            
     };
@@ -418,9 +432,11 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function(req, 
             labels: [],
             datasets: [{data: [],label:"Outside",borderColor:chartColors.red,fill: false},
                        {data: [],label:"Bad",backgroundColor:chartColors.orange,fill: false},
-                       //{data: [],label:"",backgroundColor:chartColors.yellow,fill: false},
                        {data: [],label:"Living",backgroundColor:chartColors.green,fill: false},
-                       {data: [],label:"Board",backgroundColor:chartColors.blue,fill: false}
+                       {data: [],label:"Board",backgroundColor:chartColors.blue,fill: false},
+                       {data: [],label:"Sleep",backgroundColor:chartColors.purple,fill: false},
+                       {data: [],label:"Kitchen",backgroundColor:chartColors.yellow,fill: false}
+
                        ]
            
     };
@@ -989,11 +1005,11 @@ var updateJSON = function(){
     for(var i=1; i <= 3; i++)
     {
         var pngPathName = path.join(pnpFolder,'hum'+ i +'.json');
-        const child = execFileSync('rrdtool',['xport','-s now-24h','-e now','--json','DEF:hums1=./lib/weather'+ i + '.rrd:hums1:AVERAGE','DEF:hums2=./lib/weather'+ i + '.rrd:hums2:AVERAGE','DEF:hums3=./lib/weather'+ i + '.rrd:hums3:AVERAGE','DEF:hums4=./lib/weather'+ i + '.rrd:hums4:AVERAGE','DEF:hums5=./lib/weather'+ i + '.rrd:hums5:AVERAGE','DEF:hums6=./lib/weather'+ i + '.rrd:hums6:AVERAGE','DEF:hums7=./lib/weather'+ i + '.rrd:hums7:AVERAGE','DEF:hums8=./lib/weather'+ i + '.rrd:hums8:AVERAGE','XPORT:hums1:humity1','XPORT:hums2:humity2','XPORT:hums3:humity3','XPORT:hums4:humity4','XPORT:hums5:humity5','XPORT:hums6:humity6']);
+        const child = execFileSync('rrdtool',['xport','-s now-24h','-e now','--json','DEF:hums1=./lib/weather'+ i + '.rrd:hums1:AVERAGE','DEF:hums2=./lib/weather'+ i + '.rrd:hums2:AVERAGE','DEF:hums3=./lib/weather'+ i + '.rrd:hums3:AVERAGE','DEF:hums4=./lib/weather'+ i + '.rrd:hums4:AVERAGE','DEF:hums5=./lib/weather'+ i + '.rrd:hums5:AVERAGE','DEF:hums6=./lib/weather'+ i + '.rrd:hums6:AVERAGE','DEF:hums7=./lib/weather'+ i + '.rrd:hums7:AVERAGE','DEF:hums8=./lib/weather'+ i + '.rrd:hums8:AVERAGE','DEF:hums9=./lib/weather'+ i + '.rrd:hums9:AVERAGE','DEF:hums10=./lib/weather'+ i + '.rrd:hums10:AVERAGE','DEF:hums11=./lib/weather'+ i + '.rrd:hums11:AVERAGE','DEF:hums12=./lib/weather'+ i + '.rrd:hums12:AVERAGE','DEF:hums13=./lib/weather'+ i + '.rrd:hums13:AVERAGE','DEF:hums14=./lib/weather'+ i + '.rrd:hums14:AVERAGE','XPORT:hums1:humity1','XPORT:hums2:humity2','XPORT:hums3:humity3','XPORT:hums4:humity4','XPORT:hums5:humity5','XPORT:hums6:humity6','XPORT:hums7:humity7','XPORT:hums8:humity8','XPORT:hums9:humity9','XPORT:hums10:humity10','XPORT:hums11:humity11','XPORT:hums12:humity12','XPORT:hums13:humity13','XPORT:hums14:humity14']);
         fs.writeFileSync(pngPathName, child);
         
         var pngPathName = path.join(pnpFolder,'temp'+ i +'.json');
-        const child2 = execFileSync('rrdtool',['xport','-s now-24h','-e now','--json','DEF:temps1=./lib/weather'+ i + '.rrd:temps1:AVERAGE','DEF:temps2=./lib/weather'+ i + '.rrd:temps2:AVERAGE','DEF:temps3=./lib/weather'+ i + '.rrd:temps3:AVERAGE','DEF:temps4=./lib/weather'+ i + '.rrd:temps4:AVERAGE','DEF:temps5=./lib/weather'+ i + '.rrd:temps5:AVERAGE','DEF:temps6=./lib/weather'+ i + '.rrd:temps6:AVERAGE','DEF:temps7=./lib/weather'+ i + '.rrd:temps7:AVERAGE','DEF:temps8=./lib/weather'+ i + '.rrd:temps8:AVERAGE','DEF:temps9=./lib/weather'+ i + '.rrd:temps9:AVERAGE','XPORT:temps1:temp1','XPORT:temps2:temp2','XPORT:temps3:temp3','XPORT:temps4:temp4','XPORT:temps5:temp5','XPORT:temps6:temp6','XPORT:temps7:temp7','XPORT:temps8:temp8','XPORT:temps9:temp9']);
+        const child2 = execFileSync('rrdtool',['xport','-s now-24h','-e now','--json','DEF:temps1=./lib/weather'+ i + '.rrd:temps1:AVERAGE','DEF:temps2=./lib/weather'+ i + '.rrd:temps2:AVERAGE','DEF:temps3=./lib/weather'+ i + '.rrd:temps3:AVERAGE','DEF:temps4=./lib/weather'+ i + '.rrd:temps4:AVERAGE','DEF:temps5=./lib/weather'+ i + '.rrd:temps5:AVERAGE','DEF:temps6=./lib/weather'+ i + '.rrd:temps6:AVERAGE','DEF:temps7=./lib/weather'+ i + '.rrd:temps7:AVERAGE','DEF:temps8=./lib/weather'+ i + '.rrd:temps8:AVERAGE','DEF:temps9=./lib/weather'+ i + '.rrd:temps9:AVERAGE','DEF:temps10=./lib/weather'+ i + '.rrd:temps10:AVERAGE','DEF:temps11=./lib/weather'+ i + '.rrd:temps11:AVERAGE','DEF:temps12=./lib/weather'+ i + '.rrd:temps12:AVERAGE','DEF:temps13=./lib/weather'+ i + '.rrd:temps13:AVERAGE','DEF:temps14=./lib/weather'+ i + '.rrd:temps14:AVERAGE','XPORT:temps1:temp1','XPORT:temps2:temp2','XPORT:temps3:temp3','XPORT:temps4:temp4','XPORT:temps5:temp5','XPORT:temps6:temp6','XPORT:temps7:temp7','XPORT:temps8:temp8','XPORT:temps9:temp9','XPORT:temps10:temp10','XPORT:temps11:temp11','XPORT:temps12:temp12','XPORT:temps13:temp13','XPORT:temps14:temp14']);
         fs.writeFileSync(pngPathName, child2);
     }
     

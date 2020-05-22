@@ -11,42 +11,42 @@
   <!-- The slideshow -->
   <div class="carousel-inner">
     <div class="carousel-item active">
-      <img src="/picture/dipcam1.jpg" class="d-block w-100" alt="Dip1 offline">
+      <img src="/picture/dipcam1.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Dip1 offline">
        <div class="carousel-caption">
         <h4>Einfahrt</h4>
         <p>Meine Einfahrt</p>
         </div>
     </div>
     <div class="carousel-item">
-      <img src="/picture/dipcam2.jpg" class="d-block w-100"  alt="Dip2 offline">
+      <img src="/picture/dipcam2.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100"  alt="Dip2 offline">
       <div class="carousel-caption">
         <h4>Dorf</h4>
         <p>Der Garten</p>
         </div>
     </div>
     <div class="carousel-item">
-      <img src="/picture/dipcam3.jpg" class="d-block w-100" alt="Dra offline">
+      <img src="/picture/dipcam3.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Dra offline">
       <div class="carousel-caption">
         <h4>Garten 2</h4>
         <p>Der Garten</p>
         </div>
     </div>
   <div class="carousel-item">
-      <img src="/picture/dipcam4.jpg" class="d-block w-100" alt="Dra offline">
+      <img src="/picture/dipcam4.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Dra offline">
       <div class="carousel-caption">
         <h4>Garten 2</h4>
         <p>Der Garten hinten</p>
         </div>
   </div>
   <div class="carousel-item">
-      <img src="/picture/dracam.jpg" class="d-block w-100" alt="Dra offline">
+      <img src="/picture/dracam.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Dra offline">
       <div class="carousel-caption">
         <h4>Garten</h4>
         <p>Der Garten</p>
         </div>
     </div>
     <div class="carousel-item">
-      <img src="/picture/muccam2.jpg" class="d-block w-100" alt="Muc offline">
+      <img src="/picture/muccam2.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Muc offline">
       <div class="carousel-caption">
         <h4>Wohnung</h4>
         <p>Eingang</p>
@@ -73,5 +73,11 @@
     });
     
   });
+
+  function functionToRemoveWrapping(image) {
+           setTimeout(function(){
+             $(image).attr("src","/picture/dipcam2.jpg");
+           }, 2000);    
+         }
 </script>
 {{/section}}

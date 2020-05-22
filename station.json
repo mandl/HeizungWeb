@@ -5,7 +5,7 @@
 {"id": 54, "label": 25,"name": "Waschmaschine","state": 0, "datasource" : "5"},
 {"id": 17, "label": 26,"name": "Roof","state": 0, "datasource" : "6"},
 {"id": 51, "label": 5,"name": "Heater","state": 0, "datasource" : "7"},
-{"id": 61, "label": 9,"name": "Schlafen","state": 0, "datasource" : "8"},
+{"id": 50, "label": 27,"name": "Schlafen","state": 0, "datasource" : "8"},
 {"id": 3, "label": 20,"name": "Kueche","state": 0, "datasource" : "9"},
 {"id": 32, "label": 21,"name": "Zimmer1","state": 0, "datasource" : "10"},
 {"id": 5, "label": 22,"name": "Gang Telefon","state": 0, "datasource" : "11"},
