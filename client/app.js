@@ -1,7 +1,7 @@
 /*
     Heizung
     
-    Copyright (C) 2018-2019 Mandl
+    Copyright (C) 2018-2020 Mandl
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@ const SerialPort = require('serialport');
 const TempStations = require('../app/models/tempstation');
 
 const configData = require('../config.json');
-const {logger, logfolder} = require('../lib/logger');
+const { logger, logfolder } = require('../lib/logger');
 const fs = require('fs');
 const path = require('path');
-const pnpFolder = path.join('../' ,'picture');
+const pnpFolder = path.join('../', 'picture');
 const rpio = require('../lib/sx1276');
 const sensor = require('../build/Release/dht22');
 const powerData = require('../PowerData.json');
@@ -41,7 +41,7 @@ const os = require('os');
 const stationData = require(configData.station_file);
 var stations = new TempStations.TempStations(stationData);
 
-const  Readline = SerialPort.parsers.Readline;
+const Readline = SerialPort.parsers.Readline;
 
 var serial;
 var parser;
@@ -50,178 +50,170 @@ var crcError = 0;
 var RelaisStat = true;
 
 var hostname = os.hostname()
-var piHardwareVersion = fs.readFileSync('/proc/device-tree/model',{encoding: 'utf8'});
-var hostdata = {hostname:hostname, release:os.release(), node:process.version,piHardwareVersion:piHardwareVersion};
+var piHardwareVersion = fs.readFileSync('/proc/device-tree/model', { encoding: 'utf8' });
+var hostdata = { hostname: hostname, release: os.release(), node: process.version, piHardwareVersion: piHardwareVersion };
 
-var sendOutData = function(data) {
-	
+var sendOutData = function (data) {
+
 	//console.log(data);
 	var headers = {
-		    'Content-Type': 'application/json',
-		    'Content-Length': Buffer.byteLength(data)
-		  };
-		const options = {
-		  hostname: configData.server_url,
-		  port: configData.server_port,
-		  path: configData.location_temp,
-		  rejectUnauthorized: false,
-		  encoding: "utf8",
-		  method: 'POST',
-		  headers: headers,
-		  json: true
-		  
-		};
+		'Content-Type': 'application/json',
+		'Content-Length': Buffer.byteLength(data)
+	};
+	const options = {
+		hostname: configData.server_url,
+		port: configData.server_port,
+		path: configData.location_temp,
+		rejectUnauthorized: false,
+		encoding: "utf8",
+		method: 'POST',
+		headers: headers,
+		json: true
+
+	};
 	const req = https.request(options, (res) => {
-	  logger.debug('statusCode:', res.statusCode);
-	  logger.debug('headers:', res.headers);
-	
-	  res.on('data', (d) => {
-	    // process.stdout.write(d);
-	  });
+		logger.debug('statusCode:', res.statusCode);
+		logger.debug('headers:', res.headers);
+
+		res.on('data', (d) => {
+			// process.stdout.write(d);
+		});
 	});
-	
+
 	req.on('error', (e) => {
-	  logger.debug(e);
+		logger.debug(e);
 	});
 	req.write(data);
 	req.end();
 
 };
 
-var pollStatus = function(data)
-{
-   
-    var headers = {
-            'Content-Type': 'application/json',
-            'Content-Length': Buffer.byteLength(data)
-          };
-        const options = {
-          hostname: configData.server_url,
-          port: configData.server_port,
-          path: "/mucon",
-          rejectUnauthorized: false,
-          encoding: "utf8",
-          method: 'GET',
-          headers: headers,
-          json: true
-          
-        };
-    const req = https.request(options, (res) => {
-      logger.debug('statusCode:', res.statusCode);
-      logger.debug('headers:', res.headers);
-    
-      res.on('data', (d) => {
-          
-          try 
-          {
-       
-             let result = JSON.parse(d.toString('utf8'));
-             // console.log(result)
-             if (result.PowerState === true)
-             {
-                 if (RelaisStat === true)
-                 {
-                    logger.info('Relais off');
-                    rpio.RelaisOff();
-                    RelaisStat = false;
-                 }
-             }
-             else
-             {
-                 if (RelaisStat === false)
-                 {
-                    logger.info('Relais on');
-                    rpio.RelaisOn();
-                    RelaisStat = true;
-                 }
-             }
+var pollStatus = function (data) {
 
-            }catch(e)
-             {
-   
-              logger.debug(e)
-             }
-          
-      });
-    });
-    
-    req.on('error', (e) => {
-      logger.error(e);
-    });
-    req.write(data);
-    req.end();
-}
-
-
-var sendHostdata = function(data) 
-{
-	
-	
 	var headers = {
-		    'Content-Type': 'application/json',
-		    'Content-Length': Buffer.byteLength(data)
-		  };
-		const options = {
-		  hostname: configData.server_url,
-		  port: configData.server_port,
-		  path: "/hostdata",
-		  rejectUnauthorized: false,
-		  encoding: "utf8",
-		  method: 'POST',
-		  headers: headers,
-		  json: true
-		  
-		};
+		'Content-Type': 'application/json',
+		'Content-Length': Buffer.byteLength(data)
+	};
+	const options = {
+		hostname: configData.server_url,
+		port: configData.server_port,
+		path: "/mucon",
+		rejectUnauthorized: false,
+		encoding: "utf8",
+		method: 'GET',
+		headers: headers,
+		json: true
+
+	};
 	const req = https.request(options, (res) => {
-	  logger.debug('statusCode:', res.statusCode);
-	  logger.debug('headers:', res.headers);
-	
-	  res.on('data', (d) => {
-	    // process.stdout.write(d);
-	  });
+		logger.debug('statusCode:', res.statusCode);
+		logger.debug('headers:', res.headers);
+
+		res.on('data', (d) => {
+
+			try {
+
+				let result = JSON.parse(d.toString('utf8'));
+				// console.log(result)
+				if (result.PowerState === true) {
+					if (RelaisStat === true) {
+						logger.info('Relais off');
+						rpio.RelaisOff();
+						RelaisStat = false;
+					}
+				}
+				else {
+					if (RelaisStat === false) {
+						logger.info('Relais on');
+						rpio.RelaisOn();
+						RelaisStat = true;
+					}
+				}
+
+			} catch (e) {
+
+				logger.debug(e)
+			}
+
+		});
 	});
-	
+
 	req.on('error', (e) => {
-	  logger.debug(e);
+		logger.error(e);
 	});
 	req.write(data);
 	req.end();
 }
-var sendPic = function() {
-	
+
+
+var sendHostdata = function (data) {
+
+
+	var headers = {
+		'Content-Type': 'application/json',
+		'Content-Length': Buffer.byteLength(data)
+	};
+	const options = {
+		hostname: configData.server_url,
+		port: configData.server_port,
+		path: "/hostdata",
+		rejectUnauthorized: false,
+		encoding: "utf8",
+		method: 'POST',
+		headers: headers,
+		json: true
+
+	};
+	const req = https.request(options, (res) => {
+		logger.debug('statusCode:', res.statusCode);
+		logger.debug('headers:', res.headers);
+
+		res.on('data', (d) => {
+			// process.stdout.write(d);
+		});
+	});
+
+	req.on('error', (e) => {
+		logger.debug(e);
+	});
+	req.write(data);
+	req.end();
+}
+var sendPic = function () {
+
 	// logger.info(data);
-	var camFile = path.join(pnpFolder,'cam.jpg')
-	child_process.execSync('raspistill -a 12 -md 0 -o '+ camFile);
-	
+	var camFile = path.join(pnpFolder, 'cam.jpg')
+	child_process.execSync('raspistill -a 12 -md 0 -o ' + camFile);
+
 	var data = fs.readFileSync(camFile);
 	// logger.info(data);
 	var headers = {
-		    'Content-Type': 'image/jpeg',
-		    'Content-Length': Buffer.byteLength(data)
-		  };
+		'Content-Type': 'image/jpeg',
+		'Content-Length': Buffer.byteLength(data)
+	};
 
-		const options = {
-		  hostname: configData.server_url,
-		  port: configData.server_port,
-		  path: configData.location_pic,
-		  rejectUnauthorized: false,
-		  encoding: "utf8",
-		  method: 'POST',
-		  headers: headers
-		  
-		  
-		};
+	const options = {
+		hostname: configData.server_url,
+		port: configData.server_port,
+		path: configData.location_pic,
+		rejectUnauthorized: false,
+		encoding: "utf8",
+		method: 'POST',
+		headers: headers
+
+
+	};
 	const req = https.request(options, (res) => {
-	  logger.debug('statusCode:', res.statusCode);
-	  logger.debug('headers:', res.headers);
-	
-	  res.on('data', (d) => {
-	    // process.stdout.write(d);
-	  });
+		logger.debug('statusCode:', res.statusCode);
+		logger.debug('headers:', res.headers);
+
+		res.on('data', (d) => {
+			// process.stdout.write(d);
+		});
 	});
-	
+
 	req.on('error', (e) => {
-	  logger.debug(e);
+		logger.debug(e);
 	});
 	req.write(data);
 	req.end();
@@ -229,17 +221,17 @@ var sendPic = function() {
 };
 
 
-var searchForDevice = function() {
+var searchForDevice = function () {
 	logger.info('searchForDevice');
-	setTimeout(function() {
+	setTimeout(function () {
 		connectDevice();
 	}, 10000);
 };
 
-var connectDevice = function() {
-	var portFound=false;
-	SerialPort.list(function(err, ports) {
-		ports.forEach(function(port) {
+var connectDevice = function () {
+	var portFound = false;
+	SerialPort.list(function (err, ports) {
+		ports.forEach(function (port) {
 			logger.info(port.comName);
 			// logger.info(port.pnpId);
 			// logger.info(port.manufacturer);
@@ -251,101 +243,95 @@ var connectDevice = function() {
 					portFound = true;
 				}
 			}
-		 
+
 		});
-		if(portFound == false)
-		{
+		if (portFound == false) {
 			searchForDevice();
 		}
-		
+
 	});
-	
-};
-	
-var DoConnect=function(port)
-{
-   
-		serial = new SerialPort(port.comName, {
-			baudRate : 115200
-		});
-		parser = serial.pipe(new Readline({
-			delimiter : '\r\n'
-		}));
-	
-		serial.on('close', function() {
-			logger.info('close port');
-			serial = null;
-			parser = null;
-			reconnectDevice();
-		});
-		
-		serial.on('open', function() {
-			logger.info('port open ');
-			
-			
-		});
-		
-		serial.on('error', function(err) {
-		    // error do reconnect
-			serial = null;
-			parser = null;
-			logger.error("error", err);
-			reconnectDevice();
-		});
-	
-		parser.on('data', function(data) {
-	
-			var my = data.toString();
-			// { ID: 5, Reset: 0, LOWBAT: 0, Temp: 22.3, Hygro: 47 }
-			logger.debug(my);
-			TempDataParse(my);
-	
-		});
+
 };
 
-var TempDataParse = function(my)
-{
+var DoConnect = function (port) {
+
+	serial = new SerialPort(port.comName, {
+		baudRate: 115200
+	});
+	parser = serial.pipe(new Readline({
+		delimiter: '\r\n'
+	}));
+
+	serial.on('close', function () {
+		logger.info('close port');
+		serial = null;
+		parser = null;
+		reconnectDevice();
+	});
+
+	serial.on('open', function () {
+		logger.info('port open ');
+
+
+	});
+
+	serial.on('error', function (err) {
+		// error do reconnect
+		serial = null;
+		parser = null;
+		logger.error("error", err);
+		reconnectDevice();
+	});
+
+	parser.on('data', function (data) {
+
+		var my = data.toString();
+		// { ID: 5, Reset: 0, LOWBAT: 0, Temp: 22.3, Hygro: 47 }
+		logger.debug(my);
+		TempDataParse(my);
+
+	});
+};
+
+var TempDataParse = function (my) {
 	try {
 		var obj = JSON.parse(my);
-		if (obj.frame == 'data')
-		{	
-			var data = stations.findWhere({id: obj.ID});						
-			if(data  === undefined)
-			{
+		if (obj.frame == 'data') {
+			var data = stations.findWhere({ id: obj.ID });
+			if (data === undefined) {
 				logger.debug('new id');
-				if((obj.Reset) && (configData.add_new_stations))
-				{
-					stations.add({id: obj.ID,
-					       label: 0,
-					       name : "New",
-					       state : 0,
-					       time : Date.now(),
-					       reset : obj.Reset,
-					       lowbattery : obj.LOWBAT,
-					       timestr: new Date().toLocaleString('de-DE'),
-					       datasource: "-1"});
-				}	
-			}		
-			else{
+				if ((obj.Reset) && (configData.add_new_stations)) {
+					stations.add({
+						id: obj.ID,
+						label: 0,
+						name: "New",
+						state: 0,
+						time: Date.now(),
+						reset: obj.Reset,
+						lowbattery: obj.LOWBAT,
+						timestr: new Date().toLocaleString('de-DE'),
+						datasource: "-1"
+					});
+				}
+			}
+			else {
 				// logger.info(data);
 				// Update
-				data.set({"temp": obj.Temp});
-				data.set({"hum" : obj.Hygro});
-				data.set({"time": Date.now()});
-				data.set({"reset": obj.Reset});
-				data.set({"lowbattery": obj.LOWBAT});
-				data.set({"timestr": new Date().toLocaleString('de-DE')});
+				data.set({ "temp": obj.Temp });
+				data.set({ "hum": obj.Hygro });
+				data.set({ "time": Date.now() });
+				data.set({ "reset": obj.Reset });
+				data.set({ "lowbattery": obj.LOWBAT });
+				data.set({ "timestr": new Date().toLocaleString('de-DE') });
 				// logger.info(dataTemp);
 			}
 		}
-		else if (obj.frame == 'info')
-		{
+		else if (obj.frame == 'info') {
 			// crc error
 			crcError = crcError + 1;
-			logger.debug("CRC errors: ",crcError);
-		}	
-		else
-		{			
+			logger.debug("CRC errors: ", crcError);
+		}
+		else {
 			logger.error(obj);
 		}
 	} catch (e) {
@@ -355,9 +341,9 @@ var TempDataParse = function(my)
 
 }
 // check for connection errors or drops and reconnect
-var reconnectDevice = function() {
+var reconnectDevice = function () {
 	logger.info('initiating reconnect');
-	setTimeout(function() {
+	setTimeout(function () {
 		logger.info('reconnecting to arduino');
 		connectDevice();
 	}, 10000);
@@ -377,105 +363,97 @@ logger.info('Use local DHT22:     ' + configData.localDHT22);
 logger.info('Use relais muc:      ' + configData.muc_power);
 
 // use arduino board
-if(configData.remote_temp)
-{	
+if (configData.remote_temp) {
 	setTimeout(connectDevice, 1000);
 }
 
 // send temp data
-if((configData.remote_temp) || (configData.localRFM95)  || (configData.localDHT22))
-{
-	setInterval(function() {
+if ((configData.remote_temp) || (configData.localRFM95) || (configData.localDHT22)) {
+	setInterval(function () {
 		logger.debug('send data');
-		logger.debug(JSON.stringify(stations));		
+		logger.debug(JSON.stringify(stations));
 		sendOutData(JSON.stringify(stations));
-	
+
 	}, 1000 * 60 * 5); // send every 5 minutes
 }
 
 // send host data
-setInterval(function() {
+setInterval(function () {
 	logger.debug('send hostdata');
-	logger.debug(JSON.stringify(hostdata));		
-	
+	logger.debug(JSON.stringify(hostdata));
+
 	sendHostdata(JSON.stringify(hostdata));
 
 }, 1000 * 60 * 5); // send every 5 minutes
 
 
 // send a remote picture
-if(configData.remote_cam)
-{	
-	setInterval(function() {
-		
-			var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '') 
-			logger.debug('send image: ' + strDate);
-			sendPic();	
-		
+if (configData.remote_cam) {
+	setInterval(function () {
+
+		var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+		logger.debug('send image: ' + strDate);
+		sendPic();
+
 	}, 1000 * 60 * 30); // send every 30 minutes
 
 }
 
 // use local RFM95 receiver
-if(configData.localRFM95)
-{
-	
+if (configData.localRFM95) {
+
 	rpio.FSKBegin();
 	rpio.FSKReset();
 	rpio.FSKRxChainCalibration();
-	
-	var version  = rpio.FSKGetVersion();
-	
+
+	var version = rpio.FSKGetVersion();
+
 	logger.info('RFM95 version: ' + version);
-	
+
 	rpio.FSKOn();
-	
-	setInterval(function() {	
-	 
-	    var mystr;
-	    mystr = rpio.FSKGetData();
-	    if(mystr != "timeout")
-	    {	
-	    	logger.debug(mystr);
-	    	TempDataParse(mystr);
+
+	setInterval(function () {
+
+		var mystr;
+		mystr = rpio.FSKGetData();
+		if (mystr != "timeout") {
+			logger.debug(mystr);
+			TempDataParse(mystr);
 		}
-	
-	},500); // every 500 ms
+
+	}, 500); // every 500 ms
 }
 
 // power switch muc
-if(configData.muc_power)
-{
-    
-    rpio.RelaisInit();
-    
-    // switch on = no power at heater
-    logger.info('Relais on');
-    RelaisStat = true;
-    rpio.RelaisOn();
-    
-    setInterval(function() {    
-     
-        pollStatus(JSON.stringify(hostdata))
-    
-    },10000); // every 10 seconds 
+if (configData.muc_power) {
+
+	rpio.RelaisInit();
+
+	// switch on = no power at heater
+	logger.info('Relais on');
+	RelaisStat = true;
+	rpio.RelaisOn();
+
+	setInterval(function () {
+
+		pollStatus(JSON.stringify(hostdata))
+
+	}, 10000); // every 10 seconds 
 }
 
 
 // use local DHT sensor
-if(configData.localDHT22)
-{
-	setInterval(function() {
-		   
-		  // Sensor DHT22, Pin 2
-		  var readout = sensor.read(22, 2);
-		  
-		  if(readout.isValid)
-		  {
-			  var strData = "{\"frame\":\"data\",\"ID\":99,\"Reset\":0,\"LOWBAT\":0,\"Temp\":" + readout.temperature.toFixed(1) + ",\"Hygro\":"+readout.humidity.toFixed(1)+"}";
-			  
-			  logger.debug(strData);
-			  TempDataParse(strData);
-		  }
-		}, 10000);
+if (configData.localDHT22) {
+	setInterval(function () {
+
+		// Sensor DHT22, Pin 2
+		var readout = sensor.read(22, 2);
+
+		if (readout.isValid) {
+			var strData = "{\"frame\":\"data\",\"ID\":99,\"Reset\":0,\"LOWBAT\":0,\"Temp\":" + readout.temperature.toFixed(1) + ",\"Hygro\":" + readout.humidity.toFixed(1) + "}";
+
+			logger.debug(strData);
+			TempDataParse(strData);
+		}
+	}, 10000);
 }

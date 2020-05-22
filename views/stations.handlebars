@@ -1,61 +1,61 @@
 <div class="table-responsive">
-<table class="table table-striped table-sm">
-<caption>Villa</caption>
-  <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">Label</th>
-      <th scope="col">Name</th>
-      <th scope="col">Temperatur</th>
-      <th scope="col">Humidity</th>
-      <th scope="col">Data</th>
-      <th scope="col">Bat</th>
-      <th scope="col">Res</th>
-      <th scope="col">Time</th>
-    </tr>
-  </thead>
-  <tbody id="stations"></tbody>
-</table>
+  <table class="table table-striped table-sm">
+    <caption>Villa</caption>
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Label</th>
+        <th scope="col">Name</th>
+        <th scope="col">Temperatur</th>
+        <th scope="col">Humidity</th>
+        <th scope="col">Data</th>
+        <th scope="col">Bat</th>
+        <th scope="col">Res</th>
+        <th scope="col">Time</th>
+      </tr>
+    </thead>
+    <tbody id="stations"></tbody>
+  </table>
 </div>
 
 <div class="table-responsive">
-<table class="table table-striped table-sm">
-<caption>Muc</caption>
-  <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">Label</th>
-      <th scope="col">Name</th>
-      <th scope="col">Temperatur</th>
-      <th scope="col">Humidity</th>
-      <th scope="col">Data</th>
-      <th scope="col">Bat</th>
-      <th scope="col">Res</th>
-      <th scope="col">Time</th>
-    </tr>
-  </thead>
-  <tbody id="stationsremote"></tbody>
-</table>
+  <table class="table table-striped table-sm">
+    <caption>Muc</caption>
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Label</th>
+        <th scope="col">Name</th>
+        <th scope="col">Temperatur</th>
+        <th scope="col">Humidity</th>
+        <th scope="col">Data</th>
+        <th scope="col">Bat</th>
+        <th scope="col">Res</th>
+        <th scope="col">Time</th>
+      </tr>
+    </thead>
+    <tbody id="stationsremote"></tbody>
+  </table>
 </div>
 <div class="table-responsive">
-<table class="table table-striped table-sm">
-<caption>Dra</caption>
-  <thead>
-    <tr>
-      <th scope="col">ID</th>
-      <th scope="col">Label</th>
-      <th scope="col">Name</th>
-      <th scope="col">Temperatur</th>
-      <th scope="col">Humidity</th>
-      <th scope="col">Data</th>
-      <th scope="col">Bat</th>
-      <th scope="col">Res</th>
-      <th scope="col">Time</th>
-    </tr>
-  </thead>
-  <tbody id="stationsremote2"></tbody>
-</table>
-</div>  
+  <table class="table table-striped table-sm">
+    <caption>Dra</caption>
+    <thead>
+      <tr>
+        <th scope="col">ID</th>
+        <th scope="col">Label</th>
+        <th scope="col">Name</th>
+        <th scope="col">Temperatur</th>
+        <th scope="col">Humidity</th>
+        <th scope="col">Data</th>
+        <th scope="col">Bat</th>
+        <th scope="col">Res</th>
+        <th scope="col">Time</th>
+      </tr>
+    </thead>
+    <tbody id="stationsremote2"></tbody>
+  </table>
+</div>
 <script type="text/template" id="view-station-template">
 <td><%= id %></td>
 <td><%= label %></td>
@@ -73,13 +73,13 @@
 <script src="js/mycode.js"></script>
 <script>
 
- $(document).ready(function() {
+  $(document).ready(function () {
     console.log('ready');
-    $.each($('#navbarNav').find('li'), function() {
-        $(this).toggleClass('active',
-            '/' + $(this).find('a').attr('href') == window.location.pathname);
+    $.each($('#navbarNav').find('li'), function () {
+      $(this).toggleClass('active',
+        '/' + $(this).find('a').attr('href') == window.location.pathname);
     });
-    
+
   });
 
 </script>

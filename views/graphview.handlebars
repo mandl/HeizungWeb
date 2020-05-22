@@ -1,121 +1,126 @@
 <div class="container">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <canvas id="chLine"  style="position:relative; maintainAspectRatio:false; height:100vh; width:140vw" ></canvas>
-                </div>
-            </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <canvas id="chLine" style="position:relative; maintainAspectRatio:false; height:100vh; width:140vw"></canvas>
         </div>
-     </div> 
-     <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
-                    <canvas id="chLineHum" style="position:relative; maintainAspectRatio:false; height:100vh; width:140vw"></canvas>
-                </div>
-            </div>
+      </div>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-body">
+          <canvas id="chLineHum"
+            style="position:relative; maintainAspectRatio:false; height:100vh; width:140vw"></canvas>
         </div>
-     </div>         
+      </div>
+    </div>
+  </div>
 </div>
 
 
 
 {{#section 'jquery'}}
-<script src= "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
 <script>
 
-var decodedJson = decodeURIComponent("{{{tempData}}}");
-var chartData = JSON.parse(decodedJson);
+  var decodedJson = decodeURIComponent("{{{tempData}}}");
+  var chartData = JSON.parse(decodedJson);
 
-var decodedHumJson = decodeURIComponent("{{{humData}}}");
-var chartHumData = JSON.parse(decodedHumJson);
+  var decodedHumJson = decodeURIComponent("{{{humData}}}");
+  var chartHumData = JSON.parse(decodedHumJson);
 
-const chLine = document.getElementById("chLine");
-const chLineHum = document.getElementById("chLineHum");
+  const chLine = document.getElementById("chLine");
+  const chLineHum = document.getElementById("chLineHum");
 
-if (chLine) {
-  var tempChart = new Chart(chLine, {
-  type: 'line',
-  data: chartData,
-  options: {
-    title: {
-      display: true,
-      text: 'Day temperature'
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          beginAtZero: false
+  if (chLine) {
+    var tempChart = new Chart(chLine, {
+      type: 'line',
+      data: chartData,
+      options: {
+        title: {
+          display: true,
+          text: 'Day temperature'
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: false
+            }
+          }]
+        },
+        legend: {
+          display: true
         }
-      }]
-    },
-    legend: {
-      display: true
-    }
-  }
-  });
- } 
-  
-if (chLineHum) {
-  var humChart = new Chart(chLineHum, {
-  type: 'line',
-  data: chartHumData,
-  options: {
-    title: {
-      display: true,
-      text: 'Day humity'
-    },
-    scales: {
-      yAxes: [{
-        ticks: {
-          beginAtZero: false
-        }
-      }]
-    },
-    legend: {
-      display: true
-    }
-  }
-  });
-  
-}
-
- $(document).ready(function() {
-    console.log('ready');
- 
-    $.each($('#navbarNav').find('li'), function() {
-        $(this).toggleClass('active',
-            '/' + $(this).find('a').attr('href') == window.location.pathname);
+      }
     });
-    
-    {{#each stations}}
-     $('#week{{datasource}}').toggle("slow");
-    {{/each}}
-    
-    $('#ShowWeek').click(function(){
-    		var button = $(this);
-    		button.text(button.text() == "Show week" ? "Hide week" : "Show week") 
-    		{{#each stations}}
-        $('#week{{datasource}}').toggle("slow");
-       	{{/each}}
-       //$('#ShowWeek').text('Hide week');
-        
-    }); 
-    
-    $('#ShowHumidity').click(function(){
-    		var button = $(this);
-		button.text(button.text() == "Hide Humidity" ? "Show Humidity" : "Hide Humidity") 
-    		{{#each stations}}
-        $('#hum{{datasource}}').toggle("slow");
-        $('#humWeek{{datasource}}').toggle("slow");
-       {{/each}}
-    //$('#ShowHumidity').text('Show Humidity');
-       
-   }); 
-    
-  });
+  }
+
+  if (chLineHum) {
+    var humChart = new Chart(chLineHum, {
+      type: 'line',
+      data: chartHumData,
+      options: {
+        title: {
+          display: true,
+          text: 'Day humity'
+        },
+        scales: {
+          yAxes: [{
+            ticks: {
+              beginAtZero: false
+            }
+          }]
+        },
+        legend: {
+          display: true
+        }
+      }
+    });
+
+  }
+
+  $(document).ready(function () {
+    console.log('ready');
+
+    $.each($('#navbarNav').find('li'), function () {
+      $(this).toggleClass('active',
+        '/' + $(this).find('a').attr('href') == window.location.pathname);
+    });
+
+    { {#each stations } }
+    $('#week{{datasource}}').toggle("slow");
+    {
+      {
+        /each}}
+
+        $('#ShowWeek').click(function () {
+          var button = $(this);
+          button.text(button.text() == "Show week" ? "Hide week" : "Show week")
+          { {#each stations } }
+          $('#week{{datasource}}').toggle("slow");
+          {
+            {
+              /each}}
+              //$('#ShowWeek').text('Hide week');
+
+            });
+
+        $('#ShowHumidity').click(function () {
+          var button = $(this);
+          button.text(button.text() == "Hide Humidity" ? "Show Humidity" : "Hide Humidity")
+          { {#each stations } }
+          $('#hum{{datasource}}').toggle("slow");
+          $('#humWeek{{datasource}}').toggle("slow");
+          {
+            {
+              /each}}
+              //$('#ShowHumidity').text('Show Humidity');
+
+            });
+
+      });
 </script>
 {{/section}}
-
-
