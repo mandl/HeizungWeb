@@ -83,6 +83,15 @@ var stationsDra = new TempStations.TempStations(stationData2);
 
 var allpis = new RemotePiCollection.RemotePiCollection(allPiData);
 
+var maintenance = false;
+
+
+function IsMaintenance()
+{
+    return maintenance;
+
+}
+
 // Configure the local strategy for use by Passport.
 //
 // The local strategy require a `verify` function which receives the credentials
@@ -181,24 +190,39 @@ app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function(
 
 app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
 	
-	var camFile = path.join(pnpFolder,'cam.jpg');
+	
+        var camFile = path.join(pnpFolder,'cam.jpg');
 	var ipcam1File = path.join(pnpFolder,'ipcam1.jpg');
 	var ipcam2File = path.join(pnpFolder,'ipcam2.jpg');
 	var ipcam3File = path.join(pnpFolder,'ipcam3.jpg');
+
+
+        if (maintenance === false)
+        {
 	
-	logger.info("Webcam and ipcam page");
-	
-	execSync('wget -q -O '+ ipcam1File + ' ' + configData.ipcam1 +'/cgi-bin/getsnapshot.cgi');
-	execSync('wget -q -O '+ ipcam2File + ' ' + configData.ipcam2 +'/cgi-bin/getsnapshot.cgi');
-	execSync('wget -q -O '+ ipcam3File + ' ' + configData.ipcam3 +'/cgi-bin/getsnapshot.cgi');
-	execSync('raspistill -rot 90 --colfx 128:128 -a 12 -md 0 -o '+ camFile);
-	
-	res.render('webcam', { layout:'main', title: 'Webcam'});
+	    logger.info("Webcam and ipcam page");
+	    execSync('wget -q -O '+ ipcam1File + ' ' + configData.ipcam1 +'/cgi-bin/getsnapshot.cgi');
+	    execSync('wget -q -O '+ ipcam2File + ' ' + configData.ipcam2 +'/cgi-bin/getsnapshot.cgi');
+	    execSync('wget -q -O '+ ipcam3File + ' ' + configData.ipcam3 +'/cgi-bin/getsnapshot.cgi');
+	    execSync('raspistill -rot 90 --colfx 128:128 -a 12 -md 0 -o '+ camFile);
+	    res.render('webcam', { layout:'main', title: 'Webcam'});
+         }
+         else
+         {
+            res.render('maintenance', { layout:'main', title: 'Maintenance'});
+         }
 });
 
 app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), function(req, res) {
-	logger.info("Webcam remote page");
-	res.render('webcamRemote', { layout:'main', title: 'Webcam remote'});
+      if (maintenance === false)
+      {
+	  logger.info("Webcam remote page");
+	  res.render('webcamRemote', { layout:'main', title: 'Webcam remote'});
+      }
+      else
+      {
+          res.render('maintenance', { layout:'main', title: 'Maintenance'});
+      }
 });
 
 
@@ -511,13 +535,21 @@ app.get('/datastationsdra', require('connect-ensure-login').ensureLoggedIn(),
 
 
 app.get('/controlmuc',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+ if (req.user.admin == true)
+ {
     logger.info("Controlmuc page"); 
     res.render('controlpower', { layout:'main', title: 'Muc'});
-    
+  } 
+ else
+ {
+   res.redirect('/');
+ } 
+
 });
 
 app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-	
+ if (req.user.admin == true)
+ {	
 	logger.info("Control page");
 	   var dataJson = path.join(pnpFolder, 'burner.json');
 	  
@@ -566,24 +598,36 @@ app.get('/control',  require('connect-ensure-login').ensureLoggedIn(),function(r
 	    }
 	    
 	res.render('control', { layout:'main', title: 'Control',burnerData : encodeURIComponent(JSON.stringify(chartData2))});
+    }
+    else
+    {
+      res.redirect('/');
+
+    }
 });
 
 app.get('/admin',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+    if (req.user.admin == true)
+    {
 	logger.info("Admin page");
-	piHardwareVersion = fs.readFileSync('/proc/device-tree/model');
-	runVersion = os.platform() + " " + os.release() + "    Node version: " + process.version + " " + piHardwareVersion;
-	res.render('admin', { layout:'main', title: 'Admin',dayOn:ar.getHeater().get('dayNightTimeOn'),dayOff:ar.getHeater().get('dayNightTimeoff'),osVersion:runVersion,PiStations:allpis.toJSON()});
+	//piHardwareVersion = fs.readFileSync('/proc/device-tree/model');
+	//runVersion = os.platform() + " " + os.release() + "    Node version: " + process.version + " " + piHardwareVersion;
+	res.render('admin', { layout:'main', title: 'Admin',dayOn:ar.getHeater().get('dayNightTimeOn'),dayOff:ar.getHeater().get('dayNightTimeoff'),maintenance:maintenance});
+     }
+     else
+     {
+        res.redirect('/');
+     }
+     
 });
 
+app.get('/status',  require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
+        logger.info("Status page");
+        piHardwareVersion = fs.readFileSync('/proc/device-tree/model');
+        runVersion = os.platform() + " " + os.release() + "    Node version: " + process.version + " " + piHardwareVersion;
+        res.render('status', { layout:'main', title: 'Admin',osVersion:runVersion,PiStations:allpis.toJSON()});
 
-
-// app.get('/dra',
-// require('connect-ensure-login').ensureLoggedIn(),function(req, res) {
-// logger.info("Dra page");
-// res.render('mainview', { layout:'main', title:
-// 'Dra',stations:stationsDra.toJSON(),prefix:'dra'});
-// });
-
+});
 
 
 app.get('/heater',
@@ -785,13 +829,23 @@ app.post('/heater',
 
 
 // config proxy
+app.use('/vdr', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverOne, {
+filter: function(req, res) {
+     return false;
+  }
+}));
 
+app.use('/video', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverTwo, {
+ filter: function(req, res) {
+     return maintenance == false;
+  }
+}));
 
-app.use('/vdr', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverOne));
-
-app.use('/video', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverTwo));
-
-app.use('/motion', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverThree));
+app.use('/motion', require('connect-ensure-login').ensureLoggedIn(),proxy(configData.serverThree, {
+  filter: function(req, res) {
+     return maintenance == false;
+  }
+}));
 
 
 //
@@ -969,6 +1023,16 @@ app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), func
 		exec('/sbin/reboot');
 		
 	}	
+
+        if(req.body.Maintenance !== undefined)
+        {
+             logger.info("Switch to maintenance");
+             maintenance = true;
+        }
+        else
+        {
+             maintenance = false;
+        }
 
 	res.redirect('/control');	
 });

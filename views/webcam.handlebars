@@ -1,34 +1,67 @@
 <div class="container-fluid">
-<div class="container">
-   <div class="row justify-content-md-center">
-      <img  src="/picture/cam.jpg" class="img-fluid"  alt="Offline">
-   </div>
+<div id="demo" class="carousel slide" data-ride="carousel">
+  <!-- Indicators -->
+  <ul class="carousel-indicators">
+    <li data-target="#demo" data-slide-to="0" class="active"></li>
+    <li data-target="#demo" data-slide-to="1"></li>
+    <li data-target="#demo" data-slide-to="2"></li>
+    <li data-target="#demo" data-slide-to="3"></li>
+  </ul>
+  <!-- The slideshow -->
+  <div class="carousel-inner">
+    <div class="carousel-item active">
+      <img src="/picture/cam.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Dip1 offline">
+       <div class="carousel-caption">
+        <h4>Heizung</h4>
+        <p>Meine Heizung</p>
+        </div>
+    </div>
+    <div class="carousel-item">
+      <img src="/picture/ipcam1.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100"  alt="Dip2 offline">
+      <div class="carousel-caption">
+        <h4>Einfahrt</h4>
+        <p>Die Einfahrt</p>
+        </div>
+    </div>
+    <div class="carousel-item">
+      <img src="/picture/ipcam2.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Dra offline">
+      <div class="carousel-caption">
+        <h4>Eingang</h4>
+        <p>Der Eingang</p>
+        </div>
+    </div>
+  <div class="carousel-item">
+      <img src="/picture/ipcam3.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Dra offline">
+      <div class="carousel-caption">
+        <h4>Rueckseite 2</h4>
+        <p>Der Garten hinten</p>
+        </div>
+  </div>
+ 
+  </div>
+  <!-- Left and right controls -->
+  <a class="carousel-control-prev" href="#demo" data-slide="prev">
+    <span class="carousel-control-prev-icon"></span>
+  </a>
+  <a class="carousel-control-next" href="#demo" data-slide="next">
+    <span class="carousel-control-next-icon"></span>
+  </a>
 </div>
-<div class="container">
-   <div class="row justify-content-md-center">
-      <img  src="/picture/ipcam1.jpg" class="img-fluid"  alt="Offline">
-   </div>
-</div>
-<div class="container">
-   <div class="row justify-content-md-center">
-      <img  src="/picture/ipcam2.jpg" class="img-fluid"  alt="Offline">
-   </div>
-</div>
-<div class="container">
-   <div class="row justify-content-md-center">
-      <img  src="/picture/ipcam3.jpg" class="img-fluid"  alt="Offline">
-   </div>
-</div>	
 </div>
 
 {{#section 'jquery'}}
-<script>
+<script type="text/javascript">
  $(document).ready(function() {
-    console.log('ready');
     $.each($('#navbarNav').find('li'), function() {
         $(this).toggleClass('active',
             '/' + $(this).find('a').attr('href') == window.location.pathname);
-    }); 
+    });
+    
   });
+  function functionToRemoveWrapping(image) {
+           setTimeout(function(){
+             $(image).attr("src","offline.jpg");
+           }, 2000);    
+         }
 </script>
 {{/section}}

@@ -1,0 +1,14 @@
+<div class="container-fluid">
+    <h1>Maintenance</h1>	
+</div>
+{{#section 'jquery'}}
+<script>
+ $(document).ready(function() {
+    $.each($('#navbarNav').find('li'), function() {
+        $(this).toggleClass('active',
+            '/' + $(this).find('a').attr('href') == window.location.pathname);
+    }); 
+    
+  });
+</script>
+{{/section}}

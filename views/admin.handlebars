@@ -1,33 +1,5 @@
 <div class="container-fluid">
 <h1>Admin</h1>
-<p>{{osVersion}}</p>
-
-<table class="table table-striped table-sm">
-<caption>Clients</caption>
-<thead>
-    <tr>
-      <th scope="col">Hostname</th>
-      <th scope="col">Release</th>
-      <th scope="col">Node</th>
-      <th scope="col">Hardware</th>
-      <th scope="col">Location</th>
-      <th scope="col">Date</th>
-    </tr>
-</thead>
-<tbody>
-{{#each PiStations}}
-    <tr>
-        <td>{{hostname}}</td>
-        <td>{{release}}</td>
-        <td>{{node}}</td>
-        <td>{{piHardwareVersion}}</td>
-        <td>{{location}}</td>
-        <td>{{pingDate}}</td>
-    </tr>
-{{/each}}
-</tbody>
-</table>
-
 <form id="admindata" action="/admincontrol" method="post">  
     <div class="form-group">
     <label for="ControlSelectDayOn">Day on</label>
@@ -69,10 +41,16 @@
     Reboot the system
   </label>
   </div><br>
-    <div class="form-check">
+  <div class="form-check">
   <input class="form-check-input" type="checkbox" value="" id="UpgradePI" name="UpgradePI">
   <label class="form-check-label" for="UpgradePI">
     Upgrade the system
+  </label>
+  </div><br>
+  <div class="form-check">
+    <input class="form-check-input" type="checkbox" value="" id="maintenance" name="Maintenance">
+    <label class="form-check-label" for="Maintenance">
+    Maintenance
   </label>
   </div><br>
   <button type="submit" class="btn btn-primary">Submit</button>  
@@ -85,6 +63,7 @@
     $(':text:first').focus();
     $('#ControlSelectDayOn').val({{dayOn}});
     $('#ControlSelectDayOff').val({{dayOff}});
+    $('#maintenance').prop( "checked", {{maintenance}});
     
     $('form').submit(function(e) {
     	//e.preventDefault();
