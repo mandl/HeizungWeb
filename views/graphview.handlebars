@@ -90,20 +90,16 @@
         '/' + $(this).find('a').attr('href') == window.location.pathname);
     });
 
-    { {#each stations } }
+    {{#each stations }}
     $('#week{{datasource}}').toggle("slow");
-    {
-      {
-        /each}}
+    {{/each}}
 
         $('#ShowWeek').click(function () {
           var button = $(this);
           button.text(button.text() == "Show week" ? "Hide week" : "Show week")
-          { {#each stations } }
+          {{#each stations}}
           $('#week{{datasource}}').toggle("slow");
-          {
-            {
-              /each}}
+          {{/each}}
               //$('#ShowWeek').text('Hide week');
 
             });
@@ -111,12 +107,10 @@
         $('#ShowHumidity').click(function () {
           var button = $(this);
           button.text(button.text() == "Hide Humidity" ? "Show Humidity" : "Hide Humidity")
-          { {#each stations } }
+          {{#each stations}}
           $('#hum{{datasource}}').toggle("slow");
           $('#humWeek{{datasource}}').toggle("slow");
-          {
-            {
-              /each}}
+          {{/each}}
               //$('#ShowHumidity').text('Show Humidity');
 
             });
