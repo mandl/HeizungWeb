@@ -378,6 +378,7 @@ if ((configData.remote_temp) || (configData.localRFM95) || (configData.localDHT2
 }
 
 // send host data
+sendHostdata(JSON.stringify(hostdata));
 setInterval(function () {
 	logger.debug('send hostdata');
 	logger.debug(JSON.stringify(hostdata));
@@ -389,6 +390,7 @@ setInterval(function () {
 
 // send a remote picture
 if (configData.remote_cam) {
+        sendPic();
 	setInterval(function () {
 
 		var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
