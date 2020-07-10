@@ -37,13 +37,13 @@
     "jquery": "^3.5.1",
     "lodash": "^4.17.15",
     "mathjs": "^6.6.5",
-    "moment": "^2.26.0",
+    "moment": "^2.27.0",
     "morgan": "^1.10.0",
     "passport": "^0.4.1",
     "passport-local": "^1.0.0",
     "request": "^2.88.2",
     "rrdtool": "^0.1.1",
     "serialport": "^7.1.5",
-    "winston": "^3.2.1"
+    "winston": "^3.3.2"
   }
 }
