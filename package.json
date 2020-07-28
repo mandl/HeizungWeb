@@ -35,7 +35,7 @@
     "express-session": "^1.17.1",
     "http-parser-js": "^0.5.2",
     "jquery": "^3.5.1",
-    "lodash": "^4.17.15",
+    "lodash": "^4.17.19",
     "mathjs": "^6.6.5",
     "moment": "^2.27.0",
     "morgan": "^1.10.0",
@@ -44,6 +44,6 @@
     "request": "^2.88.2",
     "rrdtool": "^0.1.1",
     "serialport": "^7.1.5",
-    "winston": "^3.3.2"
+    "winston": "^3.3.3"
   }
 }
