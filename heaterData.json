@@ -1,1 +1,10 @@
-{"burnerState" : false,"hours" : -1,"burnerStarts" : -1,"voltageBattery" : -1,"temp" : -1,"dayNightState" : false,"dayNightTimeOn" : 6,"dayNightTimeoff" : 22}
+{
+    "burnerState": false,
+    "hours": -1,
+    "burnerStarts": -1,
+    "voltageBattery": -1,
+    "temp": -1,
+    "dayNightState": false,
+    "dayNightTimeOn": 6,
+    "dayNightTimeoff": 22
+}

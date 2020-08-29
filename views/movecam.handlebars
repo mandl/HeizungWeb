@@ -1,0 +1,20 @@
+<div class="container-fluid">
+        <img src="/picture/ipcam4.jpg" onerror="functionToRemoveWrapping(this)" class="d-block w-100" alt="Dra offline">
+</div>
+
+{{#section 'jquery'}}
+<script type="text/javascript">
+  $(document).ready(function () {
+    $.each($('#navbarNav').find('li'), function () {
+      $(this).toggleClass('active',
+        '/' + $(this).find('a').attr('href') == window.location.pathname);
+    });
+
+  });
+  function functionToRemoveWrapping(image) {
+    setTimeout(function () {
+      $(image).attr("src", "offline.jpg");
+    }, 2000);
+  }
+</script>
+{{/section}}

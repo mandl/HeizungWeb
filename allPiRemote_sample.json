@@ -1,3 +1,12 @@
-[{"hostname": "demo3", "release": "1", "node": "1"},
-{"hostname": "demo2", "release": "2", "node": "2"}
+[
+    {
+        "hostname": "demo3",
+        "release": "1",
+        "node": "1"
+    },
+    {
+        "hostname": "demo2",
+        "release": "2",
+        "node": "2"
+    }
 ]

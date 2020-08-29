@@ -34,7 +34,7 @@ const os = require('os');
 const proxy = require('express-http-proxy');
 const math = require('mathjs');
 const moment = require('moment');
-
+const ensureLogin = require('connect-ensure-login');
 
 
 var handlebars = require('express-handlebars')
@@ -162,7 +162,7 @@ app.use(passport.session());
 
 // static routes
 app.use(express.static(__dirname + '/public'));
-app.use('/picture', require('connect-ensure-login').ensureLoggedIn(), express.static(__dirname + '/picture'))
+app.use('/picture', ensureLogin.ensureLoggedIn(), express.static(__dirname + '/picture'))
 
 // view engine
 app.engine('handlebars', handlebars.engine);
@@ -182,12 +182,21 @@ app.get('/mucon', function (req, res) {
     res.end();
 });
 
-app.get('/stations', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/stations', ensureLogin.ensureLoggedIn(), function (req, res) {
     res.render('stations', { layout: 'main', title: 'Stations' });
 });
 
 
-app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/movecam', ensureLogin.ensureLoggedIn(), function (reg, res) {
+
+    var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
+
+    execSync('wget --user=' + configData.ipcam4User + --password=\x27\x27--tries = 2 - q - O ' + ipcam4File + ' ' + configData.ipcam4 + ' / jpgimage / 1 / image.jpg');
+    res.render('movecam', { layout: 'main', title: 'MoveCam' });
+
+});
+
+app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
 
 
     var camFile = path.join(pnpFolder, 'cam.jpg');
@@ -210,7 +219,7 @@ app.get('/webcam', require('connect-ensure-login').ensureLoggedIn(), function (r
     }
 });
 
-app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/webcamremote', ensureLogin.ensureLoggedIn(), function (req, res) {
     if (maintenance === false) {
         logger.info("Webcam remote page");
         res.render('webcamRemote', { layout: 'main', title: 'Webcam remote' });
@@ -221,7 +230,7 @@ app.get('/webcamremote', require('connect-ensure-login').ensureLoggedIn(), funct
 });
 
 
-app.get('/', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/', ensureLogin.ensureLoggedIn(), function (req, res) {
     logger.info("villa page");
     var dataJson = path.join(pnpFolder, 'temp1.json');
     var humDataJson = path.join(pnpFolder, 'hum1.json');
@@ -320,7 +329,7 @@ app.get('/', require('connect-ensure-login').ensureLoggedIn(), function (req, re
 
 
 
-app.get('/dra', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/dra', ensureLogin.ensureLoggedIn(), function (req, res) {
     logger.info("dra page");
     var dataJson = path.join(pnpFolder, 'temp3.json');
     var humDataJson = path.join(pnpFolder, 'hum3.json');
@@ -403,7 +412,7 @@ app.get('/dra', require('connect-ensure-login').ensureLoggedIn(), function (req,
     res.render('graphview', { layout: 'main', title: 'Dra', tempData: encodeURIComponent(JSON.stringify(chartData2)), humData: encodeURIComponent(JSON.stringify(chartHumData)) });
 });
 
-app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
     logger.info("muc");
     var dataJson = path.join(pnpFolder, 'temp2.json');
     var humDataJson = path.join(pnpFolder, 'hum2.json');
@@ -490,20 +499,20 @@ app.get('/muc', require('connect-ensure-login').ensureLoggedIn(), function (req,
 
 // get stations data
 
-app.get('/datastations', require('connect-ensure-login').ensureLoggedIn(),
+app.get('/datastations', ensureLogin.ensureLoggedIn(),
     function (req, res) {
         // logger.debug(ar.getStationData());
         res.json(ar.getStationData());
     });
 
-app.get('/datastationsmuc', require('connect-ensure-login').ensureLoggedIn(),
+app.get('/datastationsmuc', ensureLogin.ensureLoggedIn(),
     function (req, res) {
         // logger.debug(stationsRemote);
         res.json(stationsRemote.toJSON());
     });
 
 
-app.get('/datastationsdra', require('connect-ensure-login').ensureLoggedIn(),
+app.get('/datastationsdra', ensureLogin.ensureLoggedIn(),
     function (req, res) {
         // logger.debug(stationsRemote);
         res.json(stationsDraRemote.toJSON());
@@ -511,7 +520,7 @@ app.get('/datastationsdra', require('connect-ensure-login').ensureLoggedIn(),
 
 
 
-app.get('/controlmuc', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/controlmuc', ensureLogin.ensureLoggedIn(), function (req, res) {
     if (req.user.admin == true) {
         logger.info("Controlmuc page");
         res.render('controlpower', { layout: 'main', title: 'Muc' });
@@ -522,7 +531,7 @@ app.get('/controlmuc', require('connect-ensure-login').ensureLoggedIn(), functio
 
 });
 
-app.get('/control', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/control', ensureLogin.ensureLoggedIn(), function (req, res) {
     if (req.user.admin == true) {
         logger.info("Control page");
         var dataJson = path.join(pnpFolder, 'burner.json');
@@ -576,7 +585,7 @@ app.get('/control', require('connect-ensure-login').ensureLoggedIn(), function (
     }
 });
 
-app.get('/admin', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/admin', ensureLogin.ensureLoggedIn(), function (req, res) {
     if (req.user.admin == true) {
         logger.info("Admin page");
         //piHardwareVersion = fs.readFileSync('/proc/device-tree/model');
@@ -589,7 +598,7 @@ app.get('/admin', require('connect-ensure-login').ensureLoggedIn(), function (re
 
 });
 
-app.get('/status', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/status', ensureLogin.ensureLoggedIn(), function (req, res) {
     logger.info("Status page");
     piHardwareVersion = fs.readFileSync('/proc/device-tree/model');
     runVersion = os.platform() + " " + os.release() + "    Node version: " + process.version + " " + piHardwareVersion;
@@ -629,7 +638,7 @@ function updatePower(err, payload) {
     }
 };
 
-app.post('/power', require('connect-ensure-login').ensureLoggedIn(),
+app.post('/power', ensureLogin.ensureLoggedIn(),
 
     function (req, res) {
         jsonBody(req, res, updatePower)
@@ -793,13 +802,13 @@ app.post('/heater',
 
 
 // config proxy
-app.use('/vdr', require('connect-ensure-login').ensureLoggedIn(), proxy(configData.serverOne, {
+app.use('/vdr', ensureLogin.ensureLoggedIn(), proxy(configData.serverOne, {
     filter: function (req, res) {
         return false;
     }
 }));
 
-app.use('/video', require('connect-ensure-login').ensureLoggedIn(), proxy(configData.serverTwo, {
+app.use('/video', ensureLogin.ensureLoggedIn(), proxy(configData.serverTwo, {
     filter: function (req, res) {
         return maintenance == false;
     }
@@ -948,7 +957,7 @@ app.post('/login', passport.authenticate('local', {
 
 
 // Control admin
-app.post('/admincontrol', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.post('/admincontrol', ensureLogin.ensureLoggedIn(), function (req, res) {
 
     ar.getHeater().set({
         "dayNightTimeOn": req.body.ControlSelectDayOn
@@ -1004,7 +1013,7 @@ app.get('/logout', function (req, res) {
 
 
 // log routes
-app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/log', ensureLogin.ensureLoggedIn(), function (req, res) {
     var logtext = fs.readFileSync(path.join(__dirname, '/lib/temp.log'), 'utf8')
 
     logtext = logtext.replace(/\n/g, '<br>');
@@ -1013,7 +1022,7 @@ app.get('/log', require('connect-ensure-login').ensureLoggedIn(), function (req,
 });
 
 // delete log
-app.get('/deleteLog', require('connect-ensure-login').ensureLoggedIn(), function (req, res) {
+app.get('/deleteLog', ensureLogin.ensureLoggedIn(), function (req, res) {
 
     fs.writeFileSync(logfolder(), "");
     res.send('ok');
