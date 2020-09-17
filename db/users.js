@@ -3,8 +3,8 @@ var records = require("../users.json");
 
 //console.log(records);
 
-exports.findById = function(id, cb) {
-  process.nextTick(function() {
+exports.findById = function (id, cb) {
+  process.nextTick(function () {
     var idx = id - 1;
     if (records[idx]) {
       cb(null, records[idx]);
@@ -14,8 +14,8 @@ exports.findById = function(id, cb) {
   });
 }
 
-exports.findByUsername = function(username, cb) {
-  process.nextTick(function() {
+exports.findByUsername = function (username, cb) {
+  process.nextTick(function () {
     for (var i = 0, len = records.length; i < len; i++) {
       var record = records[i];
       if (record.username === username.toLowerCase()) {

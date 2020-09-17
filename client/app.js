@@ -390,7 +390,7 @@ setInterval(function () {
 
 // send a remote picture
 if (configData.remote_cam) {
-        sendPic();
+	sendPic();
 	setInterval(function () {
 
 		var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')

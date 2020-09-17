@@ -191,7 +191,7 @@ app.get('/movecam', ensureLogin.ensureLoggedIn(), function (reg, res) {
 
     var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
 
-    execSync('wget --user=' + configData.ipcam4User + --password=\x27\x27--tries = 2 - q - O ' + ipcam4File + ' ' + configData.ipcam4 + ' / jpgimage / 1 / image.jpg');
+    execSync('wget --user=' + configData.ipcam4User + ' --password= --tries=2 -q -O ' + ipcam4File + ' http://' + configData.ipcam4 + '/jpgimage/1/image.jpg');
     res.render('movecam', { layout: 'main', title: 'MoveCam' });
 
 });
@@ -208,9 +208,9 @@ app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
     if (maintenance === false) {
 
         logger.info("Webcam and ipcam page");
-        execSync('wget -q -O ' + ipcam1File + ' ' + configData.ipcam1 + '/cgi-bin/getsnapshot.cgi');
-        execSync('wget -q -O ' + ipcam2File + ' ' + configData.ipcam2 + '/cgi-bin/getsnapshot.cgi');
-        execSync('wget -q -O ' + ipcam3File + ' ' + configData.ipcam3 + '/cgi-bin/getsnapshot.cgi');
+        execSync('wget -q -O ' + ipcam1File + ' http://' + configData.ipcam1 + '/cgi-bin/getsnapshot.cgi');
+        execSync('wget -q -O ' + ipcam2File + ' http://' + configData.ipcam2 + '/cgi-bin/getsnapshot.cgi');
+        execSync('wget -q -O ' + ipcam3File + ' http://' + configData.ipcam3 + '/cgi-bin/getsnapshot.cgi');
         execSync('raspistill -rot 90 --colfx 128:128 -a 12 -md 0 -o ' + camFile);
         res.render('webcam', { layout: 'main', title: 'Webcam' });
     }
