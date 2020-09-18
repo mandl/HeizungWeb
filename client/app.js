@@ -31,7 +31,7 @@ const fs = require('fs');
 const path = require('path');
 const pnpFolder = path.join('../', 'picture');
 const rpio = require('../lib/sx1276');
-const sensor = require('../build/Release/dht22');
+const sensor = require('../lib/dht-sensor');
 const powerData = require('../PowerData.json');
 const power = require('../app/models/heizungPower');
 
