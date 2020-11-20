@@ -190,9 +190,14 @@ app.get('/stations', ensureLogin.ensureLoggedIn(), function (req, res) {
 app.get('/movecam', ensureLogin.ensureLoggedIn(), function (reg, res) {
 
     var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
+    if (maintenance === false) {
 
-    execSync('wget --user=' + configData.ipcam4User + ' --password= --tries=2 -q -O ' + ipcam4File + ' http://' + configData.ipcam4 + '/jpgimage/1/image.jpg');
-    res.render('movecam', { layout: 'main', title: 'MoveCam' });
+        execSync('wget --user=' + configData.ipcam4User + ' --password= --tries=2 -q -O ' + ipcam4File + ' http://' + configData.ipcam4 + '/jpgimage/1/image.jpg');
+        res.render('movecam', { layout: 'main', title: 'MoveCam' });
+    } 
+    else {
+        res.render('maintenance', { layout: 'main', title: 'Maintenance' });
+    }
 
 });
 
@@ -436,7 +441,7 @@ app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
         { data: [], label: "Bad", backgroundColor: chartColors.orange, fill: false },
         { data: [], label: "Living", backgroundColor: chartColors.green, fill: false },
         { data: [], label: "Board", backgroundColor: chartColors.blue, fill: false },
-        { data: [], label: "Sleep", backgroundColor: chartColors.purple, fill: false },
+        { data: [], label: "Office", backgroundColor: chartColors.purple, fill: false },
         { data: [], label: "Kitchen", backgroundColor: chartColors.yellow, fill: false }
 
         ]
@@ -450,7 +455,7 @@ app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
         { data: [], label: "Bad", backgroundColor: chartColors.orange, fill: false },
         { data: [], label: "Living", backgroundColor: chartColors.green, fill: false },
         { data: [], label: "Board", backgroundColor: chartColors.blue, fill: false },
-        { data: [], label: "Sleep", backgroundColor: chartColors.purple, fill: false },
+        { data: [], label: "Office", backgroundColor: chartColors.purple, fill: false },
         { data: [], label: "Kitchen", backgroundColor: chartColors.yellow, fill: false }
 
         ]
