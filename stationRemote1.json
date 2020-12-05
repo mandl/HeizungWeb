@@ -26,5 +26,19 @@
         "name": "Board",
         "state": 0,
         "datasource": "4"
+    },
+    {
+        "id": 37,
+        "label": 9,
+        "name": "Office",
+        "state": 0,
+        "datasource": "5"
+    },
+    {
+        "id": 38,
+        "label": 8,
+        "name": "Kitchen",
+        "state": 0,
+        "datasource": "6"
     }
 ]
