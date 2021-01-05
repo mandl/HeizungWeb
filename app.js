@@ -208,6 +208,7 @@ app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
     var ipcam1File = path.join(pnpFolder, 'ipcam1.jpg');
     var ipcam2File = path.join(pnpFolder, 'ipcam2.jpg');
     var ipcam3File = path.join(pnpFolder, 'ipcam3.jpg');
+    var ipcam5File = path.join(pnpFolder, 'ipcam5.jpg');
 
 
     if (maintenance === false) {
@@ -216,6 +217,7 @@ app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
         execSync('wget -q -O ' + ipcam1File + ' http://' + configData.ipcam1 + '/cgi-bin/getsnapshot.cgi');
         execSync('wget -q -O ' + ipcam2File + ' http://' + configData.ipcam2 + '/cgi-bin/getsnapshot.cgi');
         execSync('wget -q -O ' + ipcam3File + ' http://' + configData.ipcam3 + '/cgi-bin/getsnapshot.cgi');
+        execSync('wget -q -O ' + ipcam5File + ' http://' + configData.ipcam5 + '/cgi-bin/getsnapshot.cgi');
         execSync('raspistill -rot 90 --colfx 128:128 -a 12 -md 0 -o ' + camFile);
         res.render('webcam', { layout: 'main', title: 'Webcam' });
     }
