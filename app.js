@@ -1,7 +1,7 @@
 /*
     Heizung
     
-    Copyright (C) 2018 - 2020 Mandl
+    Copyright (C) 2018 - 2021 Mandl
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -59,6 +59,7 @@ var handlebars = require('express-handlebars')
 
 const stationData = require('./stationRemote1.json');
 const stationData2 = require('./stationRemote2.json');
+const stationData3 = require('./stationRemote3.json');
 
 const allPiData = require('./allPiRemote.json');
 
@@ -73,6 +74,7 @@ const RemotePiCollection = require('./app/models/remotestationpi');
 
 var stationsRemote = new TempStations.TempStations();
 var stationsDraRemote = new TempStations.TempStations();
+var stationsWKSRemote = new TempStations.TempStations();
 
 const powerData = require('./PowerData.json');
 const power = require('./app/models/heizungPower');
@@ -80,6 +82,7 @@ var myPower = new power.PowerModel(powerData);
 
 var stationsMuc = new TempStations.TempStations(stationData);
 var stationsDra = new TempStations.TempStations(stationData2);
+var stationsWKS = new TempStations.TempStations(stationData3);
 
 var allpis = new RemotePiCollection.RemotePiCollection(allPiData);
 
@@ -209,7 +212,9 @@ app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
     var ipcam2File = path.join(pnpFolder, 'ipcam2.jpg');
     var ipcam3File = path.join(pnpFolder, 'ipcam3.jpg');
     var ipcam5File = path.join(pnpFolder, 'ipcam5.jpg');
+    //var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
 
+    var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
 
     if (maintenance === false) {
 
@@ -218,6 +223,10 @@ app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
         execSync('wget -q -O ' + ipcam2File + ' http://' + configData.ipcam2 + '/cgi-bin/getsnapshot.cgi');
         execSync('wget -q -O ' + ipcam3File + ' http://' + configData.ipcam3 + '/cgi-bin/getsnapshot.cgi');
         execSync('wget -q -O ' + ipcam5File + ' http://' + configData.ipcam5 + '/cgi-bin/getsnapshot.cgi');
+        //execSync('wget -q -O ' + ipcam4File + ' http://' + configData.ipcam4 + '/cgi-bin/getsnapshot.cgi');
+
+        execSync('wget --user=' + configData.ipcam4User + ' --password= --tries=2 -q -O ' + ipcam4File + ' http://' + configData.ipcam4 + '/jpgimage/1/image.jpg');
+
         execSync('raspistill -rot 90 --colfx 128:128 -a 12 -md 0 -o ' + camFile);
         res.render('webcam', { layout: 'main', title: 'Webcam' });
     }
@@ -525,6 +534,11 @@ app.get('/datastationsdra', ensureLogin.ensureLoggedIn(),
         res.json(stationsDraRemote.toJSON());
     });
 
+app.get('/datastationswks', ensureLogin.ensureLoggedIn(),
+    function (req, res) {
+        // logger.debug(stationsRemote);
+        res.json(stationsWKSRemote.toJSON());
+    });
 
 
 app.get('/controlmuc', ensureLogin.ensureLoggedIn(), function (req, res) {
@@ -774,8 +788,51 @@ function getStationDraJson(err, payload) {
     }
 }
 
+
+
+function getStationWksJson(err, payload) {
+
+    // logger.debug(payload);
+    var dataTemp = {};
+    stationsWKSRemote.reset(payload);
+    var TimeNow = Date.now();
+    // logger.debug(payload);
+
+    stationsWKSRemote.each(function (model) {
+
+        if ((TimeNow - model.get('time')) < (1000 * 60 * 30)) {
+            var preFix = model.get('datasource');
+            dataTemp["temps" + preFix] = model.get('temp');
+            dataTemp["hums" + preFix] = model.get('hum');
+        }
+    });
+
+    delete dataTemp['hums-1'];
+    delete dataTemp['temps-1'];
+    var ol = Object.keys(dataTemp);
+
+    if (ol.length > 0) {
+        logger.debug("Save remote data");
+        ar.updateDB4(dataTemp);
+    }
+    if (err) {
+        logger.error(err);
+    } else {
+
+    }
+}
+
+
 //
 // Client data
+
+app.post('/wksdata',
+    function (req, res) {
+        jsonBody(req, res, getStationWksJson);
+        res.send('ok');
+        res.end();
+    });
+
 
 app.post('/mucdata',
     function (req, res) {
@@ -982,6 +1039,7 @@ app.post('/admincontrol', ensureLogin.ensureLoggedIn(), function (req, res) {
     if (req.body.CheckResetStationList !== undefined) {
         logger.info("Reset station list");
         stationsDraRemote.reset();
+        stationsWKSRemote.reset();
         stationsRemote.reset();
 
     }
@@ -1040,7 +1098,7 @@ app.get('/deleteLog', ensureLogin.ensureLoggedIn(), function (req, res) {
 // update JSON
 var updateJSON = function () {
     logger.debug("updateJSON");
-    for (var i = 1; i <= 3; i++) {
+    for (var i = 1; i <= 4; i++) {
         var pngPathName = path.join(pnpFolder, 'hum' + i + '.json');
         const child = execFileSync('rrdtool', ['xport', '-s now-24h', '-e now', '--json', 'DEF:hums1=./lib/weather' + i + '.rrd:hums1:AVERAGE', 'DEF:hums2=./lib/weather' + i + '.rrd:hums2:AVERAGE', 'DEF:hums3=./lib/weather' + i + '.rrd:hums3:AVERAGE', 'DEF:hums4=./lib/weather' + i + '.rrd:hums4:AVERAGE', 'DEF:hums5=./lib/weather' + i + '.rrd:hums5:AVERAGE', 'DEF:hums6=./lib/weather' + i + '.rrd:hums6:AVERAGE', 'DEF:hums7=./lib/weather' + i + '.rrd:hums7:AVERAGE', 'DEF:hums8=./lib/weather' + i + '.rrd:hums8:AVERAGE', 'DEF:hums9=./lib/weather' + i + '.rrd:hums9:AVERAGE', 'DEF:hums10=./lib/weather' + i + '.rrd:hums10:AVERAGE', 'DEF:hums11=./lib/weather' + i + '.rrd:hums11:AVERAGE', 'DEF:hums12=./lib/weather' + i + '.rrd:hums12:AVERAGE', 'DEF:hums13=./lib/weather' + i + '.rrd:hums13:AVERAGE', 'DEF:hums14=./lib/weather' + i + '.rrd:hums14:AVERAGE', 'XPORT:hums1:humity1', 'XPORT:hums2:humity2', 'XPORT:hums3:humity3', 'XPORT:hums4:humity4', 'XPORT:hums5:humity5', 'XPORT:hums6:humity6', 'XPORT:hums7:humity7', 'XPORT:hums8:humity8', 'XPORT:hums9:humity9', 'XPORT:hums10:humity10', 'XPORT:hums11:humity11', 'XPORT:hums12:humity12', 'XPORT:hums13:humity13', 'XPORT:hums14:humity14']);
         fs.writeFileSync(pngPathName, child);
