@@ -1,23 +1,24 @@
 [
     {
-        "id": 36,
-        "label": 11,
-        "name": "Keller",
+        "id": 18,
+        "label": 32,
+        "name": "Bad",
         "state": 0,
         "datasource": "1"
     },
     {
-        "id": 61,
-        "label": 5,
+        "id": 15,
+        "label": 33,
         "name": "Wohnung",
         "state": 0,
         "datasource": "2"
     },
     {
-        "id": 99,
-        "label": 0,
-        "name": "Board",
+        "id": 36,
+        "label": 14,
+        "name": "Wohnung",
         "state": 0,
-        "datasource": "3"
+        "datasource": "2"
     }
+
 ]
