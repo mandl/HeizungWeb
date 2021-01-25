@@ -37,6 +37,7 @@ const moment = require('moment');
 const ensureLogin = require('connect-ensure-login');
 
 
+
 var handlebars = require('express-handlebars')
     .create({
         defaultLayout: 'main',
@@ -212,7 +213,7 @@ app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
     var ipcam2File = path.join(pnpFolder, 'ipcam2.jpg');
     var ipcam3File = path.join(pnpFolder, 'ipcam3.jpg');
     var ipcam5File = path.join(pnpFolder, 'ipcam5.jpg');
-    //var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
+    var ipcam6File = path.join(pnpFolder, 'ipcam6.jpg');
 
     var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
 
@@ -223,7 +224,7 @@ app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
         execSync('wget -q -O ' + ipcam2File + ' http://' + configData.ipcam2 + '/cgi-bin/getsnapshot.cgi');
         execSync('wget -q -O ' + ipcam3File + ' http://' + configData.ipcam3 + '/cgi-bin/getsnapshot.cgi');
         execSync('wget -q -O ' + ipcam5File + ' http://' + configData.ipcam5 + '/cgi-bin/getsnapshot.cgi');
-        //execSync('wget -q -O ' + ipcam4File + ' http://' + configData.ipcam4 + '/cgi-bin/getsnapshot.cgi');
+        execSync('wget -q -O ' + ipcam6File + ' http://' + configData.ipcam6 + '/cgi-bin/getsnapshot.cgi');
 
         execSync('wget --user=' + configData.ipcam4User + ' --password= --tries=2 -q -O ' + ipcam4File + ' http://' + configData.ipcam4 + '/jpgimage/1/image.jpg');
 
@@ -428,6 +429,8 @@ app.get('/dra', ensureLogin.ensureLoggedIn(), function (req, res) {
     res.render('graphview', { layout: 'main', title: 'Dra', tempData: encodeURIComponent(JSON.stringify(chartData2)), humData: encodeURIComponent(JSON.stringify(chartHumData)) });
 });
 
+
+
 app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
     logger.info("muc");
     var dataJson = path.join(pnpFolder, 'temp2.json');
@@ -512,6 +515,85 @@ app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
 });
 
 
+app.get('/wks', ensureLogin.ensureLoggedIn(), function (req, res) {
+
+    logger.info("wks");
+    var dataJson = path.join(pnpFolder, 'temp4.json');
+    var humDataJson = path.join(pnpFolder, 'hum4.json');
+
+    var count = 3;
+
+    var chartColors = {
+        red: 'rgb(255, 99, 132)',
+        orange: 'rgb(255, 159, 64)',
+        yellow: 'rgb(255, 205, 86)',
+        green: 'rgb(75, 192, 192)',
+        blue: 'rgb(54, 162, 235)',
+        purple: 'rgb(153, 102, 255)',
+        grey: 'rgb(201, 203, 207)'
+    };
+
+    var chartData2 = {
+
+        labels: [],
+        datasets: [{ data: [], label: "Bad", borderColor: chartColors.red, fill: false },
+        { data: [], label: "Bad", backgroundColr: chartColors.orange, fill: false },
+        { data: [], label: "Living", backgroundColor: chartColors.green, fill: false }
+        ]
+
+    };
+
+
+   var chartHumData = {
+
+        labels: [],
+        datasets: [{ data: [], label: "Bad", borderColor: chartColors.red, fill: false },
+        { data: [], label: "Bad", backgroundColor: chartColors.orange, fill: false },
+        { data: [], label: "Living", backgroundColor: chartColors.green, fill: false }
+
+        ]
+
+    };
+
+    let rawdata = fs.readFileSync(dataJson);
+    let rawhumdata = fs.readFileSync(humDataJson);
+    var tempdata = JSON.parse(rawdata);
+    var humdata = JSON.parse(rawhumdata);
+    var startTime = tempdata.meta.start;
+
+    moment.locale('de');
+    const date = moment.unix(startTime);
+
+
+    for (var i = 0; i < tempdata.data.length; i++) {
+        chartData2.labels[i] = date.format("LT");
+        for (var n = 0; n < count; n++) {
+            if (tempdata.data[i][n] != null) {
+                chartData2.datasets[n].data[i] = math.round(tempdata.data[i][n], 1);
+            }
+        }
+        date.add(900, 'seconds');
+    }
+
+    const date2 = moment.unix(startTime);
+
+    for (var i = 0; i < humdata.data.length; i++) {
+        chartHumData.labels[i] = date2.format("LT");
+        for (var n = 0; n < count; n++) {
+            if (humdata.data[i][n] != null) {
+                chartHumData.datasets[n].data[i] = math.round(humdata.data[i][n], 1);
+            }
+        }
+        date2.add(900, 'seconds');
+    }
+
+    // console.log(JSON.stringify(chartHumData));
+
+    res.render('graphview', { layout: 'main', title: 'Wks', tempData: encodeURIComponent(JSON.stringify(chartData2)), humData: encodeURIComponent(JSON.stringify(chartHumData)) });
+});
+
+
+
 
 // get stations data
 
@@ -556,8 +638,6 @@ app.get('/control', ensureLogin.ensureLoggedIn(), function (req, res) {
     if (req.user.admin == true) {
         logger.info("Control page");
         var dataJson = path.join(pnpFolder, 'burner.json');
-
-
         var count = 1;
 
         var chartColors = {
