@@ -28,6 +28,7 @@ var TempStation = Backbone.Model.extend({
        temp : 0,
        hum  : 0,
        time : 0,
+       state : 0,
        reset : 0,
        lowbattery : 0,
        timestr: "",

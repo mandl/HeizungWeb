@@ -1,20 +1,20 @@
 /*
-    Heizung
+	Heizung
     
-    Copyright (C) 2018-2020 Mandl
+	Copyright (C) 2018-2021 Mandl
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	This program is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 
@@ -108,11 +108,8 @@ var pollStatus = function (data) {
 	const req = https.request(options, (res) => {
 		logger.debug('statusCode:', res.statusCode);
 		logger.debug('headers:', res.headers);
-
 		res.on('data', (d) => {
-
 			try {
-
 				let result = JSON.parse(d.toString('utf8'));
 				// console.log(result)
 				if (result.PowerState === true) {
@@ -129,12 +126,10 @@ var pollStatus = function (data) {
 						RelaisStat = true;
 					}
 				}
-
 			} catch (e) {
 
 				logger.debug(e)
 			}
-
 		});
 	});
 
@@ -146,8 +141,8 @@ var pollStatus = function (data) {
 }
 
 
-var sendHostdata = function (data) {
 
+var sendHostdata = function (data) {
 
 	var headers = {
 		'Content-Type': 'application/json',
@@ -200,13 +195,10 @@ var sendPic = function () {
 		encoding: "utf8",
 		method: 'POST',
 		headers: headers
-
-
 	};
 	const req = https.request(options, (res) => {
 		logger.debug('statusCode:', res.statusCode);
 		logger.debug('headers:', res.headers);
-
 		res.on('data', (d) => {
 			// process.stdout.write(d);
 		});
@@ -217,7 +209,6 @@ var sendPic = function () {
 	});
 	req.write(data);
 	req.end();
-
 };
 
 
@@ -299,13 +290,15 @@ var TempDataParse = function (my) {
 		if (obj.frame == 'data') {
 			var data = stations.findWhere({ id: obj.ID });
 			if (data === undefined) {
+				// found new station
 				logger.debug('new id');
 				if ((obj.Reset) && (configData.add_new_stations)) {
+					// reset flag is activ
 					stations.add({
 						id: obj.ID,
 						label: 0,
 						name: "New",
-						state: 0,
+						state: 1,
 						time: Date.now(),
 						reset: obj.Reset,
 						lowbattery: obj.LOWBAT,
@@ -315,15 +308,14 @@ var TempDataParse = function (my) {
 				}
 			}
 			else {
-				// logger.info(data);
-				// Update
+				// Update data
 				data.set({ "temp": obj.Temp });
 				data.set({ "hum": obj.Hygro });
 				data.set({ "time": Date.now() });
+				data.set({ "state": 1 });
 				data.set({ "reset": obj.Reset });
 				data.set({ "lowbattery": obj.LOWBAT });
 				data.set({ "timestr": new Date().toLocaleString('de-DE') });
-				// logger.info(dataTemp);
 			}
 		}
 		else if (obj.frame == 'info') {
@@ -349,113 +341,146 @@ var reconnectDevice = function () {
 	}, 10000);
 };
 
-logger.info('Connect to:          ' + configData.server_url);
-logger.info('Using port:          ' + configData.server_port);
-logger.info('Path temp data:      ' + configData.location_temp);
-logger.info('Path pic data:       ' + configData.location_pic);
-logger.info('Add new station:     ' + configData.add_new_stations);
-logger.info('Send remote picture: ' + configData.remote_cam);
-logger.info('Send temp data:      ' + configData.remote_temp);
-logger.info('Log level:           ' + configData.loglevel);
-logger.info('Station filename:    ' + configData.station_file);
-logger.info('Use local RFM95:     ' + configData.localRFM95);
-logger.info('Use local DHT22:     ' + configData.localDHT22);
-logger.info('Use relais muc:      ' + configData.muc_power);
+function main() {
 
-// use arduino board
-if (configData.remote_temp) {
-	setTimeout(connectDevice, 1000);
-}
+	logger.info('Connect to:          ' + configData.server_url);
+	logger.info('Using port:          ' + configData.server_port);
+	logger.info('Path temp data:      ' + configData.location_temp);
+	logger.info('Path pic data:       ' + configData.location_pic);
+	logger.info('Add new station:     ' + configData.add_new_stations);
+	logger.info('Send remote picture: ' + configData.remote_cam);
+	logger.info('Send temp data:      ' + configData.remote_temp);
+	logger.info('Log level:           ' + configData.loglevel);
+	logger.info('Station filename:    ' + configData.station_file);
+	logger.info('Use local RFM95:     ' + configData.localRFM95);
+	logger.info('Use local DHT22:     ' + configData.localDHT22);
+	logger.info('Use relais muc:      ' + configData.muc_power);
 
-// send temp data
-if ((configData.remote_temp) || (configData.localRFM95) || (configData.localDHT22)) {
+	// use arduino board
+	if (configData.remote_temp) {
+		setTimeout(connectDevice, 1000);
+	}
+
+	// send temp data
+	if ((configData.remote_temp) || (configData.localRFM95) || (configData.localDHT22)) {
+		setInterval(function () {
+			logger.debug('send data');
+			logger.debug(JSON.stringify(stations));
+			sendOutData(JSON.stringify(stations));
+
+		}, 1000 * 60 * 5); // send every 5 minutes
+	}
+
+	// send host data
+	sendHostdata(JSON.stringify(hostdata));
 	setInterval(function () {
-		logger.debug('send data');
-		logger.debug(JSON.stringify(stations));
-		sendOutData(JSON.stringify(stations));
+		logger.debug('send hostdata');
+		logger.debug(JSON.stringify(hostdata));
+
+		sendHostdata(JSON.stringify(hostdata));
 
 	}, 1000 * 60 * 5); // send every 5 minutes
-}
 
-// send host data
-sendHostdata(JSON.stringify(hostdata));
-setInterval(function () {
-	logger.debug('send hostdata');
-	logger.debug(JSON.stringify(hostdata));
-
-	sendHostdata(JSON.stringify(hostdata));
-
-}, 1000 * 60 * 5); // send every 5 minutes
-
-
-// send a remote picture
-if (configData.remote_cam) {
-	sendPic();
+	// remove all old station from list
 	setInterval(function () {
+		logger.debug('reset station list');
+		let timenow = Date.now();
+		//console.log('******');
+		for (var i = 0; i < stations.length; ++i) {
+			let timeStation = stations.at(i).get("time");
+			let secDiff = Math.floor((timenow - timeStation) / 1000);
+			let minDiff = Math.floor(secDiff / 60);
 
-		var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
-		logger.debug('send image: ' + strDate);
+			//console.log(minDiff);
+			if (minDiff > 1) {
+				// more then 30 min
+				let ResetFlag =  stations.at(i).get("reset");
+				let state =  stations.at(i).get("state");
+				if ((ResetFlag === 1) && (state === 0))
+				{
+					// reset flag is activ and no update since 1 h
+					stations.remove(stations.at(i));
+				}
+				else
+				{
+					// station is offline
+					stations.at(i).set({ "state": 0 });
+					//console.log('remove');
+				}
+			}
+		};
+	}, 1000 * 60 * 60); // send every 60 minutes
+
+	// send a remote picture
+	if (configData.remote_cam) {
 		sendPic();
+		setInterval(function () {
 
-	}, 1000 * 60 * 30); // send every 30 minutes
+			var strDate = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '')
+			logger.debug('send image: ' + strDate);
+			sendPic();
+
+		}, 1000 * 60 * 30); // send every 30 minutes
+	}
+
+	// use local RFM95 receiver
+	if (configData.localRFM95) {
+
+		rpio.FSKBegin();
+		rpio.FSKReset();
+		rpio.FSKRxChainCalibration();
+
+		var version = rpio.FSKGetVersion();
+		logger.info('RFM95 version: ' + version);
+
+		rpio.FSKOn();
+		setInterval(function () {
+
+			var mystr;
+			mystr = rpio.FSKGetData();
+			if (mystr != "timeout") {
+				logger.debug(mystr);
+				TempDataParse(mystr);
+			}
+
+		}, 500); // every 500 ms
+	}
+
+	// power switch muc
+	if (configData.muc_power) {
+
+		rpio.RelaisInit();
+
+		// switch on = no power at heater
+		logger.info('Relais on');
+		RelaisStat = true;
+		rpio.RelaisOn();
+
+		setInterval(function () {
+
+			pollStatus(JSON.stringify(hostdata))
+
+		}, 1000 * 10); // every 10 seconds 
+	}
+
+	// use local DHT sensor
+	if (configData.localDHT22) {
+		setInterval(function () {
+
+			// Sensor DHT22, Pin 2
+			var readout = sensor.read(22, 2);
+
+			if (readout.isValid) {
+				var strData = "{\"frame\":\"data\",\"ID\":99,\"Reset\":0,\"LOWBAT\":0,\"Temp\":" + readout.temperature.toFixed(1) + ",\"Hygro\":" + readout.humidity.toFixed(1) + "}";
+
+				logger.debug(strData);
+				TempDataParse(strData);
+			}
+		}, 1000 * 10); // every 10 seconds 
+	}
 
 }
 
-// use local RFM95 receiver
-if (configData.localRFM95) {
-
-	rpio.FSKBegin();
-	rpio.FSKReset();
-	rpio.FSKRxChainCalibration();
-
-	var version = rpio.FSKGetVersion();
-
-	logger.info('RFM95 version: ' + version);
-
-	rpio.FSKOn();
-
-	setInterval(function () {
-
-		var mystr;
-		mystr = rpio.FSKGetData();
-		if (mystr != "timeout") {
-			logger.debug(mystr);
-			TempDataParse(mystr);
-		}
-
-	}, 500); // every 500 ms
-}
-
-// power switch muc
-if (configData.muc_power) {
-
-	rpio.RelaisInit();
-
-	// switch on = no power at heater
-	logger.info('Relais on');
-	RelaisStat = true;
-	rpio.RelaisOn();
-
-	setInterval(function () {
-
-		pollStatus(JSON.stringify(hostdata))
-
-	}, 10000); // every 10 seconds 
-}
-
-
-// use local DHT sensor
-if (configData.localDHT22) {
-	setInterval(function () {
-
-		// Sensor DHT22, Pin 2
-		var readout = sensor.read(22, 2);
-
-		if (readout.isValid) {
-			var strData = "{\"frame\":\"data\",\"ID\":99,\"Reset\":0,\"LOWBAT\":0,\"Temp\":" + readout.temperature.toFixed(1) + ",\"Hygro\":" + readout.humidity.toFixed(1) + "}";
-
-			logger.debug(strData);
-			TempDataParse(strData);
-		}
-	}, 10000);
+if (require.main === module) {
+	main();
 }
