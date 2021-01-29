@@ -53,6 +53,12 @@
         Maintenance
       </label>
     </div><br>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="addnewstation" name="Addnewstation">
+      <label class="form-check-label" for="Addnewstation">
+        Add new station
+      </label>
+    </div><br>
     <button type="submit" class="btn btn-primary">Submit</button>
   </form>
 </div>
@@ -60,10 +66,11 @@
 <script>
   $(document).ready(function () {
 
-    $(':text:first').focus();
-    $('#ControlSelectDayOn').val({{ dayOn }});
+  $(':text:first').focus();
+  $('#ControlSelectDayOn').val({{ dayOn }});
   $('#ControlSelectDayOff').val({{ dayOff }});
   $('#maintenance').prop("checked", {{ maintenance }});
+  $('#addnewstation').prop("checked", {{ addnewstation }}); 
 
   $('form').submit(function (e) {
     //e.preventDefault();

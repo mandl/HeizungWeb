@@ -80,7 +80,7 @@
 <script type="text/template" id="view-station-template">
 <td><%= id %></td>
 <td><%= label %></td>
-<td><%= name %></td>
+<td<%= (state) === 0 ? ' class="table-danger"' : '' %>><%= name %></td>
 <td><%= temp %></td>
 <td><%= (hum)!== 106 ?  hum : '' %></td>
 <td><%= datasource %></td>

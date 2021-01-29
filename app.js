@@ -72,7 +72,6 @@ const TempStations = require('./app/models/tempstation');
 
 const RemotePiCollection = require('./app/models/remotestationpi');
 
-
 var stationsRemote = new TempStations.TempStations();
 var stationsDraRemote = new TempStations.TempStations();
 var stationsWKSRemote = new TempStations.TempStations();
@@ -88,7 +87,7 @@ var stationsWKS = new TempStations.TempStations(stationData3);
 var allpis = new RemotePiCollection.RemotePiCollection(allPiData);
 
 var maintenance = false;
-
+var addnewstation = false;
 
 function IsMaintenance() {
     return maintenance;
@@ -198,7 +197,7 @@ app.get('/movecam', ensureLogin.ensureLoggedIn(), function (reg, res) {
 
         execSync('wget --user=' + configData.ipcam4User + ' --password= --tries=2 -q -O ' + ipcam4File + ' http://' + configData.ipcam4 + '/jpgimage/1/image.jpg');
         res.render('movecam', { layout: 'main', title: 'MoveCam' });
-    } 
+    }
     else {
         res.render('maintenance', { layout: 'main', title: 'Maintenance' });
     }
@@ -207,15 +206,13 @@ app.get('/movecam', ensureLogin.ensureLoggedIn(), function (reg, res) {
 
 app.get('/webcam', ensureLogin.ensureLoggedIn(), function (req, res) {
 
-
     var camFile = path.join(pnpFolder, 'cam.jpg');
     var ipcam1File = path.join(pnpFolder, 'ipcam1.jpg');
     var ipcam2File = path.join(pnpFolder, 'ipcam2.jpg');
     var ipcam3File = path.join(pnpFolder, 'ipcam3.jpg');
+    var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
     var ipcam5File = path.join(pnpFolder, 'ipcam5.jpg');
     var ipcam6File = path.join(pnpFolder, 'ipcam6.jpg');
-
-    var ipcam4File = path.join(pnpFolder, 'ipcam4.jpg');
 
     if (maintenance === false) {
 
@@ -261,6 +258,7 @@ app.get('/', ensureLogin.ensureLoggedIn(), function (req, res) {
         green: 'rgb(75, 192, 192)',
         green1: 'rgb(35, 74, 52)',
         green2: 'rgb(134, 247, 47)',
+        green3: 'rgb(52, 235, 164)',
         blue: 'rgb(54, 162, 235)',
         blue1: 'rgb(59, 191, 212)',
         blue2: 'rgb(67, 31, 209)',
@@ -271,14 +269,14 @@ app.get('/', ensureLogin.ensureLoggedIn(), function (req, res) {
     var chartData2 = {
 
         labels: [],
-        datasets: [{ data: [], label: "Outside", borderColor: chartColors.red, fill: false },
+        datasets: [{ data: [], label: "Outside", backgroundColor: chartColors.red, fill: false },
         { data: [], label: "Living", backgroundColor: chartColors.orange, fill: false },
         { data: [], label: "Dining", backgroundColor: chartColors.yellow, fill: false },
         { data: [], label: "Zimmer2", backgroundColor: chartColors.green, fill: false, hidden: true },
         { data: [], label: "Wasch", backgroundColor: chartColors.blue, fill: false },
         { data: [], label: "Roof", backgroundColor: chartColors.purple, fill: false },
         { data: [], label: "Heater", backgroundColor: chartColors.grey, fill: false, hidden: true },
-        { data: [], label: "Schlafen", backgroundColor: chartColors.red, fill: false },
+        { data: [], label: "Schlafen", backgroundColor: chartColors.green3, fill: false },
         { data: [], label: "Kueche", backgroundColor: chartColors.green1, fill: false, hidden: true },
         { data: [], label: "Zimmer1", backgroundColor: chartColors.green2, fill: false, hidden: true },
         { data: [], label: "Gang", backgroundColor: chartColors.blue1, fill: false, hidden: true },
@@ -289,7 +287,7 @@ app.get('/', ensureLogin.ensureLoggedIn(), function (req, res) {
     var chartHumData = {
 
         labels: [],
-        datasets: [{ data: [], label: "Outside", borderColor: chartColors.red, fill: false },
+        datasets: [{ data: [], label: "Outside", backgroundColor: chartColors.red, fill: false },
         { data: [], label: "Living", backgroundColor: chartColors.orange, fill: false },
         { data: [], label: "Dining", backgroundColor: chartColors.yellow, fill: false },
         { data: [], label: "Zimmer2", backgroundColor: chartColors.green, fill: false, hidden: true },
@@ -301,9 +299,7 @@ app.get('/', ensureLogin.ensureLoggedIn(), function (req, res) {
         { data: [], label: "Zimmer1", backgroundColor: chartColors.green2, fill: false, hidden: true },
         { data: [], label: "Gang", backgroundColor: chartColors.blue1, fill: false, hidden: true },
         { data: [], label: "Dusche", backgroundColor: chartColors.blue2, fill: false, hidden: true }
-
         ]
-
     };
 
     let rawdata = fs.readFileSync(dataJson);
@@ -311,13 +307,11 @@ app.get('/', ensureLogin.ensureLoggedIn(), function (req, res) {
     var tempdata = JSON.parse(rawdata);
     var humdata = JSON.parse(rawhumdata);
     var startTime = tempdata.meta.start;
-    // console.log(tempdata.data[0]);
-    // console.log(tempdata.data.length);
 
     moment.locale('de');
     const date = moment.unix(startTime);
 
-    for (var i = 0; i < tempdata.data.length; i++) {// console.log(typeof tempdata.data[i][0]);
+    for (var i = 0; i < tempdata.data.length; i++) {
         chartData2.labels[i] = date.format("LT");
         for (var n = 0; n < count; n++) {
             if (tempdata.data[i][n] != null) {
@@ -329,7 +323,7 @@ app.get('/', ensureLogin.ensureLoggedIn(), function (req, res) {
 
     const date2 = moment.unix(startTime);
 
-    for (var i = 0; i < humdata.data.length; i++) {// console.log(typeof tempdata.data[i][0]);
+    for (var i = 0; i < humdata.data.length; i++) {
         chartHumData.labels[i] = date2.format("LT");
         for (var n = 0; n < count; n++) {
             if (humdata.data[i][n] != null) {
@@ -338,9 +332,6 @@ app.get('/', ensureLogin.ensureLoggedIn(), function (req, res) {
         }
         date2.add(900, 'seconds');
     }
-
-    // console.log(JSON.stringify(chartHumData));
-
     res.render('graphview', { layout: 'main', title: 'Villa', tempData: encodeURIComponent(JSON.stringify(chartData2)), humData: encodeURIComponent(JSON.stringify(chartHumData)) });
 });
 
@@ -366,7 +357,7 @@ app.get('/dra', ensureLogin.ensureLoggedIn(), function (req, res) {
     var chartData2 = {
 
         labels: [],
-        datasets: [{ data: [], label: "Living", borderColor: chartColors.red, fill: false },
+        datasets: [{ data: [], label: "Living", backgroundColor: chartColors.red, fill: false },
         { data: [], label: "Keller Tief", backgroundColor: chartColors.orange, fill: false },
         { data: [], label: "Kitchen", backgroundColor: chartColors.yellow, fill: false },
         { data: [], label: "Waschkeller", backgroundColor: chartColors.green, fill: false },
@@ -374,13 +365,12 @@ app.get('/dra', ensureLogin.ensureLoggedIn(), function (req, res) {
         { data: [], label: "Hobby", backgroundColor: chartColors.purple, fill: false },
         { data: [], label: "Outside", backgroundColor: chartColors.grey, fill: false }
         ]
-
     };
 
     var chartHumData = {
 
         labels: [],
-        datasets: [{ data: [], label: "Living", borderColor: chartColors.red, fill: false },
+        datasets: [{ data: [], label: "Living", backgroundColor: chartColors.red, fill: false },
         { data: [], label: "Keller Tief", backgroundColor: chartColors.orange, fill: false },
         { data: [], label: "Kitchen", backgroundColor: chartColors.yellow, fill: false },
         { data: [], label: "Waschkeller", backgroundColor: chartColors.green, fill: false },
@@ -388,7 +378,6 @@ app.get('/dra', ensureLogin.ensureLoggedIn(), function (req, res) {
         { data: [], label: "Hobby", backgroundColor: chartColors.purple, fill: false },
         { data: [], label: "Outside", backgroundColor: chartColors.grey, fill: false }
         ]
-
     };
 
     let rawdata = fs.readFileSync(dataJson);
@@ -396,8 +385,6 @@ app.get('/dra', ensureLogin.ensureLoggedIn(), function (req, res) {
     var tempdata = JSON.parse(rawdata);
     var humdata = JSON.parse(rawhumdata);
     var startTime = tempdata.meta.start;
-    // console.log(tempdata.data[0]);
-    // console.log(tempdata.data.length);
 
     moment.locale('de');
     const date = moment.unix(startTime);
@@ -423,8 +410,6 @@ app.get('/dra', ensureLogin.ensureLoggedIn(), function (req, res) {
         }
         date2.add(900, 'seconds');
     }
-
-    // console.log(JSON.stringify(chartHumData));
 
     res.render('graphview', { layout: 'main', title: 'Dra', tempData: encodeURIComponent(JSON.stringify(chartData2)), humData: encodeURIComponent(JSON.stringify(chartHumData)) });
 });
@@ -451,7 +436,7 @@ app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
     var chartData2 = {
 
         labels: [],
-        datasets: [{ data: [], label: "Outside", borderColor: chartColors.red, fill: false },
+        datasets: [{ data: [], label: "Outside", backgroundColor: chartColors.red, fill: false },
         { data: [], label: "Bad", backgroundColor: chartColors.orange, fill: false },
         { data: [], label: "Living", backgroundColor: chartColors.green, fill: false },
         { data: [], label: "Board", backgroundColor: chartColors.blue, fill: false },
@@ -465,7 +450,7 @@ app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
     var chartHumData = {
 
         labels: [],
-        datasets: [{ data: [], label: "Outside", borderColor: chartColors.red, fill: false },
+        datasets: [{ data: [], label: "Outside", backgroundColor: chartColors.red, fill: false },
         { data: [], label: "Bad", backgroundColor: chartColors.orange, fill: false },
         { data: [], label: "Living", backgroundColor: chartColors.green, fill: false },
         { data: [], label: "Board", backgroundColor: chartColors.blue, fill: false },
@@ -481,13 +466,11 @@ app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
     var tempdata = JSON.parse(rawdata);
     var humdata = JSON.parse(rawhumdata);
     var startTime = tempdata.meta.start;
-    // console.log(tempdata.data[0]);
-    // console.log(tempdata.data.length);
 
     moment.locale('de');
     const date = moment.unix(startTime);
 
-    for (var i = 0; i < tempdata.data.length; i++) {// console.log(typeof tempdata.data[i][0]);
+    for (var i = 0; i < tempdata.data.length; i++) {
         chartData2.labels[i] = date.format("LT");
         for (var n = 0; n < count; n++) {
             if (tempdata.data[i][n] != null) {
@@ -499,7 +482,7 @@ app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
 
     const date2 = moment.unix(startTime);
 
-    for (var i = 0; i < humdata.data.length; i++) {// console.log(typeof tempdata.data[i][0]);
+    for (var i = 0; i < humdata.data.length; i++) {
         chartHumData.labels[i] = date2.format("LT");
         for (var n = 0; n < count; n++) {
             if (humdata.data[i][n] != null) {
@@ -508,8 +491,6 @@ app.get('/muc', ensureLogin.ensureLoggedIn(), function (req, res) {
         }
         date2.add(900, 'seconds');
     }
-
-    // console.log(JSON.stringify(chartHumData));
 
     res.render('graphview', { layout: 'main', title: 'Muc', tempData: encodeURIComponent(JSON.stringify(chartData2)), humData: encodeURIComponent(JSON.stringify(chartHumData)) });
 });
@@ -521,7 +502,7 @@ app.get('/wks', ensureLogin.ensureLoggedIn(), function (req, res) {
     var dataJson = path.join(pnpFolder, 'temp4.json');
     var humDataJson = path.join(pnpFolder, 'hum4.json');
 
-    var count = 3;
+    var count = 4;
 
     var chartColors = {
         red: 'rgb(255, 99, 132)',
@@ -536,20 +517,24 @@ app.get('/wks', ensureLogin.ensureLoggedIn(), function (req, res) {
     var chartData2 = {
 
         labels: [],
-        datasets: [{ data: [], label: "Bad", borderColor: chartColors.red, fill: false },
-        { data: [], label: "Bad", backgroundColr: chartColors.orange, fill: false },
-        { data: [], label: "Living", backgroundColor: chartColors.green, fill: false }
+        datasets: [{ data: [], label: "Bad", backgroundColor: chartColors.red, fill: false },
+        { data: [], label: "Schlafen", backgroundColor: chartColors.orange, fill: false },
+        { data: [], label: "Wohnzimmer", backgroundColor: chartColors.green, fill: false },
+        { data: [], label: "Outside", backgroundColor: chartColors.blue, fill: false }
+
         ]
 
     };
 
 
-   var chartHumData = {
+    var chartHumData = {
 
         labels: [],
-        datasets: [{ data: [], label: "Bad", borderColor: chartColors.red, fill: false },
-        { data: [], label: "Bad", backgroundColor: chartColors.orange, fill: false },
-        { data: [], label: "Living", backgroundColor: chartColors.green, fill: false }
+        datasets: [{ data: [], label: "Bad", backgroundColor: chartColors.red, fill: false },
+        { data: [], label: "Schlafen", backgroundColor: chartColors.orange, fill: false },
+        { data: [], label: "Wohnzimmer", backgroundColor: chartColors.green, fill: false },
+        { data: [], label: "Outside", backgroundColor: chartColors.blue, fill: false }
+
 
         ]
 
@@ -587,19 +572,16 @@ app.get('/wks', ensureLogin.ensureLoggedIn(), function (req, res) {
         date2.add(900, 'seconds');
     }
 
-    // console.log(JSON.stringify(chartHumData));
-
     res.render('graphview', { layout: 'main', title: 'Wks', tempData: encodeURIComponent(JSON.stringify(chartData2)), humData: encodeURIComponent(JSON.stringify(chartHumData)) });
 });
 
 
 
-
+//
 // get stations data
-
+//
 app.get('/datastations', ensureLogin.ensureLoggedIn(),
     function (req, res) {
-        // logger.debug(ar.getStationData());
         res.json(ar.getStationData());
     });
 
@@ -689,9 +671,7 @@ app.get('/control', ensureLogin.ensureLoggedIn(), function (req, res) {
 app.get('/admin', ensureLogin.ensureLoggedIn(), function (req, res) {
     if (req.user.admin == true) {
         logger.info("Admin page");
-        //piHardwareVersion = fs.readFileSync('/proc/device-tree/model');
-        //runVersion = os.platform() + " " + os.release() + "    Node version: " + process.version + " " + piHardwareVersion;
-        res.render('admin', { layout: 'main', title: 'Admin', dayOn: ar.getHeater().get('dayNightTimeOn'), dayOff: ar.getHeater().get('dayNightTimeoff'), maintenance: maintenance });
+        res.render('admin', { layout: 'main', title: 'Admin', dayOn: ar.getHeater().get('dayNightTimeOn'), dayOff: ar.getHeater().get('dayNightTimeoff'), maintenance: maintenance, addnewstation: addnewstation });
     }
     else {
         res.redirect('/');
@@ -869,7 +849,6 @@ function getStationDraJson(err, payload) {
 }
 
 
-
 function getStationWksJson(err, payload) {
 
     // logger.debug(payload);
@@ -905,7 +884,7 @@ function getStationWksJson(err, payload) {
 
 //
 // Client data
-
+//
 app.post('/wksdata',
     function (req, res) {
         jsonBody(req, res, getStationWksJson);
@@ -1091,7 +1070,6 @@ app.post('/muccam2',
     });
 
 
-
 // Login
 app.post('/login', passport.authenticate('local', {
     failureRedirect: '/login'
@@ -1100,7 +1078,43 @@ app.post('/login', passport.authenticate('local', {
 });
 
 
+// add new station aktiv
+
+app.get('/addnewstation',
+
+    function (req, res) {
+        res.status(200).send({ "result": addnewstation });
+
+    }
+);
+
+//
+// get station list
+//
+app.get('/stationlist', function (req, res) {
+
+    let page = req.query.id;
+
+    switch (page) {
+        case "1":
+            var listFolder = path.join(__dirname, 'stationRemote1.json');
+            break;
+        case "2":
+            var listFolder = path.join(__dirname, 'stationRemote2.json');
+            break;
+        case "3":
+            var listFolder = path.join(__dirname, 'stationRemote3.json');
+            break;
+        default:
+            var listFolder = path.join(__dirname, 'stationRemote1.json');
+    }
+    res.sendFile(listFolder);
+}
+);
+
+//
 // Control admin
+//
 app.post('/admincontrol', ensureLogin.ensureLoggedIn(), function (req, res) {
 
     ar.getHeater().set({
@@ -1144,6 +1158,14 @@ app.post('/admincontrol', ensureLogin.ensureLoggedIn(), function (req, res) {
     }
     else {
         maintenance = false;
+    }
+
+    if (req.body.Addnewstation !== undefined) {
+        logger.info("Switch to add new stations");
+        addnewstation = true;
+    }
+    else {
+        addnewstation = false;
     }
 
     res.redirect('/control');
@@ -1201,7 +1223,6 @@ var updatePng = function (prefix, count, dbprefix) {
     var pngPathName = path.join(pnpFolder, 'burner.png');
     execFileSync('rrdtool', ['graph', pngPathName, '-s now - 1 day', '-e now', 'DEF:runtime1=./lib/burner.rrd:runtime1:AVERAGE', 'AREA:runtime1#000000:Runtime']);
 
-
     for (var i = 1; i <= count; i++) {
         // Day
         var pngPathName = path.join(pnpFolder, prefix + 'hum' + i + '.png');
@@ -1214,7 +1235,6 @@ var updatePng = function (prefix, count, dbprefix) {
         execFileSync('rrdtool', ['graph', pngPathName, '-s now - 1 week', '-e now', 'DEF:hums' + i + '=./lib/weather' + dbprefix + '.rrd:hums' + i + ':AVERAGE', 'LINE1:hums' + i + '#000000:Humidity']);
         var pngPathName = path.join(pnpFolder, prefix + 'tempWeek' + i + '.png');
         execFileSync('rrdtool', ['graph', pngPathName, '-s now - 1 week', '-e now', 'DEF:temps' + i + '=./lib/weather' + dbprefix + '.rrd:temps' + i + ':AVERAGE', 'LINE1:temps' + i + '#000000:Temp']);
-
     }
 }
 
@@ -1240,8 +1260,9 @@ setInterval(function () {
 
 //http://api.openweathermap.org/data/2.5/forecast?units=metric&q=&appid=
 
-
+//
 // Check night/day switch
+//
 setInterval(function () {
     logger.debug('Check state');
     var d = new Date();
