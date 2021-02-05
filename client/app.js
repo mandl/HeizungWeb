@@ -134,7 +134,7 @@ var pollStatus = function (data) {
 	});
 
 	req.on('error', (e) => {
-		logger.error(e);
+		logger.debug(e);
 	});
 	req.write(data);
 	req.end();
@@ -385,31 +385,29 @@ function main() {
 	setInterval(function () {
 		logger.debug('reset station list');
 		let timenow = Date.now();
-		//console.log('******');
+		
 		for (var i = 0; i < stations.length; ++i) {
 			let timeStation = stations.at(i).get("time");
 			let secDiff = Math.floor((timenow - timeStation) / 1000);
 			let minDiff = Math.floor(secDiff / 60);
 
-			//console.log(minDiff);
-			if (minDiff > 1) {
+			
+			if (minDiff > 30) {
 				// more then 30 min
-				let ResetFlag =  stations.at(i).get("reset");
-				let state =  stations.at(i).get("state");
-				if ((ResetFlag === 1) && (state === 0))
-				{
+				let ResetFlag = stations.at(i).get("reset");
+				let state = stations.at(i).get("state");
+				if (((ResetFlag === 1) || (datasource === -1)) && (state === 0)) {
 					// reset flag is activ and no update since 1 h
 					stations.remove(stations.at(i));
 				}
-				else
-				{
+				else {
 					// station is offline
 					stations.at(i).set({ "state": 0 });
-					//console.log('remove');
+				
 				}
 			}
 		};
-	}, 1000 * 60 * 60); // send every 60 minutes
+	}, 1000 * 60 * 10); // send every 10 minutes
 
 	// send a remote picture
 	if (configData.remote_cam) {
@@ -420,7 +418,7 @@ function main() {
 			logger.debug('send image: ' + strDate);
 			sendPic();
 
-		}, 1000 * 60 * 30); // send every 30 minutes
+		}, 1000 * 60 * 20); // send every 20 minutes
 	}
 
 	// use local RFM95 receiver
