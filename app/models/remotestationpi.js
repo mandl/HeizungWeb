@@ -27,7 +27,9 @@ var RemotePi = Backbone.Model.extend({
        node  : "?",
        location: "?",
        piHardwareVersion:"?",
-       pingDate:"?"
+       pingDate:"?",
+       number: 0,
+       reboot: 0
      }
 });
 

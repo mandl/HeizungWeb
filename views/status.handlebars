@@ -6,6 +6,7 @@
 <caption>Clients</caption>
 <thead>
     <tr>
+      <th scope="Col">Reboot</th>
       <th scope="col">Hostname</th>
       <th scope="col">Release</th>
       <th scope="col">Node</th>
@@ -17,6 +18,12 @@
 <tbody>
 {{#each PiStations}}
     <tr>
+        <td>  
+            <div class="custom-control custom-checkbox">
+                  <input type="checkbox" class="custom-control-input" id="customCheck{{number}}" unchecked>
+                  <label class="custom-control-label" for="customCheck{{number}}"></label>
+            </div>
+        </td>
         <td>{{hostname}}</td>
         <td>{{release}}</td>
         <td>{{node}}</td>
