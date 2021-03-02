@@ -1,6 +1,6 @@
 [
     {
-        "id": 5,
+        "id": 43,
         "label": 13,
         "name": "Living",
         "state": 0,
@@ -42,10 +42,26 @@
         "datasource": "6"
     },
     {
-        "id": 35,
+        "id": 25,
         "label": 14,
         "name": "Outside",
         "state": 0,
         "datasource": "7"
+    },
+    {
+        "id": 32,
+        "label": 31,
+        "name": "Keller WAF",
+        "state": 0,
+        "datasource": "8"
+    },
+    {
+        "id": 63,
+        "label": 30,
+        "name": "Heizung",
+        "state": 0,
+        "datasource": "9"
     }
+
+
 ]
